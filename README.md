@@ -20,7 +20,7 @@ Create a config file called `.force_config` in your home directory with connecti
 
 Compile the project:
 
-	$ cd DBTools
+	$ cd force-tools/DBTools
 	$ mvn package
 
 This should create a complete jar-with-dependencies in the target directory allowing you to run the script with:
