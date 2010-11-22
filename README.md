@@ -13,7 +13,7 @@ Clone this project:
 Create a config file called `.force_config` in your home directory with connection parameters for your org. It should look something like this:
 
 	# Connection configuration for your Force.com Java app
-	force.endPoint = https://vmf01.t.salesforce.com
+	force.endPoint = https://login.salesforce.com
 	force.apiVersion = 20.0
 	force.userName = my_user@my_domain
 	force.password = my_password
