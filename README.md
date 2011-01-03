@@ -10,22 +10,25 @@ Clone this project:
 
 	git clone git@github.com:jesperfj/force-tools.git
 
-Create a config file called `.force_config` in your home directory with connection parameters for your org. It should look something like this:
-
-	# Connection configuration for your Force.com Java app
-	force.endPoint = https://login.salesforce.com
-	force.apiVersion = 20.0
-	force.userName = my_user@my_domain
-	force.password = my_password
-
 Compile the project:
 
 	$ cd force-tools/DBTool
 	$ mvn package
 
-This should create a complete jar-with-dependencies in the target directory allowing you to run the script with:
+This tool uses a URL type format for connecting to Force.com, similar to JDBC drivers. The URL format looks like this
 
-	$ java -jar target/DBTool-0.0.1-SNAPSHOT-jar-with-dependencies.jar
+	force://login.salesforce.com;user=scott@acme.com;password=tiger
+
+Hostname can be one of the login servers (e.g. test.salesforce.com for sandbox). You can set this URL in 3 different ways:
+
+* In the FORCE_URL environment variable
+* In the force.url Java system property
+* Stored in the file ~/.force_url (where ~ means your home directory)
+
+Each take precedence in the order listed here, e.g. if FORCE_URL is specified, everything else is ignored. So you can execute the dbclean task on a sandbox org with user scott@acme.com and password tiger by doing the following:
+
+	$ export FORCE_URL=force://test.salesforce.com;user=scott@acme.com;password=tiger
+	$ java -jar target/forcecli-0.0.1-SNAPSHOT-jar-with-dependencies.jar dbclean
 
 Which will produce something like this:
 
@@ -33,7 +36,5 @@ Which will produce something like this:
 	Preparing to delete Producer__c
 	Preparing to delete Wine__c
 	Operation succeeded.
-
-If you look at the code, you can tell there is ambition to expand this tool to do other things. DBTool is the main class that sets you up to do API stuff and the DBClean class contains the clean code. The plan is to add command line switches and more commands.
 
 

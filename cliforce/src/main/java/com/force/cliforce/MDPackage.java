@@ -1,4 +1,4 @@
-package com.force.dbtool;
+package com.force.cliforce;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.force.dbtool</groupId>
-	<artifactId>DBTool</artifactId>
+	<groupId>com.force.cliforce</groupId>
+	<artifactId>cliforce</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>DBTool</name>
+	<name>cliforce</name>
 	<description>			</description>
 	<licenses>
 	  <license>
@@ -16,29 +16,39 @@
 	</licenses>
 	<repositories>
 		<repository>
-			<id>vmforce-snapshots</id>
-			<url>http://repo.t.salesforce.com/archiva/repository/snapshots</url>
-			<name>VMForce Repo</name>
+			<id>com.force.maven.release</id>
+			<name>Force.com Maven Repo</name>
+			<url>http://repo.t.salesforce.com/archiva/repository/releases</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
 		</repository>
 	</repositories>
 	<dependencies>
 		<dependency>
-			<groupId>com.salesforce</groupId>
-			<artifactId>metadataAPI</artifactId>
-			<version>20.0.1-SNAPSHOT</version>
+			<groupId>com.force.api</groupId>
+			<artifactId>force-metadata-api</artifactId>
+			<version>20.0.0</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.salesforce</groupId>
-			<artifactId>partnerAPI</artifactId>
-			<version>20.0.1-SNAPSHOT</version>
+			<groupId>com.force.api</groupId>
+			<artifactId>force-partner-api</artifactId>
+			<version>20.0.0</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.salesforce</groupId>
-			<artifactId>wsc</artifactId>
-			<version>20.0.1-SNAPSHOT</version>
+			<groupId>com.force.api</groupId>
+			<artifactId>force-wsc</artifactId>
+			<version>20.0.0</version>
 			<scope>compile</scope>
+		</dependency>
+		<!-- Test -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.7</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 	<build>
@@ -57,7 +67,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>com.force.dbtool.DBTool</mainClass>
+							<mainClass>com.force.cliforce.CLIForce</mainClass>
 						</manifest>
 					</archive>
 					<descriptorRefs>

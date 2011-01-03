@@ -1,4 +1,4 @@
-package com.force.dbtool;
+package com.force.cliforce;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -39,8 +39,15 @@ public class DBClean {
 					destructiveChanges.addCustomObject(s.getName());
 				}
 			}
+
+			// A bit of a hack:
+			// Use same version as force-metadata-api: This is the last path element
+			// in the connector URL
 			
-			destructiveChanges.setVersion("20.0");
+			String[] arr = com.sforce.soap.metadata.Connector.END_POINT.split("/");
+			String apiVersion = arr[arr.length-1];
+						
+			destructiveChanges.setVersion(apiVersion);
 
 			ByteArrayOutputStream bout = new ByteArrayOutputStream();
 			ZipOutputStream zout = new ZipOutputStream(bout);
@@ -52,7 +59,7 @@ public class DBClean {
 			zout.closeEntry();
 			
 			MDPackage pkg = new MDPackage();
-			pkg.setVersion("20.0");
+			pkg.setVersion(apiVersion);
 			
 			entry = new ZipEntry("package.xml");
 			zout.putNextEntry(entry);
