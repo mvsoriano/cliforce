@@ -30,6 +30,7 @@ public class DBTool {
 				e.printStackTrace();
 			} 
 		}
+		
 		boolean missingProps = false;
 		for(String s : parms) {
 			String value = System.getProperty(s);
@@ -44,7 +45,7 @@ public class DBTool {
 		if(missingProps) {
 			return;
 		}
-					
+
 		try {
 
 
