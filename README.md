@@ -1,6 +1,6 @@
-# Some Java tools for Force.com
+# Command line tool for Force.com
 
-Right now only one tool is here: It deletes all custom objects (entities) from your org. This is useful if you are using your org as a database and are using the VMforce JPA provider to auto-create entities.
+Right now only one task exists: It deletes all custom objects (entities) from your org. This is useful if you are using your org as a database and are using the VMforce JPA provider to auto-create entities.
 
 Note that Force.com currently doesn't allow you to completely erase entities via the API. So this script will put them in the recycle bin. If you run the script on every build, you will eventually build up quite a recycle bin, so it's recommended that you only run it when you need to.
 
@@ -8,11 +8,11 @@ Note that Force.com currently doesn't allow you to completely erase entities via
 
 Clone this project:
 
-	git clone git@github.com:jesperfj/force-tools.git
+	git clone git@github.com:jesperfj/cliforce.git
 
 Compile the project:
 
-	$ cd force-tools/cliforce
+	$ cd cliforce
 	$ mvn package
 
 This tool uses a URL type format for connecting to Force.com, similar to JDBC drivers. The URL format looks like this
