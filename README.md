@@ -12,7 +12,7 @@ Clone this project:
 
 Compile the project:
 
-	$ cd force-tools/DBTool
+	$ cd force-tools/cliforce
 	$ mvn package
 
 This tool uses a URL type format for connecting to Force.com, similar to JDBC drivers. The URL format looks like this
