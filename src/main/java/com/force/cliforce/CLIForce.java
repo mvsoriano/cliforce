@@ -93,11 +93,9 @@ public class CLIForce {
             reader.setHistory(new History(hist));
         }
 
-        reader.addCompletor(new SimpleCompletor(new ArrayList<String>(commands.keySet()) {{
-            add("exit");
-        }}.toArray(new String[0])));
+        reader.addCompletor(new SimpleCompletor(commands.keySet().toArray(new String[0])));
         reader.setBellEnabled(false);
-        String cmd = reader.readLine("force> ");
+        String cmd = reader.readLine("force> ").trim();
         while (!cmd.equals("exit")) {
             CommandDescriptor desc = commands.get(cmd);
             if (desc != null) {
@@ -117,7 +115,7 @@ public class CLIForce {
                 out.printf("Unknown Command %s\n", cmd);
                 out.flush();
             }
-            cmd = reader.readLine("force> ");
+            cmd = reader.readLine("force> ").trim();
         }
 
     }
