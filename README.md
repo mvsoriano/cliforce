@@ -28,7 +28,17 @@ Hostname can be one of the login servers (e.g. test.salesforce.com for sandbox).
 Each take precedence in the order listed here, e.g. if FORCE_URL is specified, everything else is ignored. So you can execute the dbclean task on a sandbox org with user scott@acme.com and password tiger by doing the following:
 
 	$ export FORCE_URL=force://test.salesforce.com;user=scott@acme.com;password=tiger
-	$ java -jar target/forcecli-0.0.1-SNAPSHOT-jar-with-dependencies.jar dbclean
+	$ java -jar target/forcecli-0.0.1-SNAPSHOT-jar-with-dependencies.jar
+
+You will be taken to the force prompt.
+
+    force>
+
+Hit the tab key to see available commands or type help to see the description of the behavior of each command.
+
+If you wish to clean out your org, type dbclean at the prompt.
+
+    force> dbclean
 
 Which will produce something like this:
 
