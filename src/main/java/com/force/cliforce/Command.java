@@ -10,6 +10,6 @@ public interface Command {
 
     public String describe();
 
-    public void execute(PartnerConnection partner, MetadataConnection metadata, PrintWriter output) throws Exception;
+    public void execute(String[] args, PartnerConnection partner, MetadataConnection metadata, PrintWriter output) throws Exception;
 
 }

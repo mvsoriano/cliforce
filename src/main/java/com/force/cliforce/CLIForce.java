@@ -7,12 +7,12 @@ import com.sforce.ws.ConnectorConfig;
 import jline.ConsoleReader;
 import jline.History;
 import jline.SimpleCompletor;
+import org.apache.ivy.Ivy;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -20,10 +20,13 @@ public class CLIForce {
 
     private ConsoleReader reader;
     Map<String, CommandDescriptor> commands = new TreeMap<String, CommandDescriptor>();
+    Map<String, Plugin> plugins = new TreeMap<String, Plugin>();
     private MetadataConnection metadataConnection;
     private PartnerConnection partnerConnection;
     private PrintWriter out = new PrintWriter(System.out);
     ForceEnv forceEnv;
+    Ivy ivy = Ivy.newInstance();
+
 
     static public void main(String[] args) {
 
@@ -66,6 +69,8 @@ public class CLIForce {
             for (CommandDescriptor commandDescriptor : def.getCommands()) {
                 cliForce.commands.put(commandDescriptor.name, commandDescriptor);
             }
+
+
             cliForce.run();
 
         } catch (ConnectionException e) {
@@ -95,16 +100,18 @@ public class CLIForce {
 
         reader.addCompletor(new SimpleCompletor(commands.keySet().toArray(new String[0])));
         reader.setBellEnabled(false);
-        String cmd = reader.readLine("force> ").trim();
-        while (!cmd.equals("exit")) {
-            CommandDescriptor desc = commands.get(cmd);
+
+        String[] cmdsplit = reader.readLine("force> ").trim().split("\\s+", 2);
+        while (!cmdsplit[0].equals("exit")) {
+            CommandDescriptor desc = commands.get(cmdsplit[0]);
+            String[] args = cmdsplit.length == 2 ? cmdsplit[1].split("\\s+") : new String[0];
             if (desc != null) {
                 ClassLoader curr = Thread.currentThread().getContextClassLoader();
                 try {
                     Thread.currentThread().setContextClassLoader(desc.command.getClass().getClassLoader());
-                    desc.command.execute(partnerConnection, metadataConnection, out);
+                    desc.command.execute(args, partnerConnection, metadataConnection, out);
                 } catch (Exception e) {
-                    out.printf("Exception while executing command %s", cmd);
+                    out.printf("Exception while executing command %s", cmdsplit[0]);
                     e.printStackTrace(out);
                 } finally {
                     Thread.currentThread().setContextClassLoader(curr);
@@ -112,10 +119,10 @@ public class CLIForce {
                 }
 
             } else {
-                out.printf("Unknown Command %s\n", cmd);
+                out.printf("Unknown Command %s\n", cmdsplit[0]);
                 out.flush();
             }
-            cmd = reader.readLine("force> ").trim();
+            cmdsplit = reader.readLine("force> ").trim().split("\\s+", 2);
         }
 
     }

@@ -21,7 +21,7 @@ public class DBClean implements Command {
     }
 
 
-    public void execute(PartnerConnection partner, MetadataConnection md, PrintWriter log) throws IOException, ConnectionException {
+    public void execute(String[] args, PartnerConnection partner, MetadataConnection md, PrintWriter log) throws IOException, ConnectionException {
 
         System.out.println("Connected to org " + partner.getUserInfo().getOrganizationId());
 

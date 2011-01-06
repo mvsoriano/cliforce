@@ -7,4 +7,6 @@ public interface Plugin {
 
     List<CommandDescriptor> getCommands();
 
+    String getName();
+
 }
