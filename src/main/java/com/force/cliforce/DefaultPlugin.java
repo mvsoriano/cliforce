@@ -199,16 +199,16 @@ public class DefaultPlugin implements Plugin {
         @Override
         public void execute(String[] args, PartnerConnection partner, MetadataConnection metadata, PrintWriter output) throws Exception {
             for (String arg : args) {
-                output.printf("attempting to remove plugin: %s");
+                output.printf("attempting to remove plugin: %s\nplugin HelloWorldPlugin cliplugin:cliplugin:1.0", arg);
                 Plugin p = force.plugins.remove(arg);
                 if (p == null) {
                     output.println("....not found");
                 } else {
                     for (CommandDescriptor commandDescriptor : p.getCommands()) {
                         force.commands.remove(commandDescriptor.name);
-                        output.printf("\n removed command: %s", commandDescriptor.name);
+                        output.printf("removed command: %s\n", commandDescriptor.name);
                     }
-                    output.println("Done");
+                    output.println("\nDone");
                 }
             }
         }
