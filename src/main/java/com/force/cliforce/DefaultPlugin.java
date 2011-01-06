@@ -124,6 +124,7 @@ public class DefaultPlugin implements Plugin {
     public static class PluginCommand implements Command {
 
         private CLIForce force;
+        public static final String SYNTAX = "plugin some.plugin.ClassName mavengroup:artifact:version";
 
         public PluginCommand(CLIForce it) {
             force = it;
@@ -132,8 +133,9 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public String describe() {
-            return "adds a plugin to the shell. Syntax: plugin some.plugin.class some:maven:dependency";
+            return "adds a plugin to the shell. Syntax: " + SYNTAX;
         }
+
 
         @Override
         public void execute(String[] args, PartnerConnection partner, MetadataConnection metadata, PrintWriter output) throws Exception {
@@ -157,16 +159,24 @@ public class DefaultPlugin implements Plugin {
                             Plugin p = (Plugin) po;
                             List<CommandDescriptor> commands = p.getCommands();
                             force.plugins.put(p.getName(), p);
-                            output.printf("Adding Plugin: %s, (%s)\n", p.getName(), p.getClass().getName());
+                            output.printf("Adding Plugin: %s (%s)\n", p.getName(), p.getClass().getName());
                             for (CommandDescriptor command : commands) {
-                                output.printf("  -> adds command %s, (%s)\n", command.name, command.command.getClass().getName());
+                                output.printf("  -> adds command %s (%s)\n", command.name, command.command.getClass().getName());
                                 force.commands.put(command.name, command);
                             }
                         }
+                        force.reloadCompletions();
                     } finally {
                         Thread.currentThread().setContextClassLoader(curr);
                     }
                 }
+            } else {
+                StringBuilder b = new StringBuilder();
+                for (String arg : args) {
+                    b.append(arg).append(" ");
+                }
+                output.println("Unexpected Command Format:" + b.toString());
+                output.println("expected syntax:" + SYNTAX);
             }
         }
 
@@ -199,7 +209,7 @@ public class DefaultPlugin implements Plugin {
         @Override
         public void execute(String[] args, PartnerConnection partner, MetadataConnection metadata, PrintWriter output) throws Exception {
             for (String arg : args) {
-                output.printf("attempting to remove plugin: %s\nplugin HelloWorldPlugin cliplugin:cliplugin:1.0", arg);
+                output.printf("attempting to remove plugin: %s\n", arg);
                 Plugin p = force.plugins.remove(arg);
                 if (p == null) {
                     output.println("....not found");
@@ -208,6 +218,7 @@ public class DefaultPlugin implements Plugin {
                         force.commands.remove(commandDescriptor.name);
                         output.printf("removed command: %s\n", commandDescriptor.name);
                     }
+                    force.reloadCompletions();
                     output.println("\nDone");
                 }
             }

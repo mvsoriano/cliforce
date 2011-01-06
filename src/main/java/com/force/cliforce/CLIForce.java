@@ -4,6 +4,7 @@ import com.sforce.soap.metadata.MetadataConnection;
 import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.ws.ConnectionException;
 import com.sforce.ws.ConnectorConfig;
+import jline.Completor;
 import jline.ConsoleReader;
 import jline.History;
 import jline.SimpleCompletor;
@@ -19,6 +20,7 @@ import java.util.TreeMap;
 public class CLIForce {
 
     private ConsoleReader reader;
+    private Completor completor = new SimpleCompletor("exit");
     Map<String, CommandDescriptor> commands = new TreeMap<String, CommandDescriptor>();
     Map<String, Plugin> plugins = new TreeMap<String, Plugin>();
     private MetadataConnection metadataConnection;
@@ -82,8 +84,15 @@ public class CLIForce {
         }
     }
 
+    void reloadCompletions() {
+        reader.removeCompletor(completor);
+        completor = new SimpleCompletor(commands.keySet().toArray(new String[0]));
+        reader.addCompletor(completor);
+    }
+
     public void run() throws IOException {
         reader = new ConsoleReader();
+        reader.addCompletor(completor);
         File hist = new File(System.getProperty("user.home") + "/.force_history");
 
         if (!hist.exists()) {
@@ -97,8 +106,8 @@ public class CLIForce {
         } else {
             reader.setHistory(new History(hist));
         }
+        reloadCompletions();
 
-        reader.addCompletor(new SimpleCompletor(commands.keySet().toArray(new String[0])));
         reader.setBellEnabled(false);
 
         String[] cmdsplit = reader.readLine("force> ").trim().split("\\s+", 2);
