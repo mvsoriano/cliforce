@@ -22,7 +22,7 @@ public class CLIForce {
 
     private ConsoleReader reader;
     private Completor completor = new SimpleCompletor("exit");
-    Map<String, CommandDescriptor> commands = new TreeMap<String, CommandDescriptor>();
+    Map<String, Command> commands = new TreeMap<String, Command>();
     Map<String, Plugin> plugins = new TreeMap<String, Plugin>();
     private MetadataConnection metadataConnection;
     private PartnerConnection partnerConnection;
@@ -69,8 +69,8 @@ public class CLIForce {
             cliForce.partnerConnection = partner;
             cliForce.forceEnv = env;
             Plugin def = new DefaultPlugin(cliForce);
-            for (CommandDescriptor commandDescriptor : def.getCommands()) {
-                cliForce.commands.put(commandDescriptor.name, commandDescriptor);
+            for (Command command : def.getCommands()) {
+                cliForce.commands.put(command.name(), command);
             }
 
 
@@ -114,13 +114,13 @@ public class CLIForce {
 
         String[] cmdsplit = reader.readLine("force> ").trim().split("\\s+", 2);
         while (!cmdsplit[0].equals("exit")) {
-            CommandDescriptor desc = commands.get(cmdsplit[0]);
+            Command cmd = commands.get(cmdsplit[0]);
             String[] args = cmdsplit.length == 2 ? cmdsplit[1].split("\\s+") : new String[0];
-            if (desc != null) {
+            if (cmd != null) {
                 ClassLoader curr = Thread.currentThread().getContextClassLoader();
                 try {
-                    Thread.currentThread().setContextClassLoader(desc.command.getClass().getClassLoader());
-                    desc.command.execute(new Context(metadataConnection, partnerConnection, args, new CommandReader() {
+                    Thread.currentThread().setContextClassLoader(cmd.getClass().getClassLoader());
+                    cmd.execute(new Context(metadataConnection, partnerConnection, args, new CommandReader() {
                         @Override
                         public String readLine(final String prompt) {
                             try {

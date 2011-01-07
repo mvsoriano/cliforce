@@ -18,6 +18,11 @@ public class DBClean implements Command {
 
 
     @Override
+    public String name() {
+        return "dbclean";
+    }
+
+    @Override
     public String describe() {
         return "Deletes all custom objects in the current org";
     }

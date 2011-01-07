@@ -35,14 +35,19 @@ public class DefaultPlugin implements Plugin {
     }
 
     @Override
-    public List<CommandDescriptor> getCommands() {
-        return Arrays.asList(new CommandDescriptor("list", new ListCustomObjects()),
-                new CommandDescriptor("dbclean", new DBClean()),
-                new CommandDescriptor("info", new InfoCommand(force)),
-                new CommandDescriptor("help", new HelpCommand(force)),
-                new CommandDescriptor("plugin", new PluginCommand(force)),
-                new CommandDescriptor("unplug", new UnplugCommand(force)),
-                new CommandDescriptor("exit", new Command() {
+    public List<Command> getCommands() {
+        return Arrays.asList(new ListCustomObjects(),
+                new DBClean(),
+                new ConnectionInfoCommand(force),
+                new HelpCommand(force),
+                new PluginCommand(force),
+                new UnplugCommand(force),
+                new Command() {
+                    @Override
+                    public String name() {
+                        return "exit";
+                    }
+
                     @Override
                     public String describe() {
                         return "Exit this shell";
@@ -52,7 +57,7 @@ public class DefaultPlugin implements Plugin {
                     public void execute(CommandContext ctx) throws Exception {
                         //No-op, will exit
                     }
-                }));
+                });
     }
 
     @Override
@@ -65,6 +70,11 @@ public class DefaultPlugin implements Plugin {
         @Override
         public String describe() {
             return "list the existing custom objects and their fields";
+        }
+
+        @Override
+        public String name() {
+            return "list";
         }
 
         @Override
@@ -97,25 +107,37 @@ public class DefaultPlugin implements Plugin {
         }
 
         @Override
+        public String name() {
+            return "help";
+        }
+
+        @Override
         public String describe() {
             return "Display this help message";
         }
 
         @Override
         public void execute(CommandContext ctx) throws Exception {
-            for (Map.Entry<String, CommandDescriptor> entry : force.commands.entrySet()) {
-                ctx.getCommandWriter().printf("%s: %s\n", entry.getKey(), entry.getValue().command.describe());
+            for (Map.Entry<String, Command> entry : force.commands.entrySet()) {
+                ctx.getCommandWriter().printf("%s: %s\n", entry.getKey(), entry.getValue().describe());
             }
         }
     }
 
-    public static class InfoCommand implements Command {
+    public static class ConnectionInfoCommand implements Command {
 
         private CLIForce force;
 
-        public InfoCommand(CLIForce it) {
+        @Override
+        public String name() {
+            return "connection";
+        }
+
+        public ConnectionInfoCommand(CLIForce it) {
             force = it;
         }
+
+
 
         @Override
         public String describe() {
@@ -138,6 +160,10 @@ public class DefaultPlugin implements Plugin {
             force = it;
         }
 
+        @Override
+        public String name() {
+            return "plugin";
+        }
 
         @Override
         public String describe() {
@@ -168,12 +194,12 @@ public class DefaultPlugin implements Plugin {
                         Object po = urlClassLoader.loadClass(pluginClass).newInstance();
                         if (po instanceof Plugin) {
                             Plugin p = (Plugin) po;
-                            List<CommandDescriptor> commands = p.getCommands();
+                            List<Command> commands = p.getCommands();
                             force.plugins.put(p.getName(), p);
                             output.printf("Adding Plugin: %s (%s)\n", p.getName(), p.getClass().getName());
-                            for (CommandDescriptor command : commands) {
-                                output.printf("  -> adds command %s (%s)\n", command.name, command.command.getClass().getName());
-                                force.commands.put(command.name, command);
+                            for (Command command : commands) {
+                                output.printf("  -> adds command %s (%s)\n", command.name(), command.getClass().getName());
+                                force.commands.put(command.name(), command);
                             }
                         }
                         force.reloadCompletions();
@@ -253,6 +279,11 @@ public class DefaultPlugin implements Plugin {
         }
 
         @Override
+        public String name() {
+            return "unplug";
+        }
+
+        @Override
         public String describe() {
             return "removes a plugin from the shell";
         }
@@ -265,9 +296,9 @@ public class DefaultPlugin implements Plugin {
                 if (p == null) {
                     ctx.getCommandWriter().println("....not found");
                 } else {
-                    for (CommandDescriptor commandDescriptor : p.getCommands()) {
-                        force.commands.remove(commandDescriptor.name);
-                        ctx.getCommandWriter().printf("removed command: %s\n", commandDescriptor.name);
+                    for (Command command : p.getCommands()) {
+                        force.commands.remove(command.name());
+                        ctx.getCommandWriter().printf("removed command: %s\n", command.name());
                     }
                     force.reloadCompletions();
                     ctx.getCommandWriter().println("\nDone");
