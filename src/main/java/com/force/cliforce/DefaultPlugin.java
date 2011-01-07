@@ -2,10 +2,8 @@ package com.force.cliforce;
 
 import com.sforce.soap.metadata.FileProperties;
 import com.sforce.soap.metadata.ListMetadataQuery;
-import com.sforce.soap.metadata.MetadataConnection;
 import com.sforce.soap.partner.DescribeSObjectResult;
 import com.sforce.soap.partner.Field;
-import com.sforce.soap.partner.PartnerConnection;
 import org.apache.ivy.Ivy;
 import org.apache.ivy.core.module.descriptor.Artifact;
 import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor;
@@ -13,12 +11,11 @@ import org.apache.ivy.core.module.descriptor.DefaultModuleDescriptor;
 import org.apache.ivy.core.module.id.ModuleRevisionId;
 import org.apache.ivy.core.report.ResolveReport;
 import org.apache.ivy.core.resolve.ResolveOptions;
-import org.apache.ivy.core.settings.IvySettings;
 import org.apache.ivy.plugins.parser.xml.XmlModuleDescriptorWriter;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.PrintStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.ParseException;
@@ -52,7 +49,7 @@ public class DefaultPlugin implements Plugin {
                     }
 
                     @Override
-                    public void execute(String[] args, PartnerConnection partner, MetadataConnection metadata, PrintWriter output) throws Exception {
+                    public void execute(CommandContext ctx) throws Exception {
                         //No-op, will exit
                     }
                 }));
@@ -71,23 +68,23 @@ public class DefaultPlugin implements Plugin {
         }
 
         @Override
-        public void execute(String[] args, PartnerConnection partner, MetadataConnection metadata, PrintWriter out) throws Exception {
+        public void execute(CommandContext ctx) throws Exception {
             ListMetadataQuery q = new ListMetadataQuery();
             q.setType("CustomObject");
-            FileProperties[] fpa = metadata.listMetadata(new ListMetadataQuery[]{q}, 20.0);
+            FileProperties[] fpa = ctx.getMetadataConnection().listMetadata(new ListMetadataQuery[]{q}, 20.0);
             List<String> sobjs = new ArrayList<String>();
             for (FileProperties fileProperties : fpa) {
                 if (fileProperties.getFullName().endsWith("__c")) {
                     sobjs.add(fileProperties.getFullName());
                 }
             }
-            DescribeSObjectResult[] describeSObjectResults = partner.describeSObjects(sobjs.toArray(new String[0]));
+            DescribeSObjectResult[] describeSObjectResults = ctx.getPartnerConnection().describeSObjects(sobjs.toArray(new String[0]));
             for (DescribeSObjectResult describeSObjectResult : describeSObjectResults) {
-                out.printf("\n{\nCustom Object-> %s \n", describeSObjectResult.getName());
+                ctx.getCommandWriter().printf("\n{\nCustom Object-> %s \n", describeSObjectResult.getName());
                 for (Field field : describeSObjectResult.getFields()) {
-                    out.printf("       field -> %s (type: %s)\n", field.getName(), field.getType().toString());
+                    ctx.getCommandWriter().printf("       field -> %s (type: %s)\n", field.getName(), field.getType().toString());
                 }
-                out.print("}\n");
+                ctx.getCommandWriter().print("}\n");
             }
         }
     }
@@ -105,9 +102,9 @@ public class DefaultPlugin implements Plugin {
         }
 
         @Override
-        public void execute(String[] args, PartnerConnection partner, MetadataConnection metadata, PrintWriter log) throws Exception {
+        public void execute(CommandContext ctx) throws Exception {
             for (Map.Entry<String, CommandDescriptor> entry : force.commands.entrySet()) {
-                log.printf("%s: %s\n", entry.getKey(), entry.getValue().command.describe());
+                ctx.getCommandWriter().printf("%s: %s\n", entry.getKey(), entry.getValue().command.describe());
             }
         }
     }
@@ -126,9 +123,9 @@ public class DefaultPlugin implements Plugin {
         }
 
         @Override
-        public void execute(String[] args, PartnerConnection partner, MetadataConnection metadata, PrintWriter log) throws Exception {
-            log.printf("Current User: %s\n", force.forceEnv.getUser());
-            log.printf("Current Endpoint: %s\n", force.forceEnv.getHost());
+        public void execute(CommandContext ctx) throws Exception {
+            ctx.getCommandWriter().printf("Current User: %s\n", force.forceEnv.getUser());
+            ctx.getCommandWriter().printf("Current Endpoint: %s\n", force.forceEnv.getHost());
         }
     }
 
@@ -149,7 +146,9 @@ public class DefaultPlugin implements Plugin {
 
 
         @Override
-        public void execute(String[] args, PartnerConnection partner, MetadataConnection metadata, PrintWriter output) throws Exception {
+        public void execute(CommandContext ctx) throws Exception {
+            String[] args = ctx.getCommandArguments();
+            PrintStream output = ctx.getCommandWriter();
             if (args.length == 0) {
                 output.println("Listing plugins...");
                 for (Map.Entry<String, Plugin> e : force.plugins.entrySet()) {
@@ -259,19 +258,19 @@ public class DefaultPlugin implements Plugin {
         }
 
         @Override
-        public void execute(String[] args, PartnerConnection partner, MetadataConnection metadata, PrintWriter output) throws Exception {
-            for (String arg : args) {
-                output.printf("attempting to remove plugin: %s\n", arg);
+        public void execute(CommandContext ctx) throws Exception {
+            for (String arg : ctx.getCommandArguments()) {
+                ctx.getCommandWriter().printf("attempting to remove plugin: %s\n", arg);
                 Plugin p = force.plugins.remove(arg);
                 if (p == null) {
-                    output.println("....not found");
+                    ctx.getCommandWriter().println("....not found");
                 } else {
                     for (CommandDescriptor commandDescriptor : p.getCommands()) {
                         force.commands.remove(commandDescriptor.name);
-                        output.printf("removed command: %s\n", commandDescriptor.name);
+                        ctx.getCommandWriter().printf("removed command: %s\n", commandDescriptor.name);
                     }
                     force.reloadCompletions();
-                    output.println("\nDone");
+                    ctx.getCommandWriter().println("\nDone");
                 }
             }
         }

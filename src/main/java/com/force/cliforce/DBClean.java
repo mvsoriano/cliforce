@@ -5,6 +5,8 @@ import com.sforce.soap.partner.DescribeGlobalResult;
 import com.sforce.soap.partner.DescribeGlobalSObjectResult;
 import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.ws.ConnectionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -21,15 +23,15 @@ public class DBClean implements Command {
     }
 
 
-    public void execute(String[] args, PartnerConnection partner, MetadataConnection md, PrintWriter log) throws IOException, ConnectionException {
+    public void execute(CommandContext ctx) throws IOException, ConnectionException {
 
-        System.out.println("Connected to org " + partner.getUserInfo().getOrganizationId());
+        System.out.println("Connected to org " + ctx.getPartnerConnection().getUserInfo().getOrganizationId());
 
-        DescribeGlobalResult objs = partner.describeGlobal();
+        DescribeGlobalResult objs = ctx.getPartnerConnection().describeGlobal();
         MDPackage destructiveChanges = new MDPackage();
         for (DescribeGlobalSObjectResult s : objs.getSobjects()) {
             if (s.isCustom()) {
-                System.out.println("Preparing to delete " + s.getName());
+                ctx.getCommandWriter().println("Preparing to delete " + s.getName());
                 destructiveChanges.addCustomObject(s.getName());
             }
         }
@@ -73,16 +75,16 @@ public class DBClean implements Command {
 
         DeployOptions options = new DeployOptions();
         options.setSinglePackage(true);
-        AsyncResult ar = md.deploy(bout.toByteArray(), options);
+        AsyncResult ar = ctx.getMetadataConnection().deploy(bout.toByteArray(), options);
 
         while (!ar.getDone()) {
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException e) {
             }
-            ar = md.checkStatus(new String[]{ar.getId()})[0];
+            ar = ctx.getMetadataConnection().checkStatus(new String[]{ar.getId()})[0];
         }
-        DeployResult dr = md.checkDeployStatus(ar.getId());
+        DeployResult dr = ctx.getMetadataConnection().checkDeployStatus(ar.getId());
         if (dr.getSuccess()) {
             System.out.println("Operation succeeded.");
         } else {

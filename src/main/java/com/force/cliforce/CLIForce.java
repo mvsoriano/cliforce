@@ -12,6 +12,7 @@ import org.apache.ivy.Ivy;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.Map;
@@ -119,7 +120,16 @@ public class CLIForce {
                 ClassLoader curr = Thread.currentThread().getContextClassLoader();
                 try {
                     Thread.currentThread().setContextClassLoader(desc.command.getClass().getClassLoader());
-                    desc.command.execute(args, partnerConnection, metadataConnection, out);
+                    desc.command.execute(new Context(metadataConnection, partnerConnection, args, new CommandReader() {
+                        @Override
+                        public String readLine(final String prompt) {
+                            try {
+                                return reader.readLine(prompt);
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        }
+                    }));
                 } catch (Exception e) {
                     out.printf("Exception while executing command %s", cmdsplit[0]);
                     e.printStackTrace(out);
@@ -135,6 +145,47 @@ public class CLIForce {
             cmdsplit = reader.readLine("force> ").trim().split("\\s+", 2);
         }
 
+    }
+
+    private static class Context implements CommandContext {
+
+        MetadataConnection mc;
+        PartnerConnection pc;
+        String[] args;
+        CommandReader reader;
+
+
+        private Context(MetadataConnection mc, PartnerConnection pc, String[] args, CommandReader reader) {
+            this.mc = mc;
+            this.pc = pc;
+            this.args = args;
+            this.reader = reader;
+        }
+
+        @Override
+        public MetadataConnection getMetadataConnection() {
+            return mc;
+        }
+
+        @Override
+        public PartnerConnection getPartnerConnection() {
+            return pc;
+        }
+
+        @Override
+        public String[] getCommandArguments() {
+            return args;
+        }
+
+        @Override
+        public CommandReader getCommandReader() {
+            return reader;
+        }
+
+        @Override
+        public PrintStream getCommandWriter() {
+            return System.out;
+        }
     }
 
 
