@@ -110,6 +110,7 @@ public class CLIForce {
 
         reader.setBellEnabled(false);
 
+
         String[] cmdsplit = reader.readLine("force> ").trim().split("\\s+", 2);
         while (!cmdsplit[0].equals("exit")) {
             CommandDescriptor desc = commands.get(cmdsplit[0]);

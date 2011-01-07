@@ -6,11 +6,22 @@ import com.sforce.soap.metadata.MetadataConnection;
 import com.sforce.soap.partner.DescribeSObjectResult;
 import com.sforce.soap.partner.Field;
 import com.sforce.soap.partner.PartnerConnection;
+import org.apache.ivy.Ivy;
+import org.apache.ivy.core.module.descriptor.Artifact;
+import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor;
+import org.apache.ivy.core.module.descriptor.DefaultModuleDescriptor;
+import org.apache.ivy.core.module.id.ModuleRevisionId;
+import org.apache.ivy.core.report.ResolveReport;
+import org.apache.ivy.core.resolve.ResolveOptions;
+import org.apache.ivy.core.settings.IvySettings;
+import org.apache.ivy.plugins.parser.xml.XmlModuleDescriptorWriter;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -149,6 +160,7 @@ public class DefaultPlugin implements Plugin {
                 String pluginClass = args[0];
                 String pluginDep = args[1];
                 File jar = new File(getMavenLocalPath(pluginDep));
+
                 if (jar.exists()) {
                     ClassLoader curr = Thread.currentThread().getContextClassLoader();
                     URLClassLoader urlClassLoader = new URLClassLoader(new URL[]{jar.toURI().toURL()}, curr);
@@ -180,16 +192,56 @@ public class DefaultPlugin implements Plugin {
             }
         }
 
-        private String getMavenLocalPath(String cmdArg) {
+        String getMavenLocalPath(String cmdArg) {
             String[] deps = cmdArg.split(":");
             if (deps.length == 3) {
+                String groupId = deps[0];
+                String artifactId = deps[1];
+                String version = deps[2];
                 StringBuilder jar = new StringBuilder(System.getProperty("user.home") + "/.m2/repository/");
-                jar.append(deps[0].replace(".", "/")).append("/");
-                jar.append(deps[1]).append("/").append(deps[2]).append("/");
-                jar.append(deps[1]).append("-").append(deps[2]).append(".jar");
+                jar.append(groupId.replace(".", "/")).append("/");
+                jar.append(artifactId).append("/").append(version).append("/");
+                jar.append(artifactId).append("-").append(version).append(".jar");
                 return jar.toString();
             }
             return "";
+        }
+
+        List<URL> resolveWithDependencies(String group, String artifact, String version) throws RuntimeException {
+            try {
+                Ivy ivy = Ivy.newInstance();
+
+                ivy.configureDefault();
+
+                File ivyfile = File.createTempFile("ivy", ".xml");
+                ivyfile.deleteOnExit();
+                DefaultModuleDescriptor md = DefaultModuleDescriptor
+                        .newDefaultInstance(ModuleRevisionId.newInstance(group,
+                                artifact + "-caller", "working"));
+                DefaultDependencyDescriptor dd = new DefaultDependencyDescriptor(md,
+                        ModuleRevisionId.newInstance(group, artifact, version),
+                        false, false, true);
+                md.addDependency(dd);
+                XmlModuleDescriptorWriter.write(md, ivyfile);
+
+                String[] confs = new String[]{"default"};
+                ResolveOptions resolveOptions = new ResolveOptions().setConfs(confs);
+                ResolveReport report = ivy.resolve(ivyfile.toURI().toURL(), resolveOptions);
+                if (!report.hasError()) {
+                    List<URL> urls = new ArrayList<URL>();
+                    for (Artifact a : (List<Artifact>) report.getArtifacts()) {
+                        urls.add(a.getUrl());
+                    }
+                    return urls;
+                } else {
+                    throw new RuntimeException("Error Resolving dependencies");
+                }
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
         }
     }
 
