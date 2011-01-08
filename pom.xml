@@ -91,16 +91,7 @@
 
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>com.force.cliforce.CLIForce</mainClass>
-                        </manifest>
-                    </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                </configuration>
+
                 <executions>
                     <execution>
                         <id>make-my-jar-with-dependencies</id>
@@ -108,7 +99,33 @@
                         <goals>
                             <goal>single</goal>
                         </goals>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <mainClass>com.force.cliforce.CLIForce</mainClass>
+                                </manifest>
+                            </archive>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                        </configuration>
                     </execution>
+                    <execution>
+                        <id>make-boot-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <mainClass>com.force.cliforce.Boot</mainClass>
+                                </manifest>
+                            </archive>
+                            <descriptor>boot-assembly.xml</descriptor>
+                        </configuration>
+                    </execution>
+
                 </executions>
             </plugin>
         </plugins>

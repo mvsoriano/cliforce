@@ -3,6 +3,6 @@ package com.force.cliforce;
 
 public interface CommandReader {
 
-    String readLine(String propmt);
+    String readLine(String prompt);
 
 }

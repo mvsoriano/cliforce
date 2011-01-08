@@ -1,0 +1,15 @@
+<ivysettings>
+
+    <settings defaultResolver="chain"/>
+    <resolvers>
+        <chain name="chain" returnFirst="true">
+            <url name="m2local" m2compatible="true">
+                <artifact
+                        pattern="file://${user.home}/.m2/repository/[organisation]/[module]/[revision]/[artifact]-[revision].[ext]"/>
+            </url>
+
+            <ibiblio name="ibiblio" m2compatible="true"/>
+        </chain>
+    </resolvers>
+
+</ivysettings>
