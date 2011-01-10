@@ -2,6 +2,7 @@ package com.force.cliforce;
 
 import com.force.cliforce.dependency.DependencyResolver;
 import com.force.cliforce.dependency.OutputAdapter;
+import com.force.cliforce.plugin.dbclean.DBClean;
 import com.sforce.soap.metadata.FileProperties;
 import com.sforce.soap.metadata.ListMetadataQuery;
 import com.sforce.soap.partner.DescribeSObjectResult;

@@ -1,5 +1,8 @@
 package com.force.cliforce;
 
+import com.force.sdk.connector.ForceServiceConnector;
+import com.sforce.async.AsyncApiException;
+import com.sforce.async.RestConnection;
 import com.sforce.soap.metadata.MetadataConnection;
 import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.ws.ConnectionException;
@@ -8,6 +11,8 @@ import jline.Completor;
 import jline.ConsoleReader;
 import jline.History;
 import jline.SimpleCompletor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,16 +24,17 @@ import java.util.TreeMap;
 
 public class CLIForce {
 
+
     public static final String FORCEPROMPT = "force> ";
     public static final String EXITCMD = "exit";
     private ConsoleReader reader;
     private Completor completor = new SimpleCompletor(EXITCMD);
-    Map<String, Command> commands = new TreeMap<String, Command>();
-    Map<String, Plugin> plugins = new TreeMap<String, Plugin>();
-    private MetadataConnection metadataConnection;
-    private PartnerConnection partnerConnection;
+    /*package*/ Map<String, Command> commands = new TreeMap<String, Command>();
+    /*package*/ Map<String, Plugin> plugins = new TreeMap<String, Plugin>();
+    /*package*/ ForceEnv forceEnv;
+    private ForceServiceConnector connector;
+    private static Logger logger = LoggerFactory.getLogger(CLIForce.class);
     private PrintWriter out = new PrintWriter(System.out);
-    ForceEnv forceEnv;
 
 
     public static void main(String[] args) {
@@ -63,22 +69,14 @@ public class CLIForce {
     }
 
     public void init() throws IOException, ConnectionException {
-
         URL purl = new URL(com.sforce.soap.partner.Connector.END_POINT);
-        URL murl = new URL(com.sforce.soap.metadata.Connector.END_POINT);
+        ConnectorConfig config = new ConnectorConfig();
+        config.setAuthEndpoint("https://" + forceEnv.getHost() + purl.getPath());
+        config.setUsername(forceEnv.getUser());
+        config.setPassword(forceEnv.getPassword());
+        config.setTraceMessage("true".equals(System.getProperty("force.trace")));
+        connector = new ForceServiceConnector("cliforce", config);
 
-        ConnectorConfig partnerConfig = new ConnectorConfig();
-        partnerConfig.setAuthEndpoint("https://" + forceEnv.getHost() + purl.getPath());
-        partnerConfig.setUsername(forceEnv.getUser());
-        partnerConfig.setPassword(forceEnv.getPassword());
-        partnerConfig.setTraceMessage("true".equals(System.getProperty("force.trace")));
-        partnerConnection = new PartnerConnection(partnerConfig);
-
-        ConnectorConfig mdConfig = new ConnectorConfig();
-        mdConfig.setSessionId(partnerConfig.getSessionId());
-        mdConfig.setServiceEndpoint("https://" + forceEnv.getHost() + murl.getPath());
-        mdConfig.setTraceMessage("true".equals(System.getProperty("force.trace")));
-        metadataConnection = new MetadataConnection(mdConfig);
 
         Plugin def = new DefaultPlugin(this);
         for (Command command : def.getCommands()) {
@@ -133,7 +131,7 @@ public class CLIForce {
                 ClassLoader curr = Thread.currentThread().getContextClassLoader();
                 try {
                     Thread.currentThread().setContextClassLoader(cmd.getClass().getClassLoader());
-                    cmd.execute(new Context(metadataConnection, partnerConnection, args, cmdr));
+                    cmd.execute(new Context(connector, args, cmdr));
                 } catch (Exception e) {
                     out.printf("Exception while executing command %s", cmdsplit[0]);
                     e.printStackTrace(out);
@@ -153,27 +151,48 @@ public class CLIForce {
 
     private static class Context implements CommandContext {
 
-        MetadataConnection mc;
-        PartnerConnection pc;
+        ForceServiceConnector connector;
         String[] args;
         CommandReader reader;
 
 
-        private Context(MetadataConnection mc, PartnerConnection pc, String[] args, CommandReader reader) {
-            this.mc = mc;
-            this.pc = pc;
+        private Context(ForceServiceConnector c, String[] args, CommandReader reader) {
+            this.connector = c;
             this.args = args;
             this.reader = reader;
         }
 
         @Override
         public MetadataConnection getMetadataConnection() {
-            return mc;
+            try {
+                return connector.getMetadataConnection();
+            } catch (ConnectionException e) {
+                logger.error("Connection exception while getting metadata connection", e);
+                throw new RuntimeException(e);
+            }
         }
 
         @Override
         public PartnerConnection getPartnerConnection() {
-            return pc;
+            try {
+                return connector.getConnection();
+            } catch (ConnectionException e) {
+                logger.error("Connection exception while getting metadata connection", e);
+                throw new RuntimeException(e);
+            }
+        }
+
+        @Override
+        public RestConnection getRestConnection() {
+            try {
+                return connector.getRestConnection();
+            } catch (AsyncApiException e) {
+                logger.error("AsyncApiException exception while getting rest connection", e);
+                throw new RuntimeException(e);
+            } catch (ConnectionException e) {
+                logger.error("ConnectionException exception while getting rest connection", e);
+                throw new RuntimeException(e);
+            }
         }
 
         @Override

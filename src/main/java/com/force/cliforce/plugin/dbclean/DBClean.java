@@ -1,16 +1,14 @@
-package com.force.cliforce;
+package com.force.cliforce.plugin.dbclean;
 
+import com.force.cliforce.Command;
+import com.force.cliforce.CommandContext;
 import com.sforce.soap.metadata.*;
 import com.sforce.soap.partner.DescribeGlobalResult;
 import com.sforce.soap.partner.DescribeGlobalSObjectResult;
-import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.ws.ConnectionException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
