@@ -9,10 +9,6 @@ import org.apache.ivy.core.report.ArtifactDownloadReport;
 import org.apache.ivy.core.report.ResolveReport;
 import org.apache.ivy.core.resolve.ResolveOptions;
 import org.apache.ivy.plugins.parser.xml.XmlModuleDescriptorWriter;
-import org.apache.ivy.util.filter.AndFilter;
-import org.apache.ivy.util.filter.ArtifactTypeFilter;
-import org.apache.ivy.util.filter.Filter;
-import org.apache.ivy.util.filter.NotFilter;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +16,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class DependencyResolver {
@@ -41,10 +36,6 @@ public class DependencyResolver {
 
     public static DependencyResolver getInstance() {
         return instance;
-    }
-
-    public ClassLoader createClassLoaderFor(URL mavenPom, ClassLoader parent, OutputAdapter out) {
-        return null;
     }
 
     public ClassLoader createClassLoaderFor(String groupId, String artifactId, String version, ClassLoader parent, OutputAdapter out) {
