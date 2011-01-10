@@ -30,7 +30,7 @@ public class DependencyResolver {
 
     {
         try {
-            ivy.configure(getClass().getClassLoader().getResource("ivy-settings.xml"));
+            ivy.configure(getClass().getClassLoader().getResource("cliforce-ivy-settings.xml"));
 
         } catch (Exception e) {
             System.err.println("Exception configuring ivy, cant continue");

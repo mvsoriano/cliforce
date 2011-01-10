@@ -1,5 +1,7 @@
 package com.force.cliforce;
 
+import com.force.cliforce.dependency.DependencyResolver;
+import com.force.cliforce.dependency.OutputAdapter;
 import com.sforce.soap.metadata.FileProperties;
 import com.sforce.soap.metadata.ListMetadataQuery;
 import com.sforce.soap.partner.DescribeSObjectResult;
@@ -17,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,6 +65,7 @@ public class DefaultPlugin implements Plugin {
     public String getName() {
         return "DefaultPlugin";
     }
+
 
     public static class ListCustomObjects implements Command {
 
@@ -138,7 +140,6 @@ public class DefaultPlugin implements Plugin {
         }
 
 
-
         @Override
         public String describe() {
             return "Show the current connection info:";
@@ -172,7 +173,7 @@ public class DefaultPlugin implements Plugin {
 
 
         @Override
-        public void execute(CommandContext ctx) throws Exception {
+        public void execute(final CommandContext ctx) throws Exception {
             String[] args = ctx.getCommandArguments();
             PrintStream output = ctx.getCommandWriter();
             if (args.length == 0) {
@@ -183,30 +184,48 @@ public class DefaultPlugin implements Plugin {
                 output.println("Done.");
             } else if (args.length == 2) {
                 String pluginClass = args[0];
-                String pluginDep = args[1];
-                File jar = new File(getMavenLocalPath(pluginDep));
-
-                if (jar.exists()) {
-                    ClassLoader curr = Thread.currentThread().getContextClassLoader();
-                    URLClassLoader urlClassLoader = new URLClassLoader(new URL[]{jar.toURI().toURL()}, curr);
-                    try {
-                        Thread.currentThread().setContextClassLoader(urlClassLoader);
-                        Object po = urlClassLoader.loadClass(pluginClass).newInstance();
-                        if (po instanceof Plugin) {
-                            Plugin p = (Plugin) po;
-                            List<Command> commands = p.getCommands();
-                            force.plugins.put(p.getName(), p);
-                            output.printf("Adding Plugin: %s (%s)\n", p.getName(), p.getClass().getName());
-                            for (Command command : commands) {
-                                output.printf("  -> adds command %s (%s)\n", command.name(), command.getClass().getName());
-                                force.commands.put(command.name(), command);
-                            }
-                        }
-                        force.reloadCompletions();
-                    } finally {
-                        Thread.currentThread().setContextClassLoader(curr);
-                    }
+                String[] pluginDep = args[1].split(":");
+                if (pluginDep.length != 3) {
+                    output.printf("Unexpected Plugin Dependency Spec %s, expected groupId:artifactId:version", args[1]);
+                    return;
                 }
+                String groupId = pluginDep[0], artifactId = pluginDep[1], version = pluginDep[2];
+
+
+                ClassLoader curr = Thread.currentThread().getContextClassLoader();
+                OutputAdapter oa = new OutputAdapter() {
+                    @Override
+                    public void println(String msg) {
+                        ctx.getCommandWriter().println(msg);
+                    }
+
+                    @Override
+                    public void println(Exception e, String msg) {
+                        ctx.getCommandWriter().println(msg);
+                        e.printStackTrace(ctx.getCommandWriter());
+                    }
+                };
+                ClassLoader pcl = DependencyResolver.getInstance().createClassLoaderFor(groupId, artifactId, version, curr, oa);
+                try {
+                    Thread.currentThread().setContextClassLoader(pcl);
+                    Object po = pcl.loadClass(pluginClass).newInstance();
+                    if (po instanceof Plugin) {
+                        Plugin p = (Plugin) po;
+                        List<Command> commands = p.getCommands();
+                        force.plugins.put(p.getName(), p);
+                        output.printf("Adding Plugin: %s (%s)\n", p.getName(), p.getClass().getName());
+                        for (Command command : commands) {
+                            output.printf("  -> adds command %s (%s)\n", command.name(), command.getClass().getName());
+                            force.commands.put(command.name(), command);
+                        }
+                    } else {
+                        output.printf("ERROR, %s not an instance of Plugin\n", po.getClass().getName());
+                    }
+                    force.reloadCompletions();
+                } finally {
+                    Thread.currentThread().setContextClassLoader(curr);
+                }
+
             } else {
                 StringBuilder b = new StringBuilder();
                 for (String arg : args) {
@@ -217,20 +236,6 @@ public class DefaultPlugin implements Plugin {
             }
         }
 
-        String getMavenLocalPath(String cmdArg) {
-            String[] deps = cmdArg.split(":");
-            if (deps.length == 3) {
-                String groupId = deps[0];
-                String artifactId = deps[1];
-                String version = deps[2];
-                StringBuilder jar = new StringBuilder(System.getProperty("user.home") + "/.m2/repository/");
-                jar.append(groupId.replace(".", "/")).append("/");
-                jar.append(artifactId).append("/").append(version).append("/");
-                jar.append(artifactId).append("-").append(version).append(".jar");
-                return jar.toString();
-            }
-            return "";
-        }
 
         List<URL> resolveWithDependencies(String group, String artifact, String version) throws RuntimeException {
             try {
