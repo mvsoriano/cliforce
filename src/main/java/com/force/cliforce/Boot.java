@@ -11,7 +11,7 @@ public class Boot {
     //todo dont hardcode version get from pom.properties?
     public static void main(String[] args) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         ClassLoader parent = Thread.currentThread().getContextClassLoader();
-        ClassLoader cl = DependencyResolver.getInstance().createClassLoaderFor("com.force.cliforce", "cliforce", "0.0.1-SNAPSHOT", parent.getParent(), new SystemOutputAdapter());
+        ClassLoader cl = DependencyResolver.getInstance().createClassLoaderFor("com.force.cliforce", "cliforce", "0.0.1-SNAPSHOT", null, new SystemOutputAdapter());
         Thread.currentThread().setContextClassLoader(cl);
         cl.loadClass("com.force.cliforce.CLIForce").getMethod("main", new Class<?>[]{String[].class}).invoke(null, new Object[]{args});
     }
