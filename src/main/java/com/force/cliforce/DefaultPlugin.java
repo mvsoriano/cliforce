@@ -197,6 +197,12 @@ public class DefaultPlugin implements Plugin {
                     while (iterator.hasNext()) {
                         Plugin p = iterator.next();
                         List<Command> commands = p.getCommands();
+                        List<String> artifactPlugins = force.artifactPlugins.get(arg.getMainArg());
+                        if (artifactPlugins == null) {
+                            artifactPlugins = new ArrayList<String>();
+                            force.artifactPlugins.put(arg.getMainArg(), artifactPlugins);
+                        }
+                        artifactPlugins.add(p.getName());
                         force.plugins.put(p.getName(), p);
                         output.printf("Adding Plugin: %s (%s)\n", p.getName(), p.getClass().getName());
                         for (Command command : commands) {
@@ -235,17 +241,22 @@ public class DefaultPlugin implements Plugin {
         public void execute(CommandContext ctx) throws Exception {
             for (String arg : ctx.getCommandArguments()) {
                 ctx.getCommandWriter().printf("attempting to remove plugin: %s\n", arg);
-                Plugin p = force.plugins.remove(arg);
-                if (p == null) {
-                    ctx.getCommandWriter().println("....not found");
-                } else {
-                    for (Command command : p.getCommands()) {
-                        force.commands.remove(command.name());
-                        ctx.getCommandWriter().printf("removed command: %s\n", command.name());
+                List<String> plugins = force.artifactPlugins.get(arg);
+                for (String plugin : plugins) {
+                    Plugin p = force.plugins.remove(plugin);
+                    if (p == null) {
+                        ctx.getCommandWriter().println("....not found");
+                    } else {
+                        for (Command command : p.getCommands()) {
+                            force.commands.remove(command.name());
+                            ctx.getCommandWriter().printf("removed command: %s\n", command.name());
+                        }
+                        force.reloadCompletions();
+                        ctx.getCommandWriter().println("\nDone");
                     }
-                    force.reloadCompletions();
-                    ctx.getCommandWriter().println("\nDone");
                 }
+                force.artifactPlugins.remove(arg);
+
             }
         }
     }

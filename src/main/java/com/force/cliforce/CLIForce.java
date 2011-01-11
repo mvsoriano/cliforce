@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -36,6 +37,7 @@ public class CLIForce {
     private Completor completor = new SimpleCompletor(EXITCMD);
     /*package*/ Map<String, Command> commands = new TreeMap<String, Command>();
     /*package*/ Map<String, Plugin> plugins = new TreeMap<String, Plugin>();
+    /*package*/ Map<String, List<String>> artifactPlugins = new TreeMap<String, List<String>>();
     /*package*/ ForceEnv forceEnv;
     private ForceServiceConnector connector;
     private static Logger logger = LoggerFactory.getLogger(CLIForce.class);
