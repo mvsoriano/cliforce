@@ -1,8 +1,29 @@
 # Command line tool for Force.com
 
-Right now only one task exists: It deletes all custom objects (entities) from your org. This is useful if you are using your org as a database and are using the VMforce JPA provider to auto-create entities.
+This tool supports the following commands.
 
-Note that Force.com currently doesn't allow you to completely erase entities via the API. So this script will put them in the recycle bin. If you run the script on every build, you will eventually build up quite a recycle bin, so it's recommended that you only run it when you need to.
+        apps:			 lists deployed apps
+        connection:			 Show the current connection info:
+        dbclean:			 Deletes all custom objects in the current org
+        exit:			 Exit this shell
+        help:			 Display this help message
+        history:			 Show history of previous commands
+        list:			 list custom objects
+        plugin:			 adds a plugin to the shell
+            Usage: plugin
+            <main>	the maven artifact to load plugins from, syntax: plugin mavengroup:artifact:version
+
+        push:			 push an application to VMForce.
+            Usage: push
+            -p, --path	Local path to the deployable app
+            -i, --instances	Number of instances to deploy (default 1)
+            -n, --name	Name of the Application to push
+            -m, --mem	Memory to allocate to the app, in MB (default 256)
+
+        restart:			 restart an application
+        start:			 start an application
+        stop:			 Stop an application
+        unplug:			 removes a plugin from the shell
 
 # How to use
 
