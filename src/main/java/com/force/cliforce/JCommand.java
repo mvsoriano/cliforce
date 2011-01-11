@@ -49,4 +49,13 @@ public abstract class JCommand<T> implements Command {
         }
         return opts;
     }
+
+    public String usage(String description) {
+        Map<String, String> commandOptions = getCommandOptions();
+        StringBuilder usage = new StringBuilder(description).append("\n\tUsage:\n");
+        for (Map.Entry<String, String> e : commandOptions.entrySet()) {
+            usage.append("\t").append(e.getKey()).append("\t").append(e.getValue()).append("\n");
+        }
+        return usage.toString();
+    }
 }

@@ -12,12 +12,14 @@ class AppsCommand extends Command {
   def execute(ctx: CommandContext) = {
     asScalaIterable(ctx.getVmForceClient.getApplications).foreach{
       app: ApplicationInfo => {
-        ctx.getCommandWriter.println("============================")
-        ctx.getCommandWriter.println("App: %s".format(app.getName))
-        ctx.getCommandWriter.println("Instances: %d".format(app.getInstances))
-        ctx.getCommandWriter.println("State: %s".format(app.getState.toString))
-        ctx.getCommandWriter.println("Memory: %dMB".format(app.getResources.getMemory))
-        ctx.getCommandWriter.println("============================\n\n")
+        ctx.getCommandWriter.println("""
+===========================
+App: %s
+Instances: %d
+State: %s
+Memory: %dMB
+==========================="""
+          .format(app.getName, app.getInstances, app.getState, app.getResources.getMemory))
       }
     }
   }
@@ -90,13 +92,7 @@ class PushCommand extends JCommand[PushArgs] {
   }
 
   def describe = {
-    val usage = new StringBuilder("push an application to VMForce.\n\tUsage:\n")
-    asScalaMap(getCommandOptions).foreach{
-      p => {
-        usage.append("\t").append(p._1).append("\t").append(p._2).append("\n")
-      }
-    }
-    usage.toString
+    usage("push an application to VMForce.")
   }
 
   def name = "push"
