@@ -149,7 +149,7 @@ public class CLIForce {
                     Thread.currentThread().setContextClassLoader(cmd.getClass().getClassLoader());
                     cmd.execute(new Context(connector, forceClient, args, cmdr));
                 } catch (Exception e) {
-                    out.printf("Exception while executing command %s", cmdsplit[0]);
+                    out.printf("Exception while executing command %s\n", cmdsplit[0]);
                     e.printStackTrace(out);
                 } finally {
                     Thread.currentThread().setContextClassLoader(curr);
