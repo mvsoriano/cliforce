@@ -2,26 +2,10 @@ package com.force.cliforce;
 
 import com.force.cliforce.dependency.DependencyResolver;
 import com.force.cliforce.dependency.OutputAdapter;
+import com.force.cliforce.plugin.*;
 import com.force.cliforce.plugin.dbclean.DBClean;
-import com.sforce.soap.metadata.FileProperties;
-import com.sforce.soap.metadata.ListMetadataQuery;
-import com.sforce.soap.partner.DescribeSObjectResult;
-import com.sforce.soap.partner.Field;
-import org.apache.ivy.Ivy;
-import org.apache.ivy.core.module.descriptor.Artifact;
-import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor;
-import org.apache.ivy.core.module.descriptor.DefaultModuleDescriptor;
-import org.apache.ivy.core.module.id.ModuleRevisionId;
-import org.apache.ivy.core.report.ResolveReport;
-import org.apache.ivy.core.resolve.ResolveOptions;
-import org.apache.ivy.plugins.parser.xml.XmlModuleDescriptorWriter;
 
-import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
-import java.net.URL;
-import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +23,10 @@ public class DefaultPlugin implements Plugin {
     @Override
     public List<Command> getCommands() {
         return Arrays.asList(new ListCustomObjects(),
+                new AppsCommand(),
+                new PushCommand(),
+                new StopCommand(), new StartCommand(), new RestartCommand(),
+                new HistoryCommand(force),
                 new DBClean(),
                 new ConnectionInfoCommand(force),
                 new HelpCommand(force),
@@ -67,40 +55,6 @@ public class DefaultPlugin implements Plugin {
         return "DefaultPlugin";
     }
 
-
-    public static class ListCustomObjects implements Command {
-
-        @Override
-        public String describe() {
-            return "list the existing custom objects and their fields";
-        }
-
-        @Override
-        public String name() {
-            return "list";
-        }
-
-        @Override
-        public void execute(CommandContext ctx) throws Exception {
-            ListMetadataQuery q = new ListMetadataQuery();
-            q.setType("CustomObject");
-            FileProperties[] fpa = ctx.getMetadataConnection().listMetadata(new ListMetadataQuery[]{q}, 20.0);
-            List<String> sobjs = new ArrayList<String>();
-            for (FileProperties fileProperties : fpa) {
-                if (fileProperties.getFullName().endsWith("__c")) {
-                    sobjs.add(fileProperties.getFullName());
-                }
-            }
-            DescribeSObjectResult[] describeSObjectResults = ctx.getPartnerConnection().describeSObjects(sobjs.toArray(new String[0]));
-            for (DescribeSObjectResult describeSObjectResult : describeSObjectResults) {
-                ctx.getCommandWriter().printf("\n{\nCustom Object-> %s \n", describeSObjectResult.getName());
-                for (Field field : describeSObjectResult.getFields()) {
-                    ctx.getCommandWriter().printf("       field -> %s (type: %s)\n", field.getName(), field.getType().toString());
-                }
-                ctx.getCommandWriter().print("}\n");
-            }
-        }
-    }
 
     public static class HelpCommand implements Command {
         private CLIForce force;
@@ -238,42 +192,6 @@ public class DefaultPlugin implements Plugin {
         }
 
 
-        List<URL> resolveWithDependencies(String group, String artifact, String version) throws RuntimeException {
-            try {
-                Ivy ivy = Ivy.newInstance();
-
-                ivy.configureDefault();
-
-                File ivyfile = File.createTempFile("ivy", ".xml");
-                ivyfile.deleteOnExit();
-                DefaultModuleDescriptor md = DefaultModuleDescriptor
-                        .newDefaultInstance(ModuleRevisionId.newInstance(group,
-                                artifact + "-caller", "working"));
-                DefaultDependencyDescriptor dd = new DefaultDependencyDescriptor(md,
-                        ModuleRevisionId.newInstance(group, artifact, version),
-                        false, false, true);
-                md.addDependency(dd);
-                XmlModuleDescriptorWriter.write(md, ivyfile);
-
-                String[] confs = new String[]{"default"};
-                ResolveOptions resolveOptions = new ResolveOptions().setConfs(confs);
-                ResolveReport report = ivy.resolve(ivyfile.toURI().toURL(), resolveOptions);
-                if (!report.hasError()) {
-                    List<URL> urls = new ArrayList<URL>();
-                    for (Artifact a : (List<Artifact>) report.getArtifacts()) {
-                        urls.add(a.getUrl());
-                    }
-                    return urls;
-                } else {
-                    throw new RuntimeException("Error Resolving dependencies");
-                }
-            } catch (ParseException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-        }
     }
 
 
@@ -310,6 +228,34 @@ public class DefaultPlugin implements Plugin {
                     ctx.getCommandWriter().println("\nDone");
                 }
             }
+        }
+    }
+
+    public static class HistoryCommand implements Command {
+
+        private CLIForce force;
+
+        public HistoryCommand(CLIForce force) {
+            this.force = force;
+        }
+
+        @Override
+        public String name() {
+            return "history";
+        }
+
+        @Override
+        public String describe() {
+            return "Show history of previous commands";
+        }
+
+        @Override
+        public void execute(CommandContext ctx) throws Exception {
+            List<String> historyList = (List<String>) force.reader.getHistory().getHistoryList();
+            for (String s : historyList) {
+                ctx.getCommandWriter().println(s);
+            }
+
         }
     }
 }

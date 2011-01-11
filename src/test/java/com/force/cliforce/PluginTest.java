@@ -1,8 +1,10 @@
 package com.force.cliforce;
 
 
+import com.sforce.async.RestConnection;
 import com.sforce.soap.metadata.MetadataConnection;
 import com.sforce.soap.partner.PartnerConnection;
+import com.vmforce.client.VMForceClient;
 import org.junit.Test;
 
 import java.io.PrintStream;
@@ -16,7 +18,7 @@ public class PluginTest {
 
     @Test
     public void testPluginResolution() throws Exception {
-        CLIForce f = new CLIForce();
+        CLIForce f = new CLIForce(new ForceEnv());
         DefaultPlugin.PluginCommand c = new DefaultPlugin.PluginCommand(f);
         PrintWriter p = new PrintWriter(System.out);
         try {
@@ -26,8 +28,19 @@ public class PluginTest {
                     return null;
                 }
 
+
+                @Override
+                public VMForceClient getVmForceClient() {
+                    return null;
+                }
+
                 @Override
                 public PartnerConnection getPartnerConnection() {
+                    return null;
+                }
+
+                @Override
+                public RestConnection getRestConnection() {
                     return null;
                 }
 
@@ -38,12 +51,12 @@ public class PluginTest {
 
                 @Override
                 public CommandReader getCommandReader() {
-                    return null;  //To change body of implemented methods use File | Settings | File Templates.
+                    return null;
                 }
 
                 @Override
                 public PrintStream getCommandWriter() {
-                    return null;  //To change body of implemented methods use File | Settings | File Templates.
+                    return null;
                 }
             });
         } finally {
@@ -51,11 +64,5 @@ public class PluginTest {
         }
     }
 
-    @Test
-    public void testPluginResolutionOnly() throws Exception {
-        CLIForce f = new CLIForce();
-        DefaultPlugin.PluginCommand c = new DefaultPlugin.PluginCommand(f);
-        c.resolveWithDependencies("cliplugin", "cliplugin", "1.0");
-    }
 
 }

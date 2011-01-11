@@ -7,13 +7,17 @@ import com.sforce.soap.metadata.MetadataConnection;
 import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.ws.ConnectionException;
 import com.sforce.ws.ConnectorConfig;
+import com.vmforce.client.VMForceClient;
+import com.vmforce.client.connector.RestTemplateConnector;
 import jline.Completor;
 import jline.ConsoleReader;
 import jline.History;
 import jline.SimpleCompletor;
+import org.apache.commons.httpclient.HttpHost;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.ServletException;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -27,7 +31,8 @@ public class CLIForce {
 
     public static final String FORCEPROMPT = "force> ";
     public static final String EXITCMD = "exit";
-    private ConsoleReader reader;
+    /*package*/ ConsoleReader reader;
+    private VMForceClient forceClient;
     private Completor completor = new SimpleCompletor(EXITCMD);
     /*package*/ Map<String, Command> commands = new TreeMap<String, Command>();
     /*package*/ Map<String, Plugin> plugins = new TreeMap<String, Plugin>();
@@ -61,6 +66,10 @@ public class CLIForce {
             System.out.println("IOException Exception while initializing cliforce, exiting");
             e.printStackTrace();
             System.exit(1);
+        } catch (ServletException e) {
+            System.out.println("ServletException Exception while initializing cliforce, exiting");
+            e.printStackTrace();
+            System.exit(1);
         }
     }
 
@@ -68,7 +77,7 @@ public class CLIForce {
         forceEnv = env;
     }
 
-    public void init() throws IOException, ConnectionException {
+    public void init() throws IOException, ConnectionException, ServletException {
         URL purl = new URL(com.sforce.soap.partner.Connector.END_POINT);
         ConnectorConfig config = new ConnectorConfig();
         config.setAuthEndpoint("https://" + forceEnv.getHost() + purl.getPath());
@@ -76,6 +85,13 @@ public class CLIForce {
         config.setPassword(forceEnv.getPassword());
         config.setTraceMessage("true".equals(System.getProperty("force.trace")));
         connector = new ForceServiceConnector("cliforce", config);
+
+        forceClient = new VMForceClient();
+        RestTemplateConnector connector = new RestTemplateConnector();
+        connector.setTarget(new HttpHost("api.alpha.vmforce.com"));
+        connector.debug(true);
+        forceClient.setHttpConnector(connector);
+        forceClient.login(forceEnv.getUser(), forceEnv.getPassword());
 
 
         Plugin def = new DefaultPlugin(this);
@@ -131,7 +147,7 @@ public class CLIForce {
                 ClassLoader curr = Thread.currentThread().getContextClassLoader();
                 try {
                     Thread.currentThread().setContextClassLoader(cmd.getClass().getClassLoader());
-                    cmd.execute(new Context(connector, args, cmdr));
+                    cmd.execute(new Context(connector, forceClient, args, cmdr));
                 } catch (Exception e) {
                     out.printf("Exception while executing command %s", cmdsplit[0]);
                     e.printStackTrace(out);
@@ -154,12 +170,19 @@ public class CLIForce {
         ForceServiceConnector connector;
         String[] args;
         CommandReader reader;
+        VMForceClient client;
 
 
-        private Context(ForceServiceConnector c, String[] args, CommandReader reader) {
+        private Context(ForceServiceConnector c, VMForceClient cl, String[] args, CommandReader reader) {
             this.connector = c;
+            this.client = cl;
             this.args = args;
             this.reader = reader;
+        }
+
+        @Override
+        public VMForceClient getVmForceClient() {
+            return client;
         }
 
         @Override
