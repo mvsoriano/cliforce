@@ -37,7 +37,6 @@ public class CLIForce {
     private Completor completor = new SimpleCompletor(EXITCMD);
     /*package*/ Map<String, Command> commands = new TreeMap<String, Command>();
     /*package*/ Map<String, Plugin> plugins = new TreeMap<String, Plugin>();
-    /*package*/ Map<String, List<String>> artifactPlugins = new TreeMap<String, List<String>>();
     /*package*/ ForceEnv forceEnv;
     private ForceServiceConnector connector;
     private static Logger logger = LoggerFactory.getLogger(CLIForce.class);

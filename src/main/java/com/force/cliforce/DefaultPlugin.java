@@ -49,11 +49,6 @@ public class DefaultPlugin implements Plugin {
                 });
     }
 
-    @Override
-    public String getName() {
-        return "DefaultPlugin";
-    }
-
 
     public static class HelpCommand implements Command {
         private CLIForce force;
@@ -106,33 +101,21 @@ public class DefaultPlugin implements Plugin {
         }
     }
 
-    public static class PluginArg {
-        @Parameter(description = "the maven artifact to load plugins from, syntax: plugin mavengroup:artifact:version")
-        List<String> mainArgs;
+    public static class PluginArgs {
 
-        public List<String> getMainArgs() {
-            return mainArgs;
-        }
+        @Parameter(names = {"-a", "--artifact"}, description = "maven artifact id for an artifact in group com.force.clifprce.plugin")
+        public String artifact;
 
-        public boolean hasMainArg() {
-            if (mainArgs != null && mainArgs.size() > 0) {
-                return true;
-            } else {
-                return false;
-            }
-        }
+        public String group = "com.force.cliforce.plugin";
 
-        public String getMainArg() {
-            if (hasMainArg()) {
-                return mainArgs.get(0);
-            } else {
-                throw new IllegalStateException("There is no main arg defined");
-            }
-        }
+        @Parameter(names = {"-v", "--version"}, description = "maven artifact version for the specified artifact")
+        public String version;
+
     }
 
-    public static class PluginCommand extends JCommand<PluginArg> {
+    public static class PluginCommand extends JCommand<PluginArgs> {
 
+        public static final String PLUGIN_GROUP = "com.force.cliforce.plugin";
         private CLIForce force;
 
         public PluginCommand(CLIForce it) {
@@ -150,26 +133,20 @@ public class DefaultPlugin implements Plugin {
         }
 
         @Override
-        public PluginArg getArgObject() {
-            return new PluginArg();
+        public PluginArgs getArgObject() {
+            return new PluginArgs();
         }
 
         @Override
-        public void executeWithArgs(final CommandContext ctx, PluginArg arg) {
+        public void executeWithArgs(final CommandContext ctx, PluginArgs arg) {
             PrintStream output = ctx.getCommandWriter();
-            if (!arg.hasMainArg()) {
+            if (arg.artifact == null) {
                 output.println("Listing plugins...");
                 for (Map.Entry<String, Plugin> e : force.plugins.entrySet()) {
-                    output.printf("Plugin: %s (%s)\n", e.getKey(), e.getValue().getName());
+                    output.printf("Plugin: %s (%s)\n", e.getKey(), e.getValue().getClass().getName());
                 }
                 output.println("Done.");
             } else {
-                String[] pluginDep = arg.getMainArg().split(":");
-                if (pluginDep.length != 3) {
-                    output.printf("Unexpected Plugin Dependency Spec %s, expected groupId:artifactId:version", arg.getMainArg());
-                    return;
-                }
-                String groupId = pluginDep[0], artifactId = pluginDep[1], version = pluginDep[2];
 
 
                 ClassLoader curr = Thread.currentThread().getContextClassLoader();
@@ -185,30 +162,31 @@ public class DefaultPlugin implements Plugin {
                         e.printStackTrace(ctx.getCommandWriter());
                     }
                 };
-                ClassLoader pcl = DependencyResolver.getInstance().createClassLoaderFor(groupId, artifactId, version, curr, oa);
+                ClassLoader pcl = null;
+                if (arg.version != null) {
+                    pcl = DependencyResolver.getInstance().createClassLoaderFor(PLUGIN_GROUP, arg.artifact, arg.version, curr, oa);
+                } else {
+                    pcl = DependencyResolver.getInstance().createClassLoaderFor(PLUGIN_GROUP, arg.artifact, curr, oa);
+                }
                 try {
                     Thread.currentThread().setContextClassLoader(pcl);
                     ServiceLoader<Plugin> loader = ServiceLoader.load(Plugin.class, pcl);
                     Iterator<Plugin> iterator = loader.iterator();
                     if (!iterator.hasNext()) {
-                        output.printf("Error: %s does not declare any Plugins in META-INF/services/com.force.cliforce.Plugin");
+                        output.printf("Error: %s does not declare a Plugin in META-INF/services/com.force.cliforce.Plugin\n", arg.artifact);
                         return;
                     }
+                    Plugin p = iterator.next();
+                    List<Command> commands = p.getCommands();
+                    force.plugins.put(arg.artifact, p);
+                    output.printf("Adding Plugin: %s (%s)\n", arg.artifact, p.getClass().getName());
+                    for (Command command : commands) {
+                        output.printf("  -> adds command %s (%s)\n", command.name(), command.getClass().getName());
+                        force.commands.put(arg.artifact + ":" + command.name(), command);
+                    }
                     while (iterator.hasNext()) {
-                        Plugin p = iterator.next();
-                        List<Command> commands = p.getCommands();
-                        List<String> artifactPlugins = force.artifactPlugins.get(arg.getMainArg());
-                        if (artifactPlugins == null) {
-                            artifactPlugins = new ArrayList<String>();
-                            force.artifactPlugins.put(arg.getMainArg(), artifactPlugins);
-                        }
-                        artifactPlugins.add(p.getName());
-                        force.plugins.put(p.getName(), p);
-                        output.printf("Adding Plugin: %s (%s)\n", p.getName(), p.getClass().getName());
-                        for (Command command : commands) {
-                            output.printf("  -> adds command %s (%s)\n", command.name(), command.getClass().getName());
-                            force.commands.put(command.name(), command);
-                        }
+                        Plugin ignore = iterator.next();
+                        output.printf("only one plugin per artifact is supported, %s will not be registered\n", ignore.getClass().getName());
                     }
                     force.reloadCompletions();
                 } finally {
@@ -241,21 +219,18 @@ public class DefaultPlugin implements Plugin {
         public void execute(CommandContext ctx) throws Exception {
             for (String arg : ctx.getCommandArguments()) {
                 ctx.getCommandWriter().printf("attempting to remove plugin: %s\n", arg);
-                List<String> plugins = force.artifactPlugins.get(arg);
-                for (String plugin : plugins) {
-                    Plugin p = force.plugins.remove(plugin);
-                    if (p == null) {
-                        ctx.getCommandWriter().println("....not found");
-                    } else {
-                        for (Command command : p.getCommands()) {
-                            force.commands.remove(command.name());
-                            ctx.getCommandWriter().printf("removed command: %s\n", command.name());
-                        }
-                        force.reloadCompletions();
-                        ctx.getCommandWriter().println("\nDone");
+                Plugin p = force.plugins.remove(arg);
+                if (p == null) {
+                    ctx.getCommandWriter().println("....not found");
+                } else {
+                    for (Command command : p.getCommands()) {
+                        force.commands.remove(arg + ":" + command.name());
+                        ctx.getCommandWriter().printf("removed command: %s\n", command.name());
                     }
+                    force.reloadCompletions();
+                    ctx.getCommandWriter().println("\nDone");
                 }
-                force.artifactPlugins.remove(arg);
+
 
             }
         }

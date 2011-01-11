@@ -7,6 +7,4 @@ public interface Plugin {
 
     List<Command> getCommands();
 
-    String getName();
-
 }
