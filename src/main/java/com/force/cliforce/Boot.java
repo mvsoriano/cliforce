@@ -10,7 +10,6 @@ import java.util.Properties;
 
 public class Boot {
 
-    //todo dont hardcode version get from pom.properties?
     public static void main(String[] args) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
         ClassLoader parent = Thread.currentThread().getContextClassLoader();
         Properties p = new Properties();
