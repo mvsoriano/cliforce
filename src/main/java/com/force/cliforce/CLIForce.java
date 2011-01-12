@@ -184,6 +184,7 @@ public class CLIForce {
                 out.flush();
             }
             cmds = cmdr.readAndParseLine(FORCEPROMPT);
+            cmdKey = cmds[0];
         }
 
     }
