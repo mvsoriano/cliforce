@@ -3,9 +3,8 @@ package com.force.cliforce;
 import com.beust.jcommander.Parameter;
 import com.force.cliforce.dependency.DependencyResolver;
 import com.force.cliforce.dependency.OutputAdapter;
-import com.force.cliforce.plugin.*;
-import com.force.cliforce.plugin.dbclean.DBClean;
-
+import com.force.cliforce.command.dbclean.DBClean;
+import com.force.cliforce.command.*;
 import java.io.*;
 import java.util.*;
 

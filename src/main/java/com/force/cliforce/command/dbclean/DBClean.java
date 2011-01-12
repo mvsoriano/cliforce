@@ -1,4 +1,4 @@
-package com.force.cliforce.plugin.dbclean;
+package com.force.cliforce.command.dbclean;
 
 import com.force.cliforce.Command;
 import com.force.cliforce.CommandContext;

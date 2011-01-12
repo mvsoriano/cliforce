@@ -1,4 +1,4 @@
-package com.force.cliforce.plugin
+package com.force.cliforce.command
 
 import com.sforce.soap.metadata.ListMetadataQuery
 import com.vmforce.client.bean.ApplicationInfo

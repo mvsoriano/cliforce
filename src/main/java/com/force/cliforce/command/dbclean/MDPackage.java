@@ -1,4 +1,4 @@
-package com.force.cliforce.plugin.dbclean;
+package com.force.cliforce.command.dbclean;
 
 import java.util.ArrayList;
 import java.util.List;
