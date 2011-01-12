@@ -9,10 +9,7 @@ import com.sforce.ws.ConnectionException;
 import com.sforce.ws.ConnectorConfig;
 import com.vmforce.client.VMForceClient;
 import com.vmforce.client.connector.RestTemplateConnector;
-import jline.Completor;
-import jline.ConsoleReader;
-import jline.History;
-import jline.SimpleCompletor;
+import jline.*;
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.httpclient.HttpHost;
 import org.slf4j.Logger;
@@ -24,9 +21,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class CLIForce {
 
@@ -125,7 +120,14 @@ public class CLIForce {
 
     void reloadCompletions() {
         reader.removeCompletor(completor);
-        completor = new SimpleCompletor(commands.keySet().toArray(new String[0]));
+        List<Completor> completors = new ArrayList<Completor>();
+        for (Map.Entry<String, Command> entry : commands.entrySet()) {
+            List<Completor> cmdCompletors = new ArrayList<Completor>();
+            cmdCompletors.add(new SimpleCompletor(entry.getKey()));
+            cmdCompletors.add(new SimpleCompletor(new String[]{" ", entry.getValue().describe()}));
+            completors.add(new ArgumentCompletor(cmdCompletors));
+        }
+        completor = new MultiCompletor(completors);
         reader.addCompletor(completor);
     }
 
@@ -144,6 +146,8 @@ public class CLIForce {
             public String[] readAndParseLine(String prompt) {
                 try {
                     String line = reader.readLine(prompt);
+                    if (line == null) line = EXITCMD;
+                    if (line.equals("")) return new String[]{""};
                     CommandLine c = CommandLine.parse(line);
                     String exe = c.getExecutable();
                     String[] args = c.getArguments();
@@ -166,22 +170,24 @@ public class CLIForce {
         while (!cmdKey.equals(EXITCMD)) {
             Command cmd = commands.get(cmdKey);
             String[] args = cmds.length > 1 ? Arrays.copyOfRange(cmds, 1, cmds.length) : new String[0];
-            if (cmd != null) {
-                ClassLoader curr = Thread.currentThread().getContextClassLoader();
-                try {
-                    Thread.currentThread().setContextClassLoader(cmd.getClass().getClassLoader());
-                    cmd.execute(getContext(args, cmdr));
-                } catch (Exception e) {
-                    out.printf("Exception while executing command %s\n", cmdKey);
-                    e.printStackTrace(out);
-                } finally {
-                    Thread.currentThread().setContextClassLoader(curr);
+            if (!cmdKey.equals("")) {
+                if (cmd != null) {
+                    ClassLoader curr = Thread.currentThread().getContextClassLoader();
+                    try {
+                        Thread.currentThread().setContextClassLoader(cmd.getClass().getClassLoader());
+                        cmd.execute(getContext(args, cmdr));
+                    } catch (Exception e) {
+                        out.printf("Exception while executing command %s\n", cmdKey);
+                        e.printStackTrace(out);
+                    } finally {
+                        Thread.currentThread().setContextClassLoader(curr);
+                        out.flush();
+                    }
+
+                } else {
+                    out.printf("Unknown Command %s\n", cmdKey);
                     out.flush();
                 }
-
-            } else {
-                out.printf("Unknown Command %s\n", cmdKey);
-                out.flush();
             }
             cmds = cmdr.readAndParseLine(FORCEPROMPT);
             cmdKey = cmds[0];
