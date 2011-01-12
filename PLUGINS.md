@@ -48,23 +48,23 @@ Using the sample plugin provide, run the following commands.
         mvn install
         cliforce
 
-  _____ _      _____ ______
- / ____| |    |_   _|  ____|
-| |    | |      | | | |__ ___  _ __ ___ ___
-| |    | |      | | |  __/ _ \| '__/ __/ _ \
-| |____| |____ _| |_| | | (_) | | | (_|  __/
- \_____|______|_____|_|  \___/|_|  \___\___|
+          _____ _      _____ ______
+         / ____| |    |_   _|  ____|
+        | |    | |      | | | |__ ___  _ __ ___ ___
+        | |    | |      | | |  __/ _ \| '__/ __/ _ \
+        | |____| |____ _| |_| | | (_) | | | (_|  __/
+         \_____|______|_____|_|  \___/|_|  \___\___|
 
-force> plugin -a cliplugin -v 1.0
-Adding Plugin: cliplugin (HelloWorldPlugin)
-  -> adds command cliplugin:hello (HelloWorldPlugin$HelloWorldCommand)
-force> cliplugin:hello
-Hello World
-force> unplug cliplugin
-attempting to remove plugin: cliplugin
-removed command: hello
+        force> plugin -a cliplugin -v 1.0
+        Adding Plugin: cliplugin (HelloWorldPlugin)
+          -> adds command cliplugin:hello (HelloWorldPlugin$HelloWorldCommand)
+        force> cliplugin:hello
+        Hello World
+        force> unplug cliplugin
+        attempting to remove plugin: cliplugin
+        removed command: hello
 
-Done
-force>
+        Done
+        force>
 
 
