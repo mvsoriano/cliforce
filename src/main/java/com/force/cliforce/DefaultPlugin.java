@@ -1,10 +1,11 @@
 package com.force.cliforce;
 
 import com.beust.jcommander.Parameter;
+import com.force.cliforce.command.*;
+import com.force.cliforce.command.dbclean.DBClean;
 import com.force.cliforce.dependency.DependencyResolver;
 import com.force.cliforce.dependency.OutputAdapter;
-import com.force.cliforce.command.dbclean.DBClean;
-import com.force.cliforce.command.*;
+
 import java.io.*;
 import java.util.*;
 
@@ -192,7 +193,7 @@ public class DefaultPlugin implements Plugin {
                     force.plugins.put(arg.artifact, p);
                     output.printf("Adding Plugin: %s (%s)\n", arg.artifact, p.getClass().getName());
                     for (Command command : commands) {
-                        output.printf("  -> adds command %s (%s)\n", command.name(), command.getClass().getName());
+                        output.printf("  -> adds command %s:%s (%s)\n", arg.artifact, command.name(), command.getClass().getName());
                         force.commands.put(arg.artifact + ":" + command.name(), command);
                     }
                     while (iterator.hasNext()) {
