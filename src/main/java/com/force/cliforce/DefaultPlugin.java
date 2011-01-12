@@ -6,7 +6,7 @@ import com.force.cliforce.dependency.OutputAdapter;
 import com.force.cliforce.plugin.*;
 import com.force.cliforce.plugin.dbclean.DBClean;
 
-import java.io.PrintStream;
+import java.io.*;
 import java.util.*;
 
 
