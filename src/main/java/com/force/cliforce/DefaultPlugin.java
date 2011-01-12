@@ -289,21 +289,35 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public void execute(CommandContext ctx) throws Exception {
+            StringBuilder b = new StringBuilder();
+            for (String s : ctx.getCommandArguments()) {
+                b.append(s).append(" ");
+            }
+            ctx.getCommandWriter().println("PROCESS:" + b.toString());
+
             Process start = new ProcessBuilder(ctx.getCommandArguments()).start();
-            Thread t = new Thread(new Reader(start.getInputStream(), ctx.getCommandWriter()));
+            Thread t = new Thread(new Reader(start.getInputStream(), ctx.getCommandWriter(), ""));
+            Thread err = new Thread(new Reader(start.getErrorStream(), ctx.getCommandWriter(), "Error:"));
             t.setDaemon(true);
             t.start();
+            err.setDaemon(true);
+            err.start();
             start.waitFor();
             t.interrupt();
+            err.interrupt();
+            t.join();
+            err.join();
         }
 
         private class Reader implements Runnable {
             InputStream in;
             PrintStream out;
+            private String lineheader;
 
-            private Reader(InputStream in, PrintStream out) {
+            private Reader(InputStream in, PrintStream out, String lineheader) {
                 this.in = in;
                 this.out = out;
+                this.lineheader = lineheader;
             }
 
             public void run() {
@@ -312,7 +326,9 @@ public class DefaultPlugin implements Plugin {
                 String output = null;
                 try {
                     while ((output = breader.readLine()) != null) {
-                        out.println(output);
+                        synchronized (out) {
+                            out.println(lineheader + output);
+                        }
                     }
                 } catch (IOException e) {
                     out.println("IOException reading process input");

@@ -146,6 +146,7 @@ public class CLIForce {
         String[] cmdsplit = cmdr.readLine(FORCEPROMPT).trim().split("\\s+", 2);
         while (!cmdsplit[0].equals(EXITCMD)) {
             Command cmd = commands.get(cmdsplit[0]);
+            //todo fix this splitting, breaks for commands with quoted vals that contain whitespace
             String[] args = cmdsplit.length == 2 ? cmdsplit[1].split("\\s+") : new String[0];
             if (cmd != null) {
                 ClassLoader curr = Thread.currentThread().getContextClassLoader();
