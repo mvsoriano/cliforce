@@ -9,12 +9,29 @@
     <dependencySets>
         <dependencySet>
             <outputDirectory>/</outputDirectory>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useTransitiveDependencies>true</useTransitiveDependencies>
+            <unpack>true</unpack>
+            <scope>runtime</scope>
+            <includes>
+                <include>org.sonatype.aether:aether-api</include>
+                <include>org.sonatype.aether:aether-util</include>
+                <include>org.sonatype.aether:aether-impl</include>
+                <include>org.sonatype.aether:aether-spi</include>
+                <include>org.sonatype.aether:aether-connector-wagon</include>
+                <include>org.apache.maven:maven-aether-provider</include>
+                <include>org.apache.maven.wagon:wagon-file</include>
+                <include>org.apache.maven.wagon:wagon</include>
+                <include>org.apache.maven.wagon:wagon-http-lightweight</include>
+            </includes>
+        </dependencySet>
+        <dependencySet>
+            <outputDirectory>/</outputDirectory>
             <useProjectArtifact>true</useProjectArtifact>
             <useTransitiveDependencies>false</useTransitiveDependencies>
             <unpack>true</unpack>
-            <scope>compile</scope>
+            <scope>runtime</scope>
             <includes>
-                <include>org.apache.ivy:ivy</include>
                 <include>com.force.cliforce:cliforce</include>
             </includes>
         </dependencySet>

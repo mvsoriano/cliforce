@@ -2,41 +2,52 @@ package com.force.cliforce.dependency;
 
 
 import com.force.cliforce.Boot;
-import org.apache.ivy.Ivy;
-import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor;
-import org.apache.ivy.core.module.descriptor.DefaultModuleDescriptor;
-import org.apache.ivy.core.module.descriptor.MDArtifact;
-import org.apache.ivy.core.module.id.ModuleRevisionId;
-import org.apache.ivy.core.report.ArtifactDownloadReport;
-import org.apache.ivy.core.report.ResolveReport;
-import org.apache.ivy.core.resolve.ResolveOptions;
-import org.apache.ivy.plugins.parser.xml.XmlModuleDescriptorWriter;
-import org.apache.ivy.util.filter.Filter;
+import org.apache.maven.repository.internal.DefaultServiceLocator;
+import org.apache.maven.repository.internal.MavenRepositorySystemSession;
+import org.apache.maven.wagon.Wagon;
+import org.apache.maven.wagon.providers.file.FileWagon;
+import org.apache.maven.wagon.providers.http.LightweightHttpWagon;
+import org.sonatype.aether.RepositorySystem;
+import org.sonatype.aether.collection.CollectRequest;
+import org.sonatype.aether.collection.DependencyCollectionException;
+import org.sonatype.aether.connector.wagon.WagonProvider;
+import org.sonatype.aether.connector.wagon.WagonRepositoryConnectorFactory;
+import org.sonatype.aether.graph.Dependency;
+import org.sonatype.aether.graph.DependencyNode;
+import org.sonatype.aether.repository.LocalRepository;
+import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.resolution.ArtifactResolutionException;
+import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
+import org.sonatype.aether.util.artifact.DefaultArtifact;
+import org.sonatype.aether.util.graph.PreorderNodeListGenerator;
 
 import java.io.File;
-import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 public class DependencyResolver {
 
 
     private static DependencyResolver instance = new DependencyResolver();
-    private Ivy ivy;
+
     Set<String> cliforceDependencies;
     Properties cliforceProperties;
+    RepositorySystem repositorySystem;
 
     {
         try {
-            ivy = Ivy.newInstance();
-            ivy.configure(getClass().getClassLoader().getResource("cliforce-ivy-settings.xml"));
+            DefaultServiceLocator locator = new DefaultServiceLocator();
+            locator.setServices(WagonProvider.class, new ManualWagonProvider());
+            locator.addService(RepositoryConnectorFactory.class, WagonRepositoryConnectorFactory.class);
+            repositorySystem = locator.getService(RepositorySystem.class);
             cliforceProperties = new Properties();
             cliforceProperties.load(getClass().getClassLoader().getResourceAsStream("cliforce.properties"));
-            ArtifactFilter f = new ArtifactFilter();
-            createClassLoaderInternal(cliforceProperties.getProperty("groupId"), cliforceProperties.getProperty("artifactId"), cliforceProperties.getProperty("version"), Thread.currentThread().getContextClassLoader(), new Boot.SystemOutputAdapter(), f);
-            cliforceDependencies = f.getArtifactIds();
+            createClassLoaderInternal(cliforceProperties.getProperty("groupId"), cliforceProperties.getProperty("artifactId"), cliforceProperties.getProperty("version"), Thread.currentThread().getContextClassLoader(), new Boot.SystemOutputAdapter());
         } catch (Exception e) {
             System.err.println("Exception configuring ivy, cant continue");
             e.printStackTrace(System.err);
@@ -44,49 +55,59 @@ public class DependencyResolver {
         }
     }
 
+    public static class ManualWagonProvider implements WagonProvider {
+
+        public Wagon lookup(String roleHint)
+                throws Exception {
+            if ("file".equals(roleHint)) {
+                return new FileWagon();
+            } else if ("http".equals(roleHint)) {
+                return new LightweightHttpWagon();
+            }
+            return null;
+        }
+
+        public void release(Wagon wagon) {
+
+        }
+
+    }
+
     public static DependencyResolver getInstance() {
         return instance;
     }
 
 
-    private URLClassLoader createClassLoaderInternal(String groupId, String artifactId, String version, ClassLoader parent, OutputAdapter out, Filter filter) {
-        File ivyfile = null;
+    private URLClassLoader createClassLoaderInternal(String groupId, String artifactId, String version, ClassLoader parent, OutputAdapter out) {
         try {
-            ivyfile = File.createTempFile("ivy", ".xml");
-            ivyfile.deleteOnExit();
-            ModuleRevisionId working = ModuleRevisionId.newInstance(groupId, artifactId + "-caller", "working");
-            DefaultModuleDescriptor md = DefaultModuleDescriptor.newDefaultInstance(working);
-            ModuleRevisionId moduleRevisionId = ModuleRevisionId.newInstance(groupId, artifactId, version);
-            DefaultDependencyDescriptor dd = new DefaultDependencyDescriptor(md, moduleRevisionId, false, false, true);
-            md.addDependency(dd);
-            XmlModuleDescriptorWriter.write(md, ivyfile);
+            MavenRepositorySystemSession session = new MavenRepositorySystemSession();
+            LocalRepository localRepo = new LocalRepository("/home/sclasen/.m2/repository");
+            session.setLocalRepositoryManager(repositorySystem.newLocalRepositoryManager(localRepo));
+            Dependency dependency =
+                    new Dependency(new DefaultArtifact(groupId + ":" + artifactId + ":" + version), "runtime");
+            RemoteRepository central = new RemoteRepository("central", "default", "http://repo1.maven.org/maven2/");
 
-            String[] confs = new String[]{"*"};
-            ResolveOptions resolveOptions = new ResolveOptions().setConfs(confs);
-            resolveOptions.setArtifactFilter(filter);
-            ResolveReport report = ivy.resolve(ivyfile.toURI().toURL(), resolveOptions);
-            if (!report.hasError()) {
-                List<URL> urls = new ArrayList<URL>();
-                for (ArtifactDownloadReport a : report.getAllArtifactsReports()) {
-                    urls.add(a.getLocalFile().toURI().toURL());
-                }
-                for (URL url : urls) {
-                    out.println("Loader: " + url.toString());
-                }
-                URLClassLoader ucl = new URLClassLoader(urls.toArray(new URL[0]), parent);
-                return ucl;
-            } else {
-                for (ArtifactDownloadReport rpt : report.getFailedArtifactsReports()) {
-                    out.println(rpt.getDownloadDetails());
-                }
-                throw new RuntimeException("Unable to resolve dependencies");
+            CollectRequest collectRequest = new CollectRequest();
+            collectRequest.setRoot(dependency);
+            collectRequest.addRepository(central);
+            DependencyNode node = repositorySystem.collectDependencies(session, collectRequest).getRoot();
+
+            repositorySystem.resolveDependencies(session, node, null);
+
+            PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
+            node.accept(nlg);
+            List<URL> classpath = new ArrayList<URL>();
+            for (File file : nlg.getFiles()) {
+                classpath.add(file.toURI().toURL());
             }
-        } catch (IOException e) {
-            out.println(e, "Error Resolving dependencies");
-            throw new RuntimeException("Error Resolving dependencies", e);
-        } catch (ParseException e) {
-            out.println(e, "Error Resolving dependencies");
-            throw new RuntimeException("Error Resolving dependencies", e);
+            return new URLClassLoader(classpath.toArray(new URL[classpath.size()]), parent);
+
+        } catch (DependencyCollectionException e) {
+            throw new RuntimeException(e);
+        } catch (ArtifactResolutionException e) {
+            throw new RuntimeException(e);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
         }
 
     }
@@ -96,56 +117,8 @@ public class DependencyResolver {
     }
 
     public ClassLoader createClassLoaderFor(String groupId, String artifactId, String version, ClassLoader parent, OutputAdapter out) {
-        Filter f = null;
-        if (groupId.equals(cliforceProperties.getProperty("groupId")) && artifactId.equals(cliforceProperties.getProperty("artifactId"))) {
-            f = new ArtifactFilter();
-        } else {
-            f = new CliforceArtifactFilter();
-        }
-        return createClassLoaderInternal(groupId, artifactId, version, parent, out, f);
-    }
 
-    public static class ArtifactFilter implements Filter {
-
-        static Set<String> excludedTypes = new HashSet<String>() {{
-            add("source");
-            add("javadoc");
-        }};
-
-        Set<String> artifactIds = new HashSet<String>();
-
-        public boolean accept(Object o) {
-            if (o instanceof MDArtifact) {
-                MDArtifact mda = (MDArtifact) o;
-                artifactIds.add(mda.toString());
-                return !excludedTypes.contains(mda.getType());
-            } else {
-                return true;
-            }
-
-        }
-
-        public Set<String> getArtifactIds() {
-            return artifactIds;
-        }
-
-        public String toString() {
-            return "ArtifactFilter";
-        }
-    }
-
-    public class CliforceArtifactFilter extends ArtifactFilter {
-        @Override
-        public boolean accept(Object o) {
-            if (super.accept(o)) {
-                if (o instanceof MDArtifact) {
-                    MDArtifact mda = (MDArtifact) o;
-                    return !cliforceDependencies.contains(mda.toString());
-                }
-            }
-            return false;
-        }
-
+        return createClassLoaderInternal(groupId, artifactId, version, parent, out);
     }
 
 
