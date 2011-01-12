@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.URL;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -139,7 +138,11 @@ public class CLIForce {
                 }
             }
         };
-
+        try {
+            commands.get("banner").execute(getContext(new String[0], cmdr));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         String[] cmdsplit = cmdr.readLine(FORCEPROMPT).trim().split("\\s+", 2);
         while (!cmdsplit[0].equals(EXITCMD)) {
             Command cmd = commands.get(cmdsplit[0]);
@@ -148,7 +151,7 @@ public class CLIForce {
                 ClassLoader curr = Thread.currentThread().getContextClassLoader();
                 try {
                     Thread.currentThread().setContextClassLoader(cmd.getClass().getClassLoader());
-                    cmd.execute(new Context(connector, forceClient, args, cmdr));
+                    cmd.execute(getContext(args, cmdr));
                 } catch (Exception e) {
                     out.printf("Exception while executing command %s\n", cmdsplit[0]);
                     e.printStackTrace(out);
@@ -164,6 +167,10 @@ public class CLIForce {
             cmdsplit = cmdr.readLine(FORCEPROMPT).trim().split("\\s+", 2);
         }
 
+    }
+
+    private CommandContext getContext(String[] args, CommandReader reader) {
+        return new Context(connector, forceClient, args, reader);
     }
 
     private static class Context implements CommandContext {
@@ -234,6 +241,7 @@ public class CLIForce {
             return System.out;
         }
     }
+
 
 
 }

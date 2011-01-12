@@ -6,24 +6,35 @@ import com.beust.jcommander.ParameterDescription;
 import com.beust.jcommander.ParameterException;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * base class for Commands that use JCommander to do argument parsing
+ * base class for Commands that use JCommander to do argument parsing, and JLine completion
  */
 public abstract class JCommand<T> implements Command {
 
     /**
-     * Instance of an object annotated with JCommander annotations
+     * Instance of an object annotated with JCommander annotations. You need to override this method if
+     * your args type does not have a default constructor.
      */
-    public abstract T getArgObject();
+    public T getArgs() {
+        ParameterizedType genericSuperclass = (ParameterizedType) this.getClass().getGenericSuperclass();
+        try {
+            return (T) ((Class) genericSuperclass.getActualTypeArguments()[0]).newInstance();
+        } catch (InstantiationException e) {
+            throw new RuntimeException("Exception instantiating arg object", e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException("Exception instantiating arg object", e);
+        }
+    }
 
     public abstract void executeWithArgs(CommandContext ctx, T args);
 
     @Override
     public void execute(CommandContext ctx) throws Exception {
-        T args = getArgObject();
+        T args = getArgs();
 
         try {
             JCommander j = new JCommander(args, ctx.getCommandArguments());
@@ -34,7 +45,7 @@ public abstract class JCommand<T> implements Command {
     }
 
     public Map<String, String> getCommandOptions() {
-        JCommander j = new JCommander(getArgObject());
+        JCommander j = new JCommander(getArgs());
         String mainParam = null;
         try {
             Method m = JCommander.class.getDeclaredMethod("createDescriptions");
@@ -48,7 +59,7 @@ public abstract class JCommand<T> implements Command {
         }
         Map<String, String> opts = new HashMap<String, String>();
         for (ParameterDescription parameterDescription : j.getParameters()) {
-            opts.put(parameterDescription.getNames(), parameterDescription.getDescription());
+            opts.put(parameterDescription.getNames(), parameterDescription.getDescription() + (parameterDescription.getParameter().required() ? "(required)" : ""));
         }
         if (mainParam != null) {
             opts.put("<main>", mainParam);

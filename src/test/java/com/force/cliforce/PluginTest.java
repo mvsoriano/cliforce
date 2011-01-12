@@ -46,7 +46,7 @@ public class PluginTest {
 
                 @Override
                 public String[] getCommandArguments() {
-                    return new String[]{"HelloWorldPlugin", "cliplugin:cliplugin:1.0"};
+                    return new String[]{"-a", "cliplugin"};
                 }
 
                 @Override
@@ -56,7 +56,7 @@ public class PluginTest {
 
                 @Override
                 public PrintStream getCommandWriter() {
-                    return null;
+                    return System.out;
                 }
             });
         } finally {

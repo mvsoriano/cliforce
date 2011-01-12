@@ -14,10 +14,10 @@ class AppsCommand extends Command {
       app: ApplicationInfo => {
         ctx.getCommandWriter.println("""
 ===========================
-App: %s
+App:       %s
 Instances: %d
-State: %s
-Memory: %dMB
+State:     %s
+Memory:    %dMB
 ==========================="""
           .format(app.getName, app.getInstances, app.getState, app.getResources.getMemory))
       }
@@ -27,6 +27,25 @@ Memory: %dMB
   def describe = "lists deployed apps"
 
   def name = "apps"
+}
+
+class BannerCommand extends Command {
+  //http://www.network-science.de/ascii/  -> big font
+  def execute(ctx: CommandContext) = {
+    ctx.getCommandWriter.print("""
+  _____ _      _____ ______
+ / ____| |    |_   _|  ____|
+| |    | |      | | | |__ ___  _ __ ___ ___
+| |    | |      | | |  __/ _ \| '__/ __/ _ \
+| |____| |____ _| |_| | | (_) | | | (_|  __/
+ \_____|______|_____|_|  \___/|_|  \___\___|
+
+""")
+  }
+
+  def describe = "print the banner"
+
+  def name = "banner"
 }
 
 class ListCustomObjects extends Command {
@@ -76,9 +95,6 @@ class PushArgs {
 
 class PushCommand extends JCommand[PushArgs] {
 
-
-  def getArgObject = new PushArgs
-
   def executeWithArgs(ctx: CommandContext, args: PushArgs) = {
     val appInfo = new ApplicationInfo
     appInfo.setName(args.name)
@@ -96,6 +112,21 @@ class PushCommand extends JCommand[PushArgs] {
   }
 
   def name = "push"
+}
+
+class UpdateArgs {
+  @Parameter(names = Array("-n", "--name"), description = "The name of the app to update", required = true)
+  var appName = null;
+}
+
+class UpdateCommand extends JCommand[UpdateArgs] {
+  def describe = "update an already deployed app"
+
+  def name = "update"
+
+  def executeWithArgs(ctx: CommandContext, args: UpdateArgs) = {
+
+  }
 }
 
 class StartCommand extends Command {
@@ -154,3 +185,4 @@ class RestartCommand extends Command {
 
   def name = "restart"
 }
+
