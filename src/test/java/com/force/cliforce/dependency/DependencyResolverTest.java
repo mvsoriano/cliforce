@@ -25,7 +25,7 @@ public class DependencyResolverTest {
     }
      @Test
     public void testPluginDependencyResolution() throws ClassNotFoundException {
-        ClassLoader loader = DependencyResolver.getInstance().createClassLoaderFor("cliplugin", "cliplugin", "1.0", null, new OutputAdapter() {
+        ClassLoader loader = DependencyResolver.getInstance().createClassLoaderFor("com.force.cliforce.plugin", "cliplugin", "1.0", null, new OutputAdapter() {
             @Override
             public void println(String msg) {
                 System.out.println(msg);

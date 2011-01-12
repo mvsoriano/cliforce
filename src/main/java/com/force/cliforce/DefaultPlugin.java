@@ -6,7 +6,7 @@ import com.force.cliforce.dependency.OutputAdapter;
 import com.force.cliforce.plugin.*;
 import com.force.cliforce.plugin.dbclean.DBClean;
 
-import java.io.PrintStream;
+import java.io.*;
 import java.util.*;
 
 
@@ -25,8 +25,10 @@ public class DefaultPlugin implements Plugin {
                 new AppsCommand(),
                 new PushCommand(),
                 new StopCommand(), new StartCommand(), new RestartCommand(),
+                new ShellCommand(),
                 new HistoryCommand(force),
                 new DBClean(),
+                new BannerCommand(),
                 new ConnectionInfoCommand(force),
                 new HelpCommand(force),
                 new PluginCommand(force),
@@ -64,13 +66,23 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public String describe() {
-            return "Display this help message";
+            return "Display this help message: Usage: help <command>";
         }
 
         @Override
         public void execute(CommandContext ctx) throws Exception {
-            for (Map.Entry<String, Command> entry : force.commands.entrySet()) {
-                ctx.getCommandWriter().printf("%s:\t\t\t %s\n", entry.getKey(), entry.getValue().describe());
+            if (ctx.getCommandArguments().length == 0) {
+                for (Map.Entry<String, Command> entry : force.commands.entrySet()) {
+                    ctx.getCommandWriter().printf("%s:\t\t\t %s\n", entry.getKey(), entry.getValue().describe());
+                }
+            } else {
+                String key = ctx.getCommandArguments()[0];
+                Command c = force.commands.get(key);
+                if (c == null) {
+                    ctx.getCommandWriter().printf("No such command: %s", key);
+                } else {
+                    ctx.getCommandWriter().printf("%s:\t\t\t %s\n", key, c.describe());
+                }
             }
         }
     }
@@ -133,7 +145,7 @@ public class DefaultPlugin implements Plugin {
         }
 
         @Override
-        public PluginArgs getArgObject() {
+        public PluginArgs getArgs() {
             return new PluginArgs();
         }
 
@@ -263,4 +275,52 @@ public class DefaultPlugin implements Plugin {
 
         }
     }
+
+    public static class ShellCommand implements Command {
+        @Override
+        public String name() {
+            return "sh";
+        }
+
+        @Override
+        public String describe() {
+            return "Execute the rest of the command on the OS";
+        }
+
+        @Override
+        public void execute(CommandContext ctx) throws Exception {
+            Process start = new ProcessBuilder(ctx.getCommandArguments()).start();
+            Thread t = new Thread(new Reader(start.getInputStream(), ctx.getCommandWriter()));
+            t.setDaemon(true);
+            t.start();
+            start.waitFor();
+            t.interrupt();
+        }
+
+        private class Reader implements Runnable {
+            InputStream in;
+            PrintStream out;
+
+            private Reader(InputStream in, PrintStream out) {
+                this.in = in;
+                this.out = out;
+            }
+
+            public void run() {
+                InputStreamReader reader = new InputStreamReader(in);
+                BufferedReader breader = new BufferedReader(reader);
+                String output = null;
+                try {
+                    while ((output = breader.readLine()) != null) {
+                        out.println(output);
+                    }
+                } catch (IOException e) {
+                    out.println("IOException reading process input");
+                }
+            }
+        }
+
+    }
+
+
 }
