@@ -13,6 +13,7 @@ import jline.Completor;
 import jline.ConsoleReader;
 import jline.History;
 import jline.SimpleCompletor;
+import org.apache.commons.exec.CommandLine;
 import org.apache.commons.httpclient.HttpHost;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -137,24 +139,40 @@ public class CLIForce {
                     throw new RuntimeException(e);
                 }
             }
+
+            @Override
+            public String[] readAndParseLine(String prompt) {
+                try {
+                    String line = reader.readLine(prompt);
+                    CommandLine c = CommandLine.parse(line);
+                    String exe = c.getExecutable();
+                    String[] args = c.getArguments();
+                    String[] all = new String[args.length + 1];
+                    all[0] = exe;
+                    System.arraycopy(args, 0, all, 1, args.length);
+                    return all;
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         };
         try {
             commands.get("banner").execute(getContext(new String[0], cmdr));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        String[] cmdsplit = cmdr.readLine(FORCEPROMPT).trim().split("\\s+", 2);
-        while (!cmdsplit[0].equals(EXITCMD)) {
-            Command cmd = commands.get(cmdsplit[0]);
-            //todo fix this splitting, breaks for commands with quoted vals that contain whitespace
-            String[] args = cmdsplit.length == 2 ? cmdsplit[1].split("\\s+") : new String[0];
+        String[] cmds = cmdr.readAndParseLine(FORCEPROMPT);
+        String cmdKey = cmds[0];
+        while (!cmdKey.equals(EXITCMD)) {
+            Command cmd = commands.get(cmdKey);
+            String[] args = cmds.length > 1 ? Arrays.copyOfRange(cmds, 1, cmds.length) : new String[0];
             if (cmd != null) {
                 ClassLoader curr = Thread.currentThread().getContextClassLoader();
                 try {
                     Thread.currentThread().setContextClassLoader(cmd.getClass().getClassLoader());
                     cmd.execute(getContext(args, cmdr));
                 } catch (Exception e) {
-                    out.printf("Exception while executing command %s\n", cmdsplit[0]);
+                    out.printf("Exception while executing command %s\n", cmdKey);
                     e.printStackTrace(out);
                 } finally {
                     Thread.currentThread().setContextClassLoader(curr);
@@ -162,13 +180,14 @@ public class CLIForce {
                 }
 
             } else {
-                out.printf("Unknown Command %s\n", cmdsplit[0]);
+                out.printf("Unknown Command %s\n", cmdKey);
                 out.flush();
             }
-            cmdsplit = cmdr.readLine(FORCEPROMPT).trim().split("\\s+", 2);
+            cmds = cmdr.readAndParseLine(FORCEPROMPT);
         }
 
     }
+
 
     private CommandContext getContext(String[] args, CommandReader reader) {
         return new Context(connector, forceClient, args, reader);
@@ -242,7 +261,6 @@ public class CLIForce {
             return System.out;
         }
     }
-
 
 
 }

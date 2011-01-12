@@ -5,4 +5,6 @@ public interface CommandReader {
 
     String readLine(String prompt);
 
+    String[] readAndParseLine(String prompt);
+
 }
