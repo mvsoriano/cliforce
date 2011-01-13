@@ -81,7 +81,7 @@ public class DependencyResolver {
     private URLClassLoader createClassLoaderInternal(String groupId, String artifactId, String version, ClassLoader parent, OutputAdapter out) {
         try {
             MavenRepositorySystemSession session = new MavenRepositorySystemSession();
-            LocalRepository localRepo = new LocalRepository("/home/sclasen/.m2/repository");
+            LocalRepository localRepo = new LocalRepository(System.getProperty("user.home")+"/.m2/repository");
             session.setLocalRepositoryManager(repositorySystem.newLocalRepositoryManager(localRepo));
             Dependency dependency =
                     new Dependency(new DefaultArtifact(groupId + ":" + artifactId + ":" + version), "runtime");
