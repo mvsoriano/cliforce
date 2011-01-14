@@ -6,6 +6,8 @@ import com.force.cliforce.command.dbclean.DBClean;
 import com.force.cliforce.dependency.DependencyResolver;
 import com.force.cliforce.dependency.OutputAdapter;
 
+import static java.lang.String.format;
+
 import java.io.*;
 import java.util.*;
 
@@ -296,8 +298,8 @@ public class DefaultPlugin implements Plugin {
             ctx.getCommandWriter().println("PROCESS:" + b.toString());
 
             Process start = new ProcessBuilder(ctx.getCommandArguments()).start();
-            Thread t = new Thread(new Reader(start.getInputStream(), ctx.getCommandWriter(), ""));
-            Thread err = new Thread(new Reader(start.getErrorStream(), ctx.getCommandWriter(), "Error:"));
+            Thread t = new Thread(new Reader(start.getInputStream(), ctx.getCommandWriter(), format("sh->%s:stdout", ctx.getCommandArguments()[0])));
+            Thread err = new Thread(new Reader(start.getErrorStream(), ctx.getCommandWriter(), format("sh->%s:stderr", ctx.getCommandArguments()[0])));
             t.setDaemon(true);
             t.start();
             err.setDaemon(true);
