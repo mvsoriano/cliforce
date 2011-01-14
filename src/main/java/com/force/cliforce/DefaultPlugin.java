@@ -31,6 +31,7 @@ public class DefaultPlugin implements Plugin {
                 new HistoryCommand(force),
                 new DBClean(),
                 new BannerCommand(),
+                new DebugCommand(),
                 new ConnectionInfoCommand(force),
                 new HelpCommand(force),
                 new PluginCommand(force),

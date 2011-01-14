@@ -8,6 +8,7 @@ import com.vmforce.client.bean.ApplicationInfo.ResourcesBean
 import java.util.ArrayList
 import com.force.cliforce.{JCommand, CommandContext, Command}
 import org.slf4j.LoggerFactory
+import ch.qos.logback.classic.{Logger, Level}
 
 class AppsCommand extends Command {
   def execute(ctx: CommandContext) = {
@@ -185,5 +186,31 @@ class RestartCommand extends Command {
   def describe = "restart an application"
 
   def name = "restart"
+}
+
+class DebugArgs {
+  @Parameter(names = Array("--on"), description = "Turns on debug logging to the console")
+  val on = false
+  @Parameter(names = Array("--off"), description = "Turns off debug logging to the console")
+  val off = false
+
+}
+
+class DebugCommand extends JCommand[DebugArgs] {
+  def describe = usage("turns debug output on/off")
+
+  def name = "debug"
+
+  def executeWithArgs(ctx: CommandContext, args: DebugArgs) = {
+    if (args.on ^ args.off) {
+      var level = Level.DEBUG;
+      if (args.off) {
+        level = Level.INFO
+      }
+      ctx.getCommandWriter.printf("Setting logger level to %s\n", level.levelStr)
+      val rootLogger = LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME).asInstanceOf[Logger];
+      rootLogger.setLevel(level)
+    }
+  }
 }
 
