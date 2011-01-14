@@ -17,12 +17,10 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import javax.servlet.ServletException;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class CLIForce {
 
@@ -35,9 +33,12 @@ public class CLIForce {
     /*package*/ Map<String, Command> commands = new TreeMap<String, Command>();
     /*package*/ Map<String, Plugin> plugins = new TreeMap<String, Plugin>();
     /*package*/ ForceEnv forceEnv;
+    private volatile boolean debug = false;
     private ForceServiceConnector connector;
     private static Logger logger = LoggerFactory.getLogger(CLIForce.class);
     private PrintWriter out = new PrintWriter(System.out);
+    private ConnectorConfig config;
+    private RestTemplateConnector restConnector;
 
 
     public static void main(String[] args) {
@@ -72,21 +73,32 @@ public class CLIForce {
         forceEnv = env;
     }
 
+    public boolean isDebug() {
+        return debug;
+    }
+
+    public void setDebug(boolean debug) {
+        this.debug = debug;
+        config.setTraceMessage(debug);
+        restConnector.debug(debug);
+    }
+
     public void init() throws IOException, ConnectionException, ServletException {
         SLF4JBridgeHandler.install();
         URL purl = new URL(com.sforce.soap.partner.Connector.END_POINT);
-        ConnectorConfig config = new ConnectorConfig();
+        config = new ConnectorConfig();
         config.setAuthEndpoint("https://" + forceEnv.getHost() + purl.getPath());
         config.setUsername(forceEnv.getUser());
         config.setPassword(forceEnv.getPassword());
-        config.setTraceMessage("true".equals(System.getProperty("force.trace")));
+        config.setTraceMessage(false);
+        config.setPrettyPrintXml(true);
         connector = new ForceServiceConnector("cliforce", config);
 
         forceClient = new VMForceClient();
-        RestTemplateConnector connector = new RestTemplateConnector();
-        connector.setTarget(new HttpHost("api.alpha.vmforce.com"));
-        connector.debug(true);
-        forceClient.setHttpConnector(connector);
+        restConnector = new RestTemplateConnector();
+        restConnector.setTarget(new HttpHost("api.alpha.vmforce.com"));
+        restConnector.debug(false);
+        forceClient.setHttpConnector(restConnector);
         forceClient.login(forceEnv.getUser(), forceEnv.getPassword());
 
 
@@ -191,6 +203,7 @@ public class CLIForce {
             cmds = cmdr.readAndParseLine(FORCEPROMPT);
             cmdKey = cmds[0];
         }
+
 
     }
 

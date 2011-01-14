@@ -6,9 +6,9 @@ import collection.JavaConversions._
 import com.beust.jcommander.{JCommander, Parameter}
 import com.vmforce.client.bean.ApplicationInfo.ResourcesBean
 import java.util.ArrayList
-import com.force.cliforce.{JCommand, CommandContext, Command}
 import org.slf4j.LoggerFactory
 import ch.qos.logback.classic.{Logger, Level}
+import com.force.cliforce.{CLIForce, JCommand, CommandContext, Command}
 
 class AppsCommand extends Command {
   def execute(ctx: CommandContext) = {
@@ -196,7 +196,7 @@ class DebugArgs {
 
 }
 
-class DebugCommand extends JCommand[DebugArgs] {
+class DebugCommand(force: CLIForce) extends JCommand[DebugArgs] {
   def describe = usage("turns debug output on/off")
 
   def name = "debug"
@@ -210,6 +210,7 @@ class DebugCommand extends JCommand[DebugArgs] {
       ctx.getCommandWriter.printf("Setting logger level to %s\n", level.levelStr)
       val rootLogger = LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME).asInstanceOf[Logger];
       rootLogger.setLevel(level)
+      force.setDebug(args.on)
     }
   }
 }
