@@ -170,7 +170,7 @@ public class DefaultPlugin implements Plugin {
 
                     @Override
                     public void println(Exception e, String msg) {
-                        ctx.getCommandWriter().printf("{}: {}", msg, e.toString());
+                        ctx.getCommandWriter().printf("%s: %s", msg, e.toString());
 
                     }
                 };
