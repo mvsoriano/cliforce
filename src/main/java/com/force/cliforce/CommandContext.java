@@ -22,6 +22,6 @@ public interface CommandContext {
 
     VMForceClient getVmForceClient();
 
-    PrintStream getCommandWriter();
+    CommandWriter getCommandWriter();
 
 }

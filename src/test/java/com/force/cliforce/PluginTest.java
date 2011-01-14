@@ -55,8 +55,8 @@ public class PluginTest {
                 }
 
                 @Override
-                public PrintStream getCommandWriter() {
-                    return System.out;
+                public CommandWriter getCommandWriter() {
+                    return null;
                 }
             });
         } finally {

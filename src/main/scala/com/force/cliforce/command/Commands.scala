@@ -7,6 +7,7 @@ import com.beust.jcommander.{JCommander, Parameter}
 import com.vmforce.client.bean.ApplicationInfo.ResourcesBean
 import java.util.ArrayList
 import com.force.cliforce.{JCommand, CommandContext, Command}
+import org.slf4j.LoggerFactory
 
 class AppsCommand extends Command {
   def execute(ctx: CommandContext) = {

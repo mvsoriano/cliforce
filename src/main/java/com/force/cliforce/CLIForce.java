@@ -14,6 +14,7 @@ import org.apache.commons.exec.CommandLine;
 import org.apache.commons.httpclient.HttpHost;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import javax.servlet.ServletException;
 import java.io.File;
@@ -56,16 +57,13 @@ public class CLIForce {
             cliForce.init();
             cliForce.run();
         } catch (ConnectionException e) {
-            System.out.println("Connection Exception while initializing cliforce, exiting");
-            e.printStackTrace();
+            logger.error("Connection Exception while initializing cliforce, exiting", e);
             System.exit(1);
         } catch (IOException e) {
-            System.out.println("IOException Exception while initializing cliforce, exiting");
-            e.printStackTrace();
+            logger.error("IOException Exception while initializing cliforce, exiting", e);
             System.exit(1);
         } catch (ServletException e) {
-            System.out.println("ServletException Exception while initializing cliforce, exiting");
-            e.printStackTrace();
+            logger.error("ServletException Exception while initializing cliforce, exiting", e);
             System.exit(1);
         }
     }
@@ -75,6 +73,7 @@ public class CLIForce {
     }
 
     public void init() throws IOException, ConnectionException, ServletException {
+        SLF4JBridgeHandler.install();
         URL purl = new URL(com.sforce.soap.partner.Connector.END_POINT);
         ConnectorConfig config = new ConnectorConfig();
         config.setAuthEndpoint("https://" + forceEnv.getHost() + purl.getPath());
@@ -264,8 +263,25 @@ public class CLIForce {
         }
 
         @Override
-        public PrintStream getCommandWriter() {
-            return System.out;
+        public CommandWriter getCommandWriter() {
+            return new StdoutCommandWriter();
+        }
+    }
+
+    public static class StdoutCommandWriter implements CommandWriter {
+        @Override
+        public void printf(String format, Object... args) {
+            System.out.printf(format, args);
+        }
+
+        @Override
+        public void print(String msg) {
+            System.out.print(msg);
+        }
+
+        @Override
+        public void println(String msg) {
+            System.out.println(msg);
         }
     }
 

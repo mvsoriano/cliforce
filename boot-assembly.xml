@@ -19,10 +19,25 @@
                 <include>org.sonatype.aether:aether-impl</include>
                 <include>org.sonatype.aether:aether-spi</include>
                 <include>org.sonatype.aether:aether-connector-wagon</include>
+                <include>org.apache.maven.wagon:wagon-provider-api</include>
+                <include>org.codehaus.plexus:plexus-container-default</include>
+                <include>org.codehaus.plexus:plexus-classworlds</include>
+                <include>org.apache.xbean:xbean-reflect</include>
+                <include>org.slf4j:slf4j-api</include>
+                <include>org.slf4j:jcl-over-slf4j</include>
+                <include>org.slf4j:jul-to-slf4j</include>
+                <include>org.slf4j:log4j-over-slf4j</include>
+                <include>com.google.collections:google-collections</include>
                 <include>org.apache.maven:maven-aether-provider</include>
+                <include>org.apache.maven:maven-model</include>
+                <include>org.apache.maven:maven-model-builder</include>
+                <include>org.codehaus.plexus:plexus-interpolation</include>
+                <include>org.apache.maven:maven-repository-metadata</include>
+                <include>org.codehaus.plexus:plexus-component-annotations</include>
+                <include>org.codehaus.plexus:plexus-utils</include>
                 <include>org.apache.maven.wagon:wagon-file</include>
-                <include>org.apache.maven.wagon:wagon</include>
                 <include>org.apache.maven.wagon:wagon-http-lightweight</include>
+                <include>org.apache.maven.wagon:wagon-http-shared</include>
             </includes>
         </dependencySet>
         <dependencySet>

@@ -151,7 +151,7 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public void executeWithArgs(final CommandContext ctx, PluginArgs arg) {
-            PrintStream output = ctx.getCommandWriter();
+            CommandWriter output = ctx.getCommandWriter();
             if (arg.artifact == null) {
                 output.println("Listing plugins...");
                 for (Map.Entry<String, Plugin> e : force.plugins.entrySet()) {
@@ -170,8 +170,8 @@ public class DefaultPlugin implements Plugin {
 
                     @Override
                     public void println(Exception e, String msg) {
-                        ctx.getCommandWriter().println(msg);
-                        e.printStackTrace(ctx.getCommandWriter());
+                        ctx.getCommandWriter().printf("{}: {}", msg, e.toString());
+
                     }
                 };
                 ClassLoader pcl = null;
@@ -311,10 +311,10 @@ public class DefaultPlugin implements Plugin {
 
         private class Reader implements Runnable {
             InputStream in;
-            PrintStream out;
+            CommandWriter out;
             private String lineheader;
 
-            private Reader(InputStream in, PrintStream out, String lineheader) {
+            private Reader(InputStream in, CommandWriter out, String lineheader) {
                 this.in = in;
                 this.out = out;
                 this.lineheader = lineheader;
