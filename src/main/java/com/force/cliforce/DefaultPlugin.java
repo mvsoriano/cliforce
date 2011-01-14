@@ -296,7 +296,6 @@ public class DefaultPlugin implements Plugin {
             for (String s : ctx.getCommandArguments()) {
                 b.append(s).append(" ");
             }
-            ctx.getCommandWriter().println("PROCESS:" + b.toString());
 
             Process start = new ProcessBuilder(ctx.getCommandArguments()).start();
             Thread t = new Thread(new Reader(start.getInputStream(), ctx.getCommandWriter(), format("sh->%s:stdout#", ctx.getCommandArguments()[0])));
