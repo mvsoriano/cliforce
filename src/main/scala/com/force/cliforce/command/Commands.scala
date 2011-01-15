@@ -4,11 +4,11 @@ import com.sforce.soap.metadata.ListMetadataQuery
 import com.vmforce.client.bean.ApplicationInfo
 import collection.JavaConversions._
 import com.beust.jcommander.{JCommander, Parameter}
-import com.vmforce.client.bean.ApplicationInfo.ResourcesBean
-import java.util.ArrayList
 import org.slf4j.LoggerFactory
 import ch.qos.logback.classic.{Logger, Level}
 import com.force.cliforce.{CLIForce, JCommand, CommandContext, Command}
+import java.util.{Collections, ArrayList}
+import com.vmforce.client.bean.ApplicationInfo.{ModelEnum, StackEnum, ResourcesBean}
 
 class AppsCommand extends Command {
   def execute(ctx: CommandContext) = {
@@ -80,8 +80,8 @@ class PushArgs {
 
   @Parameter(
     names = Array("-m", "--mem"),
-    description = "Memory to allocate to the app, in MB (default 256)")
-  var mem: Int = 256
+    description = "Memory to allocate to the app, in MB (default 512)")
+  var mem: Int = 512
 
   @Parameter(
     names = Array("-i", "--instances"),
@@ -98,15 +98,26 @@ class PushArgs {
 class PushCommand extends JCommand[PushArgs] {
 
   def executeWithArgs(ctx: CommandContext, args: PushArgs) = {
-    val appInfo = new ApplicationInfo
-    appInfo.setName(args.name)
-    val res = new ResourcesBean
-    res.setMemory(args.mem)
-    appInfo.setInstances(args.instances)
-    appInfo.setResources(res)
-    ctx.getVmForceClient.createApplication(appInfo)
-    ctx.getVmForceClient.deployApplication(name, args.path)
-    ctx.getCommandWriter.println(args.name)
+    ctx.getCommandWriter.printf("Pushing Application:%s", args.name)
+    var appInfo = ctx.getVmForceClient.getApplication(args.name)
+    if (appInfo == null) {
+      ctx.getCommandWriter.printf("Application %s does not exist, creating\n", args.name)
+      appInfo = new ApplicationInfo
+      appInfo.setName(args.name)
+      val res = new ResourcesBean
+      res.setMemory(args.mem)
+      appInfo.setInstances(args.instances)
+      appInfo.setResources(res)
+      appInfo.setUris(Collections.emptyList[String])
+      var staging: ApplicationInfo.StagingBean = new ApplicationInfo.StagingBean
+      staging.setModel(ModelEnum.SPRING.getRequestValue)
+      staging.setStack(StackEnum.JT10.getRequestValue)
+      appInfo.setStaging(staging)
+      ctx.getVmForceClient.createApplication(appInfo)
+
+    }
+    ctx.getVmForceClient.deployApplication(args.name, args.path)
+    ctx.getCommandWriter.printf("Application Deployed: %s\n", args.name)
   }
 
   def describe = {
