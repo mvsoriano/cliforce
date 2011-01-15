@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory
 import ch.qos.logback.classic.{Logger, Level}
 import com.force.cliforce.{CLIForce, JCommand, CommandContext, Command}
 import java.util.{Collections, ArrayList}
-import com.vmforce.client.bean.ApplicationInfo.{ModelEnum, StackEnum, ResourcesBean}
+import com.vmforce.client.bean.ApplicationInfo.{StagingBean, ModelEnum, StackEnum, ResourcesBean}
 
 class AppsCommand extends Command {
   def execute(ctx: CommandContext) = {
@@ -51,10 +51,13 @@ class BannerCommand extends Command {
 }
 
 class ListCustomObjects extends Command {
+  val version: Double = 20.0
+
   def execute(ctx: CommandContext) = {
     val q = new ListMetadataQuery
     q.setType("CustomObject")
-    val objs = ctx.getMetadataConnection.listMetadata(Array(q), 20.0).map(_.getFullName).filter(_.endsWith("__c"))
+
+    val objs = ctx.getMetadataConnection.listMetadata(Array(q), version).map(_.getFullName).filter(_.endsWith("__c"))
     ctx.getPartnerConnection.describeSObjects(objs).foreach{
       res => {
         ctx.getCommandWriter.printf("\n{\nCustom Object-> %s \n", res.getName());
@@ -109,12 +112,11 @@ class PushCommand extends JCommand[PushArgs] {
       appInfo.setInstances(args.instances)
       appInfo.setResources(res)
       appInfo.setUris(Collections.emptyList[String])
-      var staging: ApplicationInfo.StagingBean = new ApplicationInfo.StagingBean
+      val staging: StagingBean = new StagingBean
       staging.setModel(ModelEnum.SPRING.getRequestValue)
       staging.setStack(StackEnum.JT10.getRequestValue)
       appInfo.setStaging(staging)
       ctx.getVmForceClient.createApplication(appInfo)
-
     }
     ctx.getVmForceClient.deployApplication(args.name, args.path)
     ctx.getCommandWriter.printf("Application Deployed: %s\n", args.name)
@@ -130,16 +132,6 @@ class PushCommand extends JCommand[PushArgs] {
 class UpdateArgs {
   @Parameter(names = Array("-n", "--name"), description = "The name of the app to update", required = true)
   var appName = null;
-}
-
-class UpdateCommand extends JCommand[UpdateArgs] {
-  def describe = "update an already deployed app"
-
-  def name = "update"
-
-  def executeWithArgs(ctx: CommandContext, args: UpdateArgs) = {
-
-  }
 }
 
 class StartCommand extends Command {
