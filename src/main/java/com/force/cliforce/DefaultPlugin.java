@@ -26,12 +26,14 @@ public class DefaultPlugin implements Plugin {
         return Arrays.asList(new ListCustomObjects(),
                 new AppsCommand(),
                 new PushCommand(),
-                new StopCommand(), new StartCommand(), new RestartCommand(),
+                new StopCommand(),
+                new StartCommand(),
+                new RestartCommand(),
                 new ShellCommand(),
                 new DeleteAppCommand(),
-                new HistoryCommand(force),
                 new DBClean(),
                 new BannerCommand(),
+                new HistoryCommand(force),
                 new DebugCommand(force),
                 new ConnectionInfoCommand(force),
                 new HelpCommand(force),
@@ -76,8 +78,15 @@ public class DefaultPlugin implements Plugin {
         @Override
         public void execute(CommandContext ctx) throws Exception {
             if (ctx.getCommandArguments().length == 0) {
+                int longCmd = 0;
+                for (String key : force.commands.keySet()) {
+                    longCmd = Math.max(longCmd, key.length());
+                }
+                int offset = longCmd + 4;
+
                 for (Map.Entry<String, Command> entry : force.commands.entrySet()) {
-                    ctx.getCommandWriter().printf("%s:\t\t\t %s\n", entry.getKey(), entry.getValue().describe());
+                    String pad = pad(offset - entry.getKey().length());
+                    ctx.getCommandWriter().printf("%s:" + pad + "%s\n", entry.getKey(), entry.getValue().describe());
                 }
             } else {
                 String key = ctx.getCommandArguments()[0];
@@ -88,6 +97,12 @@ public class DefaultPlugin implements Plugin {
                     ctx.getCommandWriter().printf("%s:\t\t\t %s\n", key, c.describe());
                 }
             }
+        }
+
+        private String pad(int pad) {
+            StringBuilder padb = new StringBuilder();
+            for (int i = 0; i < pad; i++) padb.append(" ");
+            return padb.toString();
         }
     }
 
@@ -119,7 +134,7 @@ public class DefaultPlugin implements Plugin {
 
     public static class PluginArgs {
 
-        @Parameter(names = {"-a", "--artifact"}, description = "maven artifact id for an artifact in group com.force.clifprce.plugin")
+        @Parameter(names = {"-a", "--artifact"}, description = "maven artifact id for an artifact in group com.force.cliforce.plugin")
         public String artifact;
 
         public String group = "com.force.cliforce.plugin";
@@ -197,7 +212,7 @@ public class DefaultPlugin implements Plugin {
                     force.plugins.put(arg.artifact, p);
                     output.printf("Adding Plugin: %s (%s)\n", arg.artifact, p.getClass().getName());
                     for (Command command : commands) {
-                        output.printf("  -> adds command %s:%s (%s)\n", arg.artifact, command.name(), command.getClass().getName());
+                        output.printf("\tadds command %s:%s (%s)\n", arg.artifact, command.name(), command.getClass().getName());
                         force.commands.put(arg.artifact + ":" + command.name(), command);
                     }
                     while (iterator.hasNext()) {
@@ -234,17 +249,17 @@ public class DefaultPlugin implements Plugin {
         @Override
         public void execute(CommandContext ctx) throws Exception {
             for (String arg : ctx.getCommandArguments()) {
-                ctx.getCommandWriter().printf("attempting to remove plugin: %s\n", arg);
+                ctx.getCommandWriter().printf("Removing plugin: %s\n", arg);
                 Plugin p = force.plugins.remove(arg);
                 if (p == null) {
                     ctx.getCommandWriter().println("....not found");
                 } else {
                     for (Command command : p.getCommands()) {
                         force.commands.remove(arg + ":" + command.name());
-                        ctx.getCommandWriter().printf("removed command: %s\n", command.name());
+                        ctx.getCommandWriter().printf("\tremoved command: %s\n", command.name());
                     }
                     force.reloadCompletions();
-                    ctx.getCommandWriter().println("\nDone");
+                    ctx.getCommandWriter().println("Done");
                 }
 
 

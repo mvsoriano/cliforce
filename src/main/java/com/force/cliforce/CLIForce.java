@@ -36,7 +36,7 @@ public class CLIForce {
     private Completor completor = new SimpleCompletor(EXITCMD);
     private volatile boolean debug = false;
     private ForceServiceConnector connector;
-    private CommandWriter writer = new StdoutCommandWriter();
+    private CommandWriter writer = new Writer();
     private ConnectorConfig config;
     private RestTemplateConnector restConnector;
 
@@ -265,7 +265,7 @@ public class CLIForce {
         }
     }
 
-    public static class StdoutCommandWriter implements CommandWriter {
+    public static class Writer implements CommandWriter {
         @Override
         public void printf(String format, Object... args) {
             System.out.printf(format, args);
