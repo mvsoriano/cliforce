@@ -1,5 +1,6 @@
 package com.force.cliforce;
 
+import ch.qos.logback.classic.Level;
 import com.force.sdk.connector.ForceServiceConnector;
 import com.sforce.async.AsyncApiException;
 import com.sforce.async.RestConnection;
@@ -86,6 +87,13 @@ public class CLIForce {
         this.debug = debug;
         config.setTraceMessage(debug);
         restConnector.debug(debug);
+        Level level = Level.DEBUG;
+        if (!debug) {
+            level = Level.INFO;
+        }
+        writer.printf("Setting logger level to %s\n", level.levelStr);
+        ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
+        rootLogger.setLevel(level);
     }
 
     public void init() throws IOException, ConnectionException, ServletException {

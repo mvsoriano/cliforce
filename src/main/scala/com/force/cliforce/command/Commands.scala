@@ -206,13 +206,6 @@ class DebugCommand(force: CLIForce) extends JCommand[DebugArgs] {
 
   def executeWithArgs(ctx: CommandContext, args: DebugArgs) = {
     if (args.on ^ args.off) {
-      var level = Level.DEBUG;
-      if (args.off) {
-        level = Level.INFO
-      }
-      ctx.getCommandWriter.printf("Setting logger level to %s\n", level.levelStr)
-      val rootLogger = LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME).asInstanceOf[Logger];
-      rootLogger.setLevel(level)
       force.setDebug(args.on)
     }
   }
