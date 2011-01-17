@@ -11,4 +11,6 @@ public interface CommandWriter {
 
     void println(String msg);
 
+    void printStackTrace(Exception e);
+
 }

@@ -28,6 +28,7 @@ public class DefaultPlugin implements Plugin {
                 new PushCommand(),
                 new StopCommand(), new StartCommand(), new RestartCommand(),
                 new ShellCommand(),
+                new DeleteAppCommand(),
                 new HistoryCommand(force),
                 new DBClean(),
                 new BannerCommand(),

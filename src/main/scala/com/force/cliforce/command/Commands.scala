@@ -218,3 +218,22 @@ class DebugCommand(force: CLIForce) extends JCommand[DebugArgs] {
   }
 }
 
+class DeleteAppCommand extends Command {
+
+  object Arg {
+    @Parameter(description = "The app to delete", required = true)
+    var app = new ArrayList[String]
+  }
+
+  def execute(ctx: CommandContext) = {
+    new JCommander(Arg, ctx.getCommandArguments.toArray: _*)
+    ctx.getCommandWriter.println("Deleting %s".format(Arg.app.get(0)))
+    ctx.getVmForceClient.deleteApplication(Arg.app.get(0))
+    ctx.getCommandWriter.println("done")
+  }
+
+  def describe = "deletes an application from vmforce"
+
+  def name = "delete"
+}
+
