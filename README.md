@@ -2,49 +2,49 @@
 
 This tool supports the following commands.
 
-                                apps:          lists deployed apps
-                                banner:        print the banner
-                                connection:    Show the current connection info:
-                                dbclean:       Deletes all custom objects in the current org
-                                debug:         turns debug output on/off
-                                    Usage: debug [args]
-                                    args:
-                                    --off	Turns off debug logging to the console
-                                    --on	Turns on debug logging to the console
+    apps:          lists deployed apps
+    banner:        print the banner
+    connection:    Show the current connection info:
+    dbclean:       Deletes all custom objects in the current org
+    debug:         turns debug output on/off
+        Usage: debug [args]
+        args:
+        --off	Turns off debug logging to the console
+        --on	Turns on debug logging to the console
 
-                                delete:        deletes an application from vmforce
-                                    Usage: delete <the name of the application>
+    delete:        deletes an application from vmforce
+        Usage: delete <the name of the application>
 
-                                exit:          Exit this shell
-                                help:          Display this help message, or help for a specific command
-                                    Usage: help <command>
-                                history:       Show history of previous commands
-                                list:          list custom objects
-                                plugin:        adds a plugin to the shell
-                                    Usage: plugin [args]
-                                    args:
-                                    -a, --artifact	maven artifact id for an artifact in group com.force.cliforce.plugin(required)
-                                    -v, --version	maven artifact version for the specified artifact, if unspecified RELEASE meta-version is used
+    exit:          Exit this shell
+    help:          Display this help message, or help for a specific command
+        Usage: help <command>
+    history:       Show history of previous commands
+    list:          list custom objects
+    plugin:        adds a plugin to the shell
+        Usage: plugin [args]
+        args:
+        -a, --artifact	maven artifact id for an artifact in group com.force.cliforce.plugin(required)
+        -v, --version	maven artifact version for the specified artifact, if unspecified RELEASE meta-version is used
 
-                                push:          push an application to VMForce.
-                                    Usage: push [args]
-                                    args:
-                                    -i, --instances	Number of instances to deploy (default 1)
-                                    -m, --mem	Memory to allocate to the app, in MB (default 512)
-                                    -n, --name	Name of the Application to push(required)
-                                    -p, --path	Local path to the deployable app(required)
+    push:          push an application to VMForce.
+        Usage: push [args]
+        args:
+        -i, --instances	Number of instances to deploy (default 1)
+        -m, --mem	Memory to allocate to the app, in MB (default 512)
+        -n, --name	Name of the Application to push(required)
+        -p, --path	Local path to the deployable app(required)
 
-                                restart:       restart an application
-                                    Usage: restart <the name of the application>
+    restart:       restart an application
+        Usage: restart <the name of the application>
 
-                                sh:            Execute the rest of the command on the OS
-                                start:         start an application
-                                    Usage: start <the name of the application>
+    sh:            Execute the rest of the command on the OS
+    start:         start an application
+        Usage: start <the name of the application>
 
-                                stop:          Stop an application
-                                    Usage: stop <the name of the application>
+    stop:          Stop an application
+        Usage: stop <the name of the application>
 
-                                unplug:        removes a plugin and it's commands from the shell
+    unplug:        removes a plugin and it's commands from the shell
 
 
 
