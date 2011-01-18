@@ -7,7 +7,7 @@ import com.beust.jcommander.ParameterException;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -58,12 +58,12 @@ public abstract class JCommand<T> implements Command {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        Map<String, String> opts = new HashMap<String, String>();
+        Map<String, String> opts = new LinkedHashMap<String, String>();
         for (ParameterDescription parameterDescription : j.getParameters()) {
             opts.put(parameterDescription.getNames(), parameterDescription.getDescription() + (parameterDescription.getParameter().required() ? "(required)" : ""));
         }
         if (mainParam != null) {
-            opts.put("<main>", mainParam);
+            opts.put("<main>", "<" + mainParam + ">");
         }
 
 
@@ -72,7 +72,16 @@ public abstract class JCommand<T> implements Command {
 
     public String usage(String description) {
         Map<String, String> commandOptions = getCommandOptions();
-        StringBuilder usage = new StringBuilder(description).append("\n\tUsage: ").append(name()).append("\n");
+        String main = commandOptions.remove("<main>");
+        if (main == null) main = "";
+        StringBuilder usage = new StringBuilder(description).append("\n\tUsage: ").append(name());
+        boolean args = false;
+        if (commandOptions.size() > 0) {
+            args = true;
+        }
+        if (args) usage.append(" [args]");
+        usage.append(" ").append(main).append("\n");
+        if (args) usage.append("\targs:\n");
         for (Map.Entry<String, String> e : commandOptions.entrySet()) {
             usage.append("\t").append(e.getKey()).append("\t").append(e.getValue()).append("\n");
         }

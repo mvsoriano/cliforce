@@ -3,9 +3,7 @@ package com.force.cliforce.command
 import com.sforce.soap.metadata.ListMetadataQuery
 import com.vmforce.client.bean.ApplicationInfo
 import collection.JavaConversions._
-import com.beust.jcommander.{JCommander, Parameter}
-import org.slf4j.LoggerFactory
-import ch.qos.logback.classic.{Logger, Level}
+import com.beust.jcommander.Parameter
 import com.force.cliforce.{CLIForce, JCommand, CommandContext, Command}
 import java.util.{Collections, ArrayList}
 import com.vmforce.client.bean.ApplicationInfo.{StagingBean, ModelEnum, StackEnum, ResourcesBean}
@@ -129,64 +127,53 @@ class PushCommand extends JCommand[PushArgs] {
   def name = "push"
 }
 
-class UpdateArgs {
-  @Parameter(names = Array("-n", "--name"), description = "The name of the app to update", required = true)
-  var appName = null;
+
+class AppArg {
+  @Parameter(description = "the name of the application", required = true)
+  private var apps = new ArrayList[String]
+
+  def app = apps(0);
 }
 
-class StartCommand extends Command {
+class StartCommand extends JCommand[AppArg] {
 
-  object Arg {
-    @Parameter(description = "The app to start", required = true)
-    var app = new ArrayList[String]
-  }
 
-  def execute(ctx: CommandContext) = {
-    new JCommander(Arg, ctx.getCommandArguments.toArray: _*)
-    ctx.getCommandWriter.println("Starting %s".format(Arg.app.get(0)))
-    ctx.getVmForceClient.startApplication(Arg.app.get(0))
+  def executeWithArgs(ctx: CommandContext, arg: AppArg) = {
+    ctx.getCommandWriter.println("Starting %s".format(arg.app))
+    ctx.getVmForceClient.startApplication(arg.app)
     ctx.getCommandWriter.println("done")
   }
 
-  def describe = "start an application"
+  def describe = usage("start an application")
 
   def name = "start"
 }
 
-class StopCommand extends Command {
+class StopCommand extends JCommand[AppArg] {
 
-  object Arg {
-    @Parameter(description = "The app to stop", required = true)
-    var app = new ArrayList[String]
-  }
 
-  def execute(ctx: CommandContext) = {
-    new JCommander(Arg, ctx.getCommandArguments.toArray: _*)
-    ctx.getCommandWriter.println("Stopping %s".format(Arg.app.get(0)))
-    ctx.getVmForceClient.stopApplication(Arg.app.get(0))
+  def executeWithArgs(ctx: CommandContext, arg: AppArg) = {
+    ctx.getCommandWriter.println("Stopping %s".format(arg.app))
+    ctx.getVmForceClient.stopApplication(arg.app)
     ctx.getCommandWriter.println("done")
   }
 
-  def describe = "Stop an application"
+
+  def describe = usage("Stop an application")
 
   def name = "stop"
 }
 
-class RestartCommand extends Command {
+class RestartCommand extends JCommand[AppArg] {
 
-  object Arg {
-    @Parameter(description = "The app to restart", required = true)
-    var app = new ArrayList[String]
-  }
 
-  def execute(ctx: CommandContext) = {
-    new JCommander(Arg, ctx.getCommandArguments.toArray: _*)
-    ctx.getCommandWriter.println("Restarting %s".format(Arg.app.get(0)))
-    ctx.getVmForceClient.restartApplication(Arg.app.get(0))
+  def executeWithArgs(ctx: CommandContext, arg: AppArg) = {
+    ctx.getCommandWriter.println("Restarting %s".format(arg.app))
+    ctx.getVmForceClient.restartApplication(arg.app)
     ctx.getCommandWriter.println("done")
   }
 
-  def describe = "restart an application"
+  def describe = usage("restart an application")
 
   def name = "restart"
 }
@@ -211,21 +198,16 @@ class DebugCommand(force: CLIForce) extends JCommand[DebugArgs] {
   }
 }
 
-class DeleteAppCommand extends Command {
+class DeleteAppCommand extends JCommand[AppArg] {
 
-  object Arg {
-    @Parameter(description = "The app to delete", required = true)
-    var app = new ArrayList[String]
-  }
 
-  def execute(ctx: CommandContext) = {
-    new JCommander(Arg, ctx.getCommandArguments.toArray: _*)
-    ctx.getCommandWriter.println("Deleting %s".format(Arg.app.get(0)))
-    ctx.getVmForceClient.deleteApplication(Arg.app.get(0))
+  def executeWithArgs(ctx: CommandContext, arg: AppArg) = {
+    ctx.getCommandWriter.println("Deleting %s".format(arg.app))
+    ctx.getVmForceClient.deleteApplication(arg.app)
     ctx.getCommandWriter.println("done")
   }
 
-  def describe = "deletes an application from vmforce"
+  def describe = usage("deletes an application from vmforce")
 
   def name = "delete"
 }
