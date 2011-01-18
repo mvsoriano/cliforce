@@ -134,12 +134,12 @@ public class DefaultPlugin implements Plugin {
 
     public static class PluginArgs {
 
-        @Parameter(names = {"-a", "--artifact"}, description = "maven artifact id for an artifact in group com.force.cliforce.plugin")
+        @Parameter(names = {"-a", "--artifact"}, description = "maven artifact id for an artifact in group com.force.cliforce.plugin", required = true)
         public String artifact;
 
         public String group = "com.force.cliforce.plugin";
 
-        @Parameter(names = {"-v", "--version"}, description = "maven artifact version for the specified artifact")
+        @Parameter(names = {"-v", "--version"}, description = "maven artifact version for the specified artifact, if unspecified RELEASE meta-version is used")
         public String version;
 
     }
