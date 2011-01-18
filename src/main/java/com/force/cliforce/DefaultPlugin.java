@@ -246,7 +246,7 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public String describe() {
-            return "removes a plugin from the shell";
+            return "removes a plugin and it's commands from the shell";
         }
 
         @Override

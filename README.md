@@ -44,7 +44,7 @@ This tool supports the following commands.
                                 stop:          Stop an application
                                     Usage: stop <the name of the application>
 
-                                unplug:        removes a plugin from the shell
+                                unplug:        removes a plugin and it's commands from the shell
 
 
 
