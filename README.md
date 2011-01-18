@@ -123,4 +123,19 @@ This tool is scriptable, you simply need to redirect input from a file
 
 os>./cliforce < mycliforceScript.cli
 
+#Deployment
+
+Due to the way that cliforce tests bootstrapping itself, you must run mvn -DskipTests=true install once when you increment the version before the test will
+ pass. You will most likely do this if you are deploying a new version.
+
+        <increment pom version>
+        git commit -a -m 'increment version for release'
+        git tag -a <version-tag> -m 'version-tag'
+        mvn -DskipTests=true install
+        mvn deploy
+        <increment to next snapshot>
+        git commit -a -m 'increment to next snapshot'
+        mvn -DskipTests=true install
+
+
 
