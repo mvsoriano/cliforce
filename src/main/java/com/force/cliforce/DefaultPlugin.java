@@ -6,10 +6,13 @@ import com.force.cliforce.command.dbclean.DBClean;
 import com.force.cliforce.dependency.DependencyResolver;
 import com.force.cliforce.dependency.OutputAdapter;
 
-import static java.lang.String.format;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.*;
+
+import static java.lang.String.format;
 
 
 public class DefaultPlugin implements Plugin {
@@ -72,7 +75,7 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public String describe() {
-            return "Display this help message: Usage: help <command>";
+            return "Display this help message, or help for a specific command\n\tUsage: help <command>";
         }
 
         @Override

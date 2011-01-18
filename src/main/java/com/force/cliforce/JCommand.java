@@ -7,8 +7,8 @@ import com.beust.jcommander.ParameterException;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
-import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * base class for Commands that use JCommander to do argument parsing, and JLine completion
@@ -58,7 +58,7 @@ public abstract class JCommand<T> implements Command {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        Map<String, String> opts = new LinkedHashMap<String, String>();
+        Map<String, String> opts = new TreeMap<String, String>();
         for (ParameterDescription parameterDescription : j.getParameters()) {
             opts.put(parameterDescription.getNames(), parameterDescription.getDescription() + (parameterDescription.getParameter().required() ? "(required)" : ""));
         }
