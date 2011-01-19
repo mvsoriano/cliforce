@@ -95,7 +95,7 @@ public class DefaultPlugin implements Plugin {
                 String key = ctx.getCommandArguments()[0];
                 Command c = force.commands.get(key);
                 if (c == null) {
-                    ctx.getCommandWriter().printf("No such command: %s", key);
+                    ctx.getCommandWriter().printf("No such command: %s\n", key);
                 } else {
                     ctx.getCommandWriter().printf("%s:\t\t\t %s\n", key, c.describe());
                 }

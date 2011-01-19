@@ -18,8 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import javax.servlet.ServletException;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.util.*;
 
@@ -38,7 +37,7 @@ public class CLIForce {
     private Completor completor = new SimpleCompletor(EXITCMD);
     private volatile boolean debug = false;
     private ForceServiceConnector connector;
-    private CommandWriter writer = new Writer();
+    private CommandWriter writer;
     private ConnectorConfig config;
     private RestTemplateConnector restConnector;
 
@@ -57,7 +56,9 @@ public class CLIForce {
 
         CLIForce cliForce = new CLIForce(env);
         try {
-            cliForce.init();
+            cliForce.init(System.in, new PrintWriter(
+                    new OutputStreamWriter(System.out,
+                            System.getProperty("jline.WindowsTerminal.output.encoding", System.getProperty("file.encoding"))), true));
             if (args.length == 0) {
                 cliForce.run();
             } else {
@@ -97,7 +98,7 @@ public class CLIForce {
         rootLogger.setLevel(level);
     }
 
-    public void init() throws IOException, ConnectionException, ServletException {
+    public void init(InputStream in, PrintWriter out) throws IOException, ConnectionException, ServletException {
         SLF4JBridgeHandler.install();
         URL purl = new URL(com.sforce.soap.partner.Connector.END_POINT);
         config = new ConnectorConfig();
@@ -120,8 +121,10 @@ public class CLIForce {
         for (Command command : def.getCommands()) {
             commands.put(command.name(), command);
         }
-        reader = new ConsoleReader();
+
+        reader = new ConsoleReader(in, out);
         reader.addCompletor(completor);
+        writer = new Writer(out);
         File hist = new File(System.getProperty("user.home") + "/.force_history");
 
         if (!hist.exists()) {
@@ -129,10 +132,10 @@ public class CLIForce {
                 if (hist.createNewFile()) {
                     reader.setHistory(new History(hist));
                 } else {
-                    System.out.println("cant create history file");
+                    out.println("cant create history file");
                 }
             } catch (IOException e) {
-                System.out.println("cant create history file");
+                out.println("cant create history file");
             }
 
         } else {
@@ -274,25 +277,32 @@ public class CLIForce {
         }
     }
 
-    public static class Writer implements CommandWriter {
+    public class Writer implements CommandWriter {
+
+        private PrintWriter out;
+
+        public Writer(PrintWriter out) {
+            this.out = out;
+        }
+
         @Override
         public void printf(String format, Object... args) {
-            System.out.printf(format, args);
+            out.printf(format, args);
         }
 
         @Override
         public void print(String msg) {
-            System.out.print(msg);
+            out.print(msg);
         }
 
         @Override
         public void println(String msg) {
-            System.out.println(msg);
+            out.println(msg);
         }
 
         @Override
         public void printStackTrace(Exception e) {
-            e.printStackTrace(System.out);
+            e.printStackTrace(out);
         }
     }
 

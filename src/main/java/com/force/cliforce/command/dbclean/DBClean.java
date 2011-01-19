@@ -28,7 +28,7 @@ public class DBClean implements Command {
 
     public void execute(CommandContext ctx) throws IOException, ConnectionException {
 
-        System.out.println("Connected to org " + ctx.getPartnerConnection().getUserInfo().getOrganizationId());
+        ctx.getCommandWriter().println("Connected to org " + ctx.getPartnerConnection().getUserInfo().getOrganizationId());
 
         DescribeGlobalResult objs = ctx.getPartnerConnection().describeGlobal();
         MDPackage destructiveChanges = new MDPackage();
@@ -89,11 +89,11 @@ public class DBClean implements Command {
         }
         DeployResult dr = ctx.getMetadataConnection().checkDeployStatus(ar.getId());
         if (dr.getSuccess()) {
-            System.out.println("Operation succeeded.");
+            ctx.getCommandWriter().println("Operation succeeded.");
         } else {
-            System.out.println("Operation failed. Messages:");
+            ctx.getCommandWriter().println("Operation failed. Messages:");
             for (DeployMessage dm : dr.getMessages()) {
-                System.out.println("  " + dm.getFullName() + ": " + dm.getProblem());
+                ctx.getCommandWriter().println("  " + dm.getFullName() + ": " + dm.getProblem());
             }
         }
 
