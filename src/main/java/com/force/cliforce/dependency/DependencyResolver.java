@@ -28,7 +28,6 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 public class DependencyResolver {
 
@@ -87,10 +86,14 @@ public class DependencyResolver {
             Dependency dependency =
                     new Dependency(new DefaultArtifact(groupId + ":" + artifactId + ":" + version), "runtime");
             RemoteRepository central = new RemoteRepository("central", "default", "http://repo1.maven.org/maven2/");
+            RemoteRepository force = new RemoteRepository("force", "default", "http://repo.t.salesforce.com/archiva/repository/releases");
+            RemoteRepository forcesnap = new RemoteRepository("forcesnap", "default", "http://repo.t.salesforce.com/archiva/repository/snapshots");
 
             CollectRequest collectRequest = new CollectRequest();
             collectRequest.setRoot(dependency);
             collectRequest.addRepository(central);
+            collectRequest.addRepository(force);
+            collectRequest.addRepository(forcesnap);
             DependencyNode node = repositorySystem.collectDependencies(session, collectRequest).getRoot();
 
             repositorySystem.resolveDependencies(session, node, null);
