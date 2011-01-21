@@ -103,7 +103,7 @@ Put the line (replacing <VERSION> with your version)
 
 in a file called cliforce in your ~/bin directory and do
 
-$ chmod u+x ~/bin/cliforce
+	$ chmod u+x ~/bin/cliforce
 
 This allows you to launch cliforce in any directory by typing cliforce at the command prompt.
 
