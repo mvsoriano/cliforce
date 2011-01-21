@@ -45,7 +45,7 @@ public class ForceEnv {
 					url = new Scanner(new File(envFile)).useDelimiter("\\Z").next().trim();
 				}
 			}
-				
+			//expects force://<host>;user=<user>;password=<password>
 			StringTokenizer t = new StringTokenizer(url);
 			Map<String,String> map = new HashMap<String,String>();
 
