@@ -1,4 +1,4 @@
-# Command line tool for Force.com
+# Command line tool for Force.com - BETA
 
 This tool supports the following commands.
 
@@ -106,6 +106,9 @@ in a file called cliforce in your ~/bin directory and do
 $ chmod u+x ~/bin/cliforce
 
 This allows you to launch cliforce in any directory by typing cliforce at the command prompt.
+
+You can also use a really neat trick documented in [this gist](https://gist.github.com/782862), (based on [this gist](https://gist.github.com/782523) by Sam Pullara)
+to create a single executable file by combining a bash script and the jar.
 
 ##Windows
 
