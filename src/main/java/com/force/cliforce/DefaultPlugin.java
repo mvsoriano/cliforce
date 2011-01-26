@@ -222,6 +222,7 @@ public class DefaultPlugin implements Plugin {
                         Plugin ignore = iterator.next();
                         output.printf("only one plugin per artifact is supported, %s will not be registered\n", ignore.getClass().getName());
                     }
+                    loader.reload();
                     force.reloadCompletions();
                 } finally {
                     Thread.currentThread().setContextClassLoader(curr);
