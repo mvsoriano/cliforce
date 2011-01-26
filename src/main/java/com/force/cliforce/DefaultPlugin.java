@@ -137,7 +137,7 @@ public class DefaultPlugin implements Plugin {
 
     public static class PluginArgs {
 
-        @Parameter(names = {"-a", "--artifact"}, description = "maven artifact id for an artifact in group com.force.cliforce.plugin", required = true)
+        @Parameter(names = {"-a", "--artifact"}, description = "maven artifact id for an artifact in group com.force.cliforce.plugin")
         public String artifact;
 
         public String group = "com.force.cliforce.plugin";
@@ -182,6 +182,10 @@ public class DefaultPlugin implements Plugin {
                 output.println("Done.");
             } else {
 
+                if (force.plugins.containsKey(arg.artifact)) {
+                    output.printf("Plugin %s is already installed, please execute 'unplug %s' before running this command", arg.artifact, arg.artifact);
+                    return;
+                }
 
                 ClassLoader curr = Thread.currentThread().getContextClassLoader();
                 OutputAdapter oa = new OutputAdapter() {
@@ -213,6 +217,8 @@ public class DefaultPlugin implements Plugin {
                     Plugin p = iterator.next();
                     List<Command> commands = p.getCommands();
                     force.plugins.put(arg.artifact, p);
+                    force.installedPlugins.setProperty(arg.artifact, arg.version);
+                    force.saveInstalledPlugins(output);
                     output.printf("Adding Plugin: %s (%s)\n", arg.artifact, p.getClass().getName());
                     for (Command command : commands) {
                         output.printf("\tadds command %s:%s (%s)\n", arg.artifact, command.name(), command.getClass().getName());
@@ -263,6 +269,8 @@ public class DefaultPlugin implements Plugin {
                         ctx.getCommandWriter().printf("\tremoved command: %s\n", command.name());
                     }
                     force.reloadCompletions();
+                    force.installedPlugins.remove(arg);
+                    force.saveInstalledPlugins(ctx.getCommandWriter());
                     ctx.getCommandWriter().println("Done");
                 }
 

@@ -30,6 +30,7 @@ public class CLIForce {
     public static final String EXITCMD = "exit";
     /*package*/ Map<String, Command> commands = new TreeMap<String, Command>();
     /*package*/ Map<String, Plugin> plugins = new TreeMap<String, Plugin>();
+    /*package*/ Properties installedPlugins = new Properties();
     /*package*/ ForceEnv forceEnv;
     /*package*/ ConsoleReader reader;
     private CommandReader commandReader;
@@ -144,7 +145,40 @@ public class CLIForce {
         reloadCompletions();
         reader.setBellEnabled(false);
         commandReader = new Reader();
+        loadInstalledPlugins();
+    }
 
+    private void loadInstalledPlugins() throws FileNotFoundException {
+        DefaultPlugin.PluginCommand p = (DefaultPlugin.PluginCommand) commands.get("plugin");
+        File plugins = new File(System.getProperty("user.home") + "/.force_plugins");
+        try {
+            if (!plugins.exists() && !plugins.createNewFile()) {
+                //silent or error
+                return;
+            }
+            installedPlugins.load(new FileInputStream(plugins));
+            for (String artifact : installedPlugins.stringPropertyNames()) {
+                String version = installedPlugins.getProperty(artifact);
+                DefaultPlugin.PluginArgs args = new DefaultPlugin.PluginArgs();
+                args.artifact = artifact;
+                args.version = version;
+                p.executeWithArgs(getContext(new String[0]), args);
+            }
+        } catch (IOException e) {
+            //silent or error
+            return;
+        }
+    }
+
+    void saveInstalledPlugins(CommandWriter out) {
+        File plugins = new File(System.getProperty("user.home") + "/.force_plugins");
+        if (plugins.exists()) {
+            try {
+                installedPlugins.store(new FileOutputStream(plugins), "CLIForce plugins");
+            } catch (IOException e) {
+                out.println("error persisting installation of plugin, you will have to re-plugin next time you run cliforce");
+            }
+        }
     }
 
     void reloadCompletions() {
