@@ -43,6 +43,7 @@ public class DefaultPlugin implements Plugin {
                 new PluginCommand(force),
                 new RequirePluginCommand(force),
                 new UnplugCommand(force),
+                new NewProjectCommand(),
                 new Command() {
                     @Override
                     public String name() {
