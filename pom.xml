@@ -57,7 +57,19 @@
             <name>Scala-Tools Dependencies Repository for Releases</name>
             <url>http://scala-tools.org/repo-releases</url>
         </repository>
+        <repository>
+            <id>akathist-repository</id>
+            <name>Akathist Repository</name>
+            <url>http://www.9stmaryrd.com/maven</url>
+        </repository>
     </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>akathist-repository</id>
+            <name>Akathist Repository</name>
+            <url>http://www.9stmaryrd.com/maven</url>
+        </pluginRepository>
+    </pluginRepositories>
     <distributionManagement>
         <repository>
             <id>force.repo</id>
@@ -336,6 +348,80 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!--<plugin>
+                <groupId>com.akathist.maven.plugins.launch4j</groupId>
+                <artifactId>launch4j-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>l4j-cli</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>launch4j</goal>
+                        </goals>
+                        <configuration>
+                            <headerType>console</headerType>
+                            <outfile>target/cliforce.exe</outfile>
+                            <jar>target/cliforce-${project.version}-boot.jar</jar>
+                            <errTitle>CLIForce</errTitle>
+                            <classPath>
+                                <mainClass>com.force.cliforce.Boot</mainClass>
+                                <addDependencies>false</addDependencies>
+                            </classPath>
+                            <jre>
+                                <minVersion>1.6.0</minVersion>
+                            </jre>
+                            <versionInfo>
+                                <fileVersion>1.1.1.1</fileVersion>
+                                <txtFileVersion>cliforce</txtFileVersion>
+                                <fileDescription>cliforce description</fileDescription>
+                                <copyright>cliforce copyright</copyright>
+                                <productVersion>1.1.1.1</productVersion>
+                                <txtProductVersion>CLIFORCE ${project.version}</txtProductVersion>
+                                <productName>Cliforce</productName>
+                                <internalName>Cliforce</internalName>
+                                <originalFilename>cliforce.exe</originalFilename>
+                            </versionInfo>
+                            <messages>
+                                <startupErr>sttext</startupErr>
+                                <bundledJreErr>bjretext</bundledJreErr>
+                                <jreVersionErr>jvtext</jreVersionErr>
+                                <launcherErr>lerrtext</launcherErr>
+                            </messages>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>-->
+            <plugin>
+               <groupId>org.apache.maven.plugins</groupId>
+               <artifactId>maven-eclipse-plugin</artifactId>
+               <version>2.8</version>
+               <!-- see http://maven.apache.org/plugins/maven-eclipse-plugin/eclipse-mojo.html for more information -->
+               <configuration>
+                 <downloadSources>true</downloadSources>
+                 <downloadJavadocs>true</downloadJavadocs>
+                 <projectnatures>
+                   <projectnature>ch.epfl.lamp.sdt.core.scalanature</projectnature>
+                   <projectnature>org.eclipse.jdt.core.javanature</projectnature>
+                 </projectnatures>
+                 <buildcommands>
+                   <buildcommand>ch.epfl.lamp.sdt.core.scalabuilder</buildcommand>
+                 </buildcommands>
+                 <classpathContainers>
+                   <classpathContainer>ch.epfl.lamp.sdt.launching.SCALA_CONTAINER</classpathContainer>
+                   <classpathContainer>org.eclipse.jdt.launching.JRE_CONTAINER</classpathContainer>
+                 </classpathContainers>
+                 <excludes>
+                   <exclude>org.scala-lang:scala-library</exclude>
+                   <exclude>org.scala-lang:scala-compiler</exclude>
+                 </excludes>
+                 <sourceIncludes>
+                   <sourceInclude>**/*.scala</sourceInclude>
+                   <sourceInclude>**/*.java</sourceInclude>
+                 </sourceIncludes>
+               </configuration>
+             </plugin>
+
         </plugins>
     </build>
 </project>
