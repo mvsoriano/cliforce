@@ -227,6 +227,9 @@ public class CLIForce {
         try {
             Thread.currentThread().setContextClassLoader(cmd.getClass().getClassLoader());
             cmd.execute(getContext(args));
+        } catch (ExitException e) {
+            writer.println("Exit Exception thrown, exiting");
+            throw e;
         } catch (Exception e) {
             writer.printf("Exception while executing command %s\n", cmdKey);
             writer.printStackTrace(e);

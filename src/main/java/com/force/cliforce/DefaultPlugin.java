@@ -41,6 +41,7 @@ public class DefaultPlugin implements Plugin {
                 new ConnectionInfoCommand(force),
                 new HelpCommand(force),
                 new PluginCommand(force),
+                new RequirePluginCommand(force),
                 new UnplugCommand(force),
                 new Command() {
                     @Override
@@ -239,6 +240,47 @@ public class DefaultPlugin implements Plugin {
     }
 
 
+    public static class RequirePluginCommand extends JCommand<PluginArgs> {
+
+        private CLIForce force;
+
+        public RequirePluginCommand(CLIForce it) {
+            force = it;
+        }
+
+        @Override
+        public String name() {
+            return "require";
+        }
+
+        @Override
+        public String describe() {
+            return usage("exit the shell if a specified version of a plugin is not installed");
+        }
+
+        @Override
+        public PluginArgs getArgs() {
+            return new PluginArgs();
+        }
+
+        @Override
+        public void executeWithArgs(final CommandContext ctx, PluginArgs arg) {
+            CommandWriter output = ctx.getCommandWriter();
+            String version = force.installedPlugins.getProperty(arg.artifact);
+            if (version == null) {
+                ctx.getCommandWriter().printf("Required Plugin %s version %s is not installed, exiting\n", arg.artifact, arg.version);
+                throw new ExitException("Required Plugin Not Installed");
+            }
+            if (!version.equals(arg.version)) {
+                //this will be funny about RELEASE for now...best practice use and require explicit versions
+                ctx.getCommandWriter().printf("incorrect version %s of Required Plugin %s version %s is not installed, exiting\n", version, arg.artifact, arg.version);
+                throw new ExitException("Required Plugin Not Installed");
+            }
+
+        }
+    }
+
+
     public static class UnplugCommand implements Command {
         private CLIForce force;
 
@@ -278,6 +320,7 @@ public class DefaultPlugin implements Plugin {
             }
         }
     }
+
 
     public static class HistoryCommand implements Command {
 
