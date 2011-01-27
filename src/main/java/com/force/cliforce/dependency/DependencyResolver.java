@@ -78,17 +78,22 @@ public class DependencyResolver {
 
     private URLClassLoader createClassLoaderInternal(String groupId, String artifactId, String version, ClassLoader parent, OutputAdapter out) {
         try {
+
+
             MavenRepositorySystemSession session = new MavenRepositorySystemSession();
             String local = System.getProperty("user.home") + "/.m2/repository/";
             LocalRepository localRepo = new LocalRepository(local);
             session.setLocalRepositoryManager(repositorySystem.newLocalRepositoryManager(localRepo));
 
-            Dependency dependency =
-                    new Dependency(new DefaultArtifact(groupId + ":" + artifactId + ":" + version), "runtime");
+            DefaultArtifact defaultArtifact = new DefaultArtifact(groupId + ":" + artifactId + ":" + version);
+
             RemoteRepository central = new RemoteRepository("central", "default", "http://repo1.maven.org/maven2/");
             RemoteRepository force = new RemoteRepository("force", "default", "http://repo.t.salesforce.com/archiva/repository/releases");
             RemoteRepository forcesnap = new RemoteRepository("forcesnap", "default", "http://repo.t.salesforce.com/archiva/repository/snapshots");
 
+
+            Dependency dependency =
+                    new Dependency(defaultArtifact, "runtime");
             CollectRequest collectRequest = new CollectRequest();
             collectRequest.setRoot(dependency);
             collectRequest.addRepository(central);

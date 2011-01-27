@@ -143,7 +143,7 @@ public class DefaultPlugin implements Plugin {
         public String group = "com.force.cliforce.plugin";
 
         @Parameter(names = {"-v", "--version"}, description = "maven artifact version for the specified artifact, if unspecified RELEASE meta-version is used")
-        public String version;
+        public String version = "RELEASE";
 
     }
 
