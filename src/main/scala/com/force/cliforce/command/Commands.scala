@@ -8,6 +8,7 @@ import com.force.cliforce.{CLIForce, JCommand, CommandContext, Command}
 import java.util.{Collections, ArrayList}
 import com.vmforce.client.bean.ApplicationInfo.{StagingBean, ModelEnum, StackEnum, ResourcesBean}
 import com.force.cliforce.DefaultPlugin.ShellCommand
+import java.io.IOException
 
 class AppsCommand extends Command {
   def execute(ctx: CommandContext) = {
@@ -283,6 +284,7 @@ class NewProjectCommand extends JCommand[NewProjectArgs] {
   def executeWithArgs(ctx: CommandContext, args: NewProjectArgs) = {
     val shell = new ShellCommand
     val cmd = Array("mvn", "archetype:generate", "-DinteractiveMode=false",
+      "-DarchetypeCatalog=http://repo.t.salesforce.com/archiva/repository/snapshots/archetype-catalog.xml",
       "-DarchetypeGroupId=" + args.getGroupArtifact._1,
       "-DarchetypeArtifactId=" + args.getGroupArtifact._2,
       "-DarchetypeVersion=0.0.1-SNAPSHOT",
@@ -292,8 +294,14 @@ class NewProjectCommand extends JCommand[NewProjectArgs] {
       "-Dpackagename=" + args.getpkg
     )
     ctx.getCommandWriter.println("Executing:" + cmd.reduceLeft((acc, str) => acc + " " + str))
-    shell.execute(new NewProjectContextWrapper(ctx, cmd));
-
+    try {
+      shell.execute(new NewProjectContextWrapper(ctx, cmd));
+    } catch {
+      case ioe: IOException => {
+        ctx.getCommandWriter.println("It appears you either dont have maven installed or on your path. Both are required to run this command.")
+        ctx.getCommandWriter.println(ioe.getMessage)
+      }
+    }
   }
 
   def describe = usage("creates a new vmforce maven project from a maven archetype")
