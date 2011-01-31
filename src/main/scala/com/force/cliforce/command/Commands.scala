@@ -214,6 +214,52 @@ class DeleteAppCommand extends JCommand[AppArg] {
   def name = "delete"
 }
 
+
+class TailArg {
+  @Parameter(names = Array("-a", "--app"), description = "App on which to tail a file", required = true)
+  var app: String = null
+  @Parameter(names = Array("-i", "--instance"), description = "Instance on which to tail a file, default:0")
+  var instance: String = "0"
+  @Parameter(names = Array("-p", "--path"), description = "path to file", required = true)
+  var path: String = null
+
+}
+
+class TailFileCommand extends JCommand[TailArg] {
+  def name = "tail"
+
+  def describe = usage("tail a file within a given app's instance")
+
+  def executeWithArgs(ctx: CommandContext, args: TailArg) = {
+    val tailer = ctx.getVmForceClient.getTailFile(args.app, args.instance, args.path);
+    @volatile var go = true;
+    var dot = false;
+    val r = new Runnable() {
+      def run = {
+        while (go) {
+          var tail = tailer.tail()
+          if (tail == null || tail.length == 0) {
+            ctx.getCommandWriter.print(".")
+            dot = true;
+          } else {
+            if (dot) {
+              ctx.getCommandWriter.println(".")
+            }
+            ctx.getCommandWriter.print(tail)
+          }
+          Thread.sleep(2000)
+        }
+      }
+    }
+    val thread = new Thread(r);
+    ctx.getCommandWriter.printf("Tailing %s on app: %s instance %s, press enter to interrupt\n", args.path, args.app, args.instance);
+    thread.start
+    ctx.getCommandReader.readLine("")
+    go = false
+    thread.join
+  }
+}
+
 //  %w[logs/stderr.log logs/stdout.log logs/startup.log]
 //cc_url = "#{droplets_uri}/#{appname}/instances/#{instance}/files/#{path}"
 //cc_url.gsub!('files//', 'files/')

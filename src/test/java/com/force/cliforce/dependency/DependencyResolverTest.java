@@ -1,6 +1,7 @@
 package com.force.cliforce.dependency;
 
-import org.junit.Test;
+
+import org.testng.annotations.Test;
 
 public class DependencyResolverTest {
 

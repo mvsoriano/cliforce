@@ -36,6 +36,7 @@ public class DefaultPlugin implements Plugin {
                 new DeleteAppCommand(),
                 new DBClean(),
                 new BannerCommand(),
+                new TailFileCommand(),
                 new HistoryCommand(force),
                 new DebugCommand(force),
                 new ConnectionInfoCommand(force),

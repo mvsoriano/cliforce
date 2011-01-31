@@ -330,6 +330,7 @@ public class CLIForce {
         @Override
         public void print(String msg) {
             out.print(msg);
+            out.flush();
         }
 
         @Override
