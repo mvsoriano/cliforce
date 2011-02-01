@@ -2,8 +2,8 @@ package com.force.cliforce.plugin.template.command
 
 import java.io.IOException
 import com.beust.jcommander.Parameter
-import com.force.cliforce.{JCommand, CommandContext}
 import com.force.cliforce.DefaultPlugin.ShellCommand
+import com.force.cliforce.{Command, JCommand, CommandContext}
 
 
 class NewProjectArgs {
@@ -74,6 +74,16 @@ class NewProjectCommand extends JCommand[NewProjectArgs] {
 
   def describe = usage("creates a new vmforce maven project from a maven archetype")
 
-  def name = "newproj"
+  def name = "create"
+}
+
+class ListTemplatesCommand extends Command{
+  def name = "list"
+
+  def describe = "list the available project templates"
+
+  def execute(ctx: CommandContext) = {
+    ctx.getCommandWriter.println("single:  A simple maven based vmforce project using spring and jpa")
+  }
 }
 
