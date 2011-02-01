@@ -134,6 +134,7 @@ public class CLIForce {
             DefaultPlugin.PluginArgs args = new DefaultPlugin.PluginArgs();
             args.artifact = defalutPlugin;
             args.version = "LATEST";
+            args.internal = true;
             p.executeWithArgs(getContext(new String[0]), args);
         }
 

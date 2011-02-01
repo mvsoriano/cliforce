@@ -139,6 +139,9 @@ public class DefaultPlugin implements Plugin {
         @Parameter(names = {"-v", "--version"}, description = "maven artifact version for the specified artifact, if unspecified RELEASE meta-version is used")
         public String version = "RELEASE";
 
+        //internal plugins are reinstalled every restart, so we dont save their installation or output that they are being installed
+        public boolean internal = false;
+
     }
 
     public static class PluginCommand extends JCommand<PluginArgs> {
@@ -210,13 +213,19 @@ public class DefaultPlugin implements Plugin {
                     Plugin p = iterator.next();
                     List<Command> commands = p.getCommands();
                     force.plugins.put(arg.artifact, p);
-                    force.installedPlugins.setProperty(arg.artifact, arg.version);
-                    force.saveInstalledPlugins(output);
-                    output.printf("Adding Plugin: %s (%s)\n", arg.artifact, p.getClass().getName());
+                    if (!arg.internal) {
+                        force.installedPlugins.setProperty(arg.artifact, arg.version);
+                        force.saveInstalledPlugins(output);
+                        output.printf("Adding Plugin: %s (%s)\n", arg.artifact, p.getClass().getName());
+                    }
+
                     for (Command command : commands) {
-                        output.printf("\tadds command %s:%s (%s)\n", arg.artifact, command.name(), command.getClass().getName());
+                        if (!arg.internal) {
+                            output.printf("\tadds command %s:%s (%s)\n", arg.artifact, command.name(), command.getClass().getName());
+                        }
                         force.commands.put(arg.artifact + ":" + command.name(), command);
                     }
+
                     while (iterator.hasNext()) {
                         Plugin ignore = iterator.next();
                         output.printf("only one plugin per artifact is supported, %s will not be registered\n", ignore.getClass().getName());
