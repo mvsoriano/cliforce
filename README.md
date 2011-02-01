@@ -95,11 +95,11 @@ This command produces output like this:
 
 ##Unix
 
-Put the cliforce-<VERSION>.boot.jar in a directory on your path.
+Put the cliforce-boot<VERSION>.boot.jar in a directory on your path.
 In this example, your ~/bin directory.
 Put the line (replacing <VERSION> with your version)
 
-        java -Xmx512M -jar `dirname $0`/cliforce-<VERSION>.boot.jar "$@"
+        java -Xmx512M -jar `dirname $0`/cliforce-boot<VERSION>.boot.jar "$@"
 
 in a file called cliforce in your ~/bin directory and do
 
@@ -115,7 +115,7 @@ to create a single executable file by combining a bash script and the jar.
 Create a batch file cliforce.bat:
 
         set SCRIPT_DIR=%~dp0
-        java -Xmx512M -jar "%SCRIPT_DIR%cliforce-<VERSION>.boot.jar" %*
+        java -Xmx512M -jar "%SCRIPT_DIR%cliforce-boot<VERSION>.boot.jar" %*
 
 (replacing <VERSION> with your version)and put the jar in the same directory as the batch file.
 Put cliforce.bat on your path so that you can launch cliforce in any directory by typing cliforce at the command prompt.
