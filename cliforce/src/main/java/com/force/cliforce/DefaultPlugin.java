@@ -211,6 +211,7 @@ public class DefaultPlugin implements Plugin {
                         return;
                     }
                     Plugin p = iterator.next();
+
                     List<Command> commands = p.getCommands();
                     force.plugins.put(arg.artifact, p);
                     if (!arg.internal) {
@@ -224,6 +225,9 @@ public class DefaultPlugin implements Plugin {
                             output.printf("\tadds command %s:%s (%s)\n", arg.artifact, command.name(), command.getClass().getName());
                         }
                         force.commands.put(arg.artifact + ":" + command.name(), command);
+                        if (command instanceof ForceEnvAware) {
+                            ((ForceEnvAware) command).setForceEnv(force.forceEnv);
+                        }
                     }
 
                     while (iterator.hasNext()) {

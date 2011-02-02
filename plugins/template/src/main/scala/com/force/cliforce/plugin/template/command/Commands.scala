@@ -3,8 +3,7 @@ package com.force.cliforce.plugin.template.command
 import java.io.IOException
 import com.beust.jcommander.Parameter
 import com.force.cliforce.DefaultPlugin.ShellCommand
-import com.force.cliforce.{Command, JCommand, CommandContext}
-
+import com.force.cliforce._
 
 class NewProjectArgs {
 
@@ -48,7 +47,14 @@ class NewProjectContextWrapper(val ctx: CommandContext, val args: Array[String])
   def getMetadataConnection = ctx.getMetadataConnection
 }
 
-class NewProjectCommand extends JCommand[NewProjectArgs] {
+class NewProjectCommand extends JCommand[NewProjectArgs] with ForceEnvAware {
+
+  var forceEnv: ForceEnv = null
+
+  def setForceEnv(env: ForceEnv) = {
+    forceEnv = env
+  }
+
   def executeWithArgs(ctx: CommandContext, args: NewProjectArgs) = {
     val shell = new ShellCommand
     val cmd = Array("mvn", "archetype:generate", "-DinteractiveMode=false",
@@ -59,7 +65,8 @@ class NewProjectCommand extends JCommand[NewProjectArgs] {
       "-DgroupId=" + args.group,
       "-DartifactId=" + args.artifact,
       "-Dversion=" + args.version,
-      "-Dpackagename=" + args.getpkg
+      "-Dpackagename=" + args.getpkg,
+      "-DforceUrl=" + forceEnv.getUrl
     )
     ctx.getCommandWriter.println("Executing:" + cmd.reduceLeft((acc, str) => acc + " " + str))
     try {
@@ -77,7 +84,7 @@ class NewProjectCommand extends JCommand[NewProjectArgs] {
   def name = "create"
 }
 
-class ListTemplatesCommand extends Command{
+class ListTemplatesCommand extends Command {
   def name = "list"
 
   def describe = "list the available project templates"
