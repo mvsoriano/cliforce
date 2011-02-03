@@ -11,7 +11,7 @@ class AppArg {
   @Parameter(description = "the name of the application", required = true)
   private var apps = new ArrayList[String]
 
-  def app = apps.get(0);
+  def app = apps.get(0)
 }
 
 class AppsCommand extends Command {
@@ -51,10 +51,11 @@ class DeleteAppCommand extends JCommand[AppArg] {
 
 class PushArgs {
   @Parameter(
-    names = Array("-n", "--name"),
     description = "Name of the Application to push",
     required = true)
-  var name: String = null
+  var names = new ArrayList[String]
+
+  def name = names.get(0)
 
   @Parameter(
     names = Array("-m", "--mem"),
@@ -76,7 +77,7 @@ class PushArgs {
 class PushCommand extends JCommand[PushArgs] {
 
   def executeWithArgs(ctx: CommandContext, args: PushArgs) = {
-    ctx.getCommandWriter.printf("Pushing Application:%s", args.name)
+    ctx.getCommandWriter.printf("Pushing Application:%s\n", args.name)
     var appInfo = ctx.getVmForceClient.getApplication(args.name)
     if (appInfo == null) {
       ctx.getCommandWriter.printf("Application %s does not exist, creating\n", args.name)
@@ -94,7 +95,8 @@ class PushCommand extends JCommand[PushArgs] {
       ctx.getVmForceClient.createApplication(appInfo)
     }
     ctx.getVmForceClient.deployApplication(args.name, args.path)
-    ctx.getCommandWriter.printf("Application Deployed: %s\n", args.name)
+    ctx.getCommandWriter.printf("Application Deployed: http://%s.alpha.vmforce.com\n", args.name)
+    ctx.getCommandWriter.printf("Note that push does not start/restart apps, please run app:start %s or app:restart %s as appropriate\n", args.name, args.name)
   }
 
   def describe = {
@@ -150,8 +152,11 @@ class RestartCommand extends JCommand[AppArg] {
 
 
 class TailArg {
-  @Parameter(names = Array("-a", "--app"), description = "App on which to tail a file", required = true)
-  var app: String = null
+  @Parameter(description = "App on which to tail a file", required = true)
+  var apps = new ArrayList[String]
+
+  def app = apps.get(0)
+
   @Parameter(names = Array("-i", "--instance"), description = "Instance on which to tail a file, default:0")
   var instance: String = "0"
   @Parameter(names = Array("-p", "--path"), description = "path to file", required = true)

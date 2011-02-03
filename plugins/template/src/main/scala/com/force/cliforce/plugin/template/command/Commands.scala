@@ -4,13 +4,17 @@ import java.io.IOException
 import com.beust.jcommander.Parameter
 import com.force.cliforce.DefaultPlugin.ShellCommand
 import com.force.cliforce._
+import java.util.ArrayList
 
 class NewProjectArgs {
 
-  @Parameter(names = Array("-g", "--group"), required = true, description = "groupId of the project to create")
+  @Parameter(names = Array("-g", "--group"), description = "groupId of the project to create, defaults to org name(reversed, ie my.org = org.my).artifactId")
   var group: String = null
-  @Parameter(names = Array("-a", "--artifact"), required = true, description = "artifactId of the project to create")
-  var artifact: String = null
+  @Parameter(required = true, description = "artifactId/name of the project to create")
+  var artifacts = new ArrayList[String]
+
+  def artifact = artifacts.get(0)
+
   @Parameter(names = Array("-v", "--version"), description = "version of the project to create, default 1.0-SNAPSHOT")
   var version: String = "1.0-SNAPSHOT"
   @Parameter(names = Array("-p", "--package"), description = "root package for classes in project, defaults to groupId")
@@ -55,7 +59,15 @@ class NewProjectCommand extends JCommand[NewProjectArgs] with ForceEnvAware {
     forceEnv = env
   }
 
+  def getGroupFromEnv(artifact: String) = {
+    val pkg = forceEnv.getUser.substring(forceEnv.getUser.indexOf("@") + 1)
+    pkg.split("\\.").reverse.reduceLeft((acc, str) => acc + "." + str) + "." + artifact
+  }
+
   def executeWithArgs(ctx: CommandContext, args: NewProjectArgs) = {
+    if (args.group eq null) {
+      args.group = getGroupFromEnv(args.artifact)
+    }
     val shell = new ShellCommand
     val cmd = Array("mvn", "archetype:generate", "-DinteractiveMode=false",
       "-DarchetypeCatalog=http://repo.t.salesforce.com/archiva/repository/snapshots/archetype-catalog.xml",

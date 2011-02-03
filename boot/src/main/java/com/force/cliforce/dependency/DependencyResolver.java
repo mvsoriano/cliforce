@@ -36,6 +36,7 @@ public class DependencyResolver {
 
     Properties cliforceProperties;
     RepositorySystem repositorySystem;
+    String latestMetaVersion = "RELEASE";
 
     {
         try {
@@ -45,6 +46,10 @@ public class DependencyResolver {
             repositorySystem = locator.getService(RepositorySystem.class);
             cliforceProperties = new Properties();
             cliforceProperties.load(getClass().getClassLoader().getResourceAsStream("cliforce.properties"));
+            //If cliforce itself is a snapshot, use "LATEST" instead of "RELEASE" to find dependencies with no version
+            if (cliforceProperties.getProperty("version").contains("SNAPSHOT")) {
+                latestMetaVersion = "LATEST";
+            }
             createClassLoaderInternal(cliforceProperties.getProperty("groupId"), cliforceProperties.getProperty("artifactId"), cliforceProperties.getProperty("version"), Thread.currentThread().getContextClassLoader(), new Boot.SystemOutputAdapter());
         } catch (Exception e) {
             System.err.println("Exception configuring maven, cant continue");
@@ -154,7 +159,7 @@ public class DependencyResolver {
     }
 
     public ClassLoader createClassLoaderFor(String groupId, String artifactId, ClassLoader parent, OutputAdapter out) {
-        return createClassLoaderFor(groupId, artifactId, "RELEASE", parent, out);
+        return createClassLoaderFor(groupId, artifactId, latestMetaVersion, parent, out);
     }
 
     public ClassLoader createClassLoaderFor(String groupId, String artifactId, String version, ClassLoader parent, OutputAdapter out) {
