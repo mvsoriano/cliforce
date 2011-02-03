@@ -77,7 +77,7 @@ class PushArgs {
 class PushCommand extends JCommand[PushArgs] {
 
   def executeWithArgs(ctx: CommandContext, args: PushArgs) = {
-    ctx.getCommandWriter.printf("Pushing Application:%s\n", args.name)
+    ctx.getCommandWriter.printf("Pushing Application: %s\n", args.name)
     var appInfo = ctx.getVmForceClient.getApplication(args.name)
     if (appInfo == null) {
       ctx.getCommandWriter.printf("Application %s does not exist, creating\n", args.name)
@@ -93,10 +93,17 @@ class PushCommand extends JCommand[PushArgs] {
       staging.setStack(StackEnum.JT10.getRequestValue)
       appInfo.setStaging(staging)
       ctx.getVmForceClient.createApplication(appInfo)
+      appInfo = ctx.getVmForceClient.getApplication(args.name)
     }
     ctx.getVmForceClient.deployApplication(args.name, args.path)
-    ctx.getCommandWriter.printf("Application Deployed: http://%s.alpha.vmforce.com\n", args.name)
-    ctx.getCommandWriter.printf("Note that push does not start/restart apps, please run app:start %s or app:restart %s as appropriate\n", args.name, args.name)
+    ctx.getCommandWriter.printf("Application Deployed: %s\n", args.name)
+    ctx.getCommandWriter.printf("Instances: %s\n", appInfo.getInstances.toString)
+    ctx.getCommandWriter.printf("Memory: %sMB\n", appInfo.getResources.getMemory.toString)
+    appInfo.getUris.foreach{
+      ctx.getCommandWriter.printf("URI: http://%s\n", _)
+    }
+
+    ctx.getCommandWriter.printf("Note that push does not start/restart apps, please run 'app:start %s' or 'app:restart %s' as appropriate\n", args.name, args.name)
   }
 
   def describe = {
