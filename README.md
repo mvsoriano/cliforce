@@ -2,49 +2,69 @@
 
 This tool supports the following commands.
 
-    apps:          Lists deployed applications
-    banner:        Prints the banner
-    connection:    Shows the current connection info
-    dbclean:       Deletes all custom objects in the current org
-    debug:         Turns debug output on/off
+     app:apps:           lists deployed apps
+     app:delete:         deletes an application from vmforce
+        Usage: delete <the name of the application>
+
+     app:push:           push an application to VMForce.
+        Usage: push [args] <Name of the Application to push>
+        args:
+        -i, --instances	Number of instances to deploy (default 1)
+        -m, --mem	Memory to allocate to the app, in MB (default 512)
+        -p, --path	Local path to the deployable app(required)
+
+     app:restart:        restart an application
+        Usage: restart <the name of the application>
+
+     app:start:          start an application
+        Usage: start <the name of the application>
+
+     app:stop:           Stop an application
+        Usage: stop <the name of the application>
+
+     app:tail:           tail a file within a given app's instance
+        Usage: tail [args] <App on which to tail a file>
+        args:
+        -i, --instance	Instance on which to tail a file, default:0
+        -p, --path	path to file(required)
+
+     banner:             print the banner
+     connection:         Show the current connection info:
+     db:clean:           Deletes all custom objects in the current org
+     db:list:            list custom objects
+     debug:              turns debug output on/off
         Usage: debug [args]
         args:
         --off	Turns off debug logging to the console
         --on	Turns on debug logging to the console
 
-    delete:        Deletes an application from VMforce
-        Usage: delete <the name of the application>
-
-    exit:          Exits this shell
-    help:          Displays this help message, or help for a specific command
+     exit:               Exit this shell
+     help:               Display this help message, or help for a specific command
         Usage: help <command>
-    history:       Shows history of previous commands
-    list:          Lists custom objects
-    plugin:        Adds a plugin to the shell
+     history:            Show history of previous commands
+     plugin:             adds a plugin to the shell
         Usage: plugin [args]
         args:
-        -a, --artifact	maven artifact id for an artifact in group com.force.cliforce.plugin(required)
-        -v, --version	maven artifact version for the specified artifact. If unspecified, RELEASE meta-version is used.
+        -a, --artifact	maven artifact id for an artifact in group com.force.cliforce.plugin
+        -v, --version	maven artifact version for the specified artifact, if unspecified RELEASE meta-version is used
 
-    push:          Pushes an application to VMforce.
-        Usage: push [args]
+     require:            exit the shell if a specified version of a plugin is not installed
+        Usage: require [args]
         args:
-        -i, --instances	Number of instances to deploy (default 1)
-        -m, --mem	Memory to allocate to the application, in MB (default 512)
-        -n, --name	Name of the application to push (required)
-        -p, --path	Local path to the deployable application (required)
+        -a, --artifact	maven artifact id for an artifact in group com.force.cliforce.plugin
+        -v, --version	maven artifact version for the specified artifact, if unspecified RELEASE meta-version is used
 
-    restart:       Restarts an application
-        Usage: restart <the name of the application>
+     sh:                 Execute the rest of the command on the OS
+     template:create:    creates a new vmforce maven project from a maven archetype
+        Usage: create [args] <artifactId/name of the project to create>
+        args:
+        -g, --group	groupId of the project to create, defaults to org name(reversed, ie my.org = org.my).artifactId
+        -p, --package	root package for classes in project, defaults to groupId
+        -t, type	type of project single|multi defaults to single
+        -v, --version	version of the project to create, default 1.0-SNAPSHOT
 
-    sh:            Executes the rest of the command on the OS
-    start:         Starts an application
-        Usage: start <the name of the application>
-
-    stop:          Stops an application
-        Usage: stop <the name of the application>
-
-    unplug:        Removes a plugin and its commands from the shell
+     template:list:      list the available project templates
+     unplug:             removes a plugin and it's commands from the shell
 
 
 
