@@ -26,9 +26,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+/*
+NOT THREADSAFE, but there shouldnt be a reason it needs to be.
+ */
 public class DependencyResolver {
 
 
@@ -36,7 +40,9 @@ public class DependencyResolver {
 
     Properties cliforceProperties;
     RepositorySystem repositorySystem;
+    MavenRepositorySystemSession session = new MavenRepositorySystemSession();
     String latestMetaVersion = "RELEASE";
+    List<RemoteRepository> remoteRepositories;
 
     {
         try {
@@ -44,13 +50,20 @@ public class DependencyResolver {
             locator.setServices(WagonProvider.class, new ManualWagonProvider());
             locator.addService(RepositoryConnectorFactory.class, WagonRepositoryConnectorFactory.class);
             repositorySystem = locator.getService(RepositorySystem.class);
+            String local = System.getProperty("user.home") + "/.m2/repository/";
+            LocalRepository localRepo = new LocalRepository(local);
+            session.setLocalRepositoryManager(repositorySystem.newLocalRepositoryManager(localRepo));
+            RemoteRepository central = new RemoteRepository("central", "default", "http://repo1.maven.org/maven2/");
+            RemoteRepository force = new RemoteRepository("force", "default", "http://repo.t.salesforce.com/archiva/repository/releases");
+            RemoteRepository forcesnap = new RemoteRepository("forcesnap", "default", "http://repo.t.salesforce.com/archiva/repository/snapshots");
+            remoteRepositories = Arrays.asList(central, force, forcesnap);
             cliforceProperties = new Properties();
             cliforceProperties.load(getClass().getClassLoader().getResourceAsStream("cliforce.properties"));
             //If cliforce itself is a snapshot, use "LATEST" instead of "RELEASE" to find dependencies with no version
             if (cliforceProperties.getProperty("version").contains("SNAPSHOT")) {
                 latestMetaVersion = "LATEST";
             }
-            createClassLoaderInternal(cliforceProperties.getProperty("groupId"), cliforceProperties.getProperty("artifactId"), cliforceProperties.getProperty("version"), Thread.currentThread().getContextClassLoader(), new Boot.SystemOutputAdapter());
+            createClassLoaderFor(cliforceProperties.getProperty("groupId"), cliforceProperties.getProperty("artifactId"), cliforceProperties.getProperty("version"), Thread.currentThread().getContextClassLoader(), new Boot.SystemOutputAdapter());
         } catch (Exception e) {
             System.err.println("Exception configuring maven, cant continue");
             e.printStackTrace(System.err);
@@ -81,29 +94,17 @@ public class DependencyResolver {
     }
 
 
-    private URLClassLoader createClassLoaderInternal(String groupId, String artifactId, String version, ClassLoader parent, OutputAdapter out) {
+    private URLClassLoader createClassLoaderInternal(String groupId, String artifactId, String version, ClassLoader parent, boolean offline) {
         try {
 
-
-            MavenRepositorySystemSession session = new MavenRepositorySystemSession();
-            String local = System.getProperty("user.home") + "/.m2/repository/";
-            LocalRepository localRepo = new LocalRepository(local);
-            session.setLocalRepositoryManager(repositorySystem.newLocalRepositoryManager(localRepo));
-
             DefaultArtifact defaultArtifact = new DefaultArtifact(groupId + ":" + artifactId + ":" + version);
-
-            RemoteRepository central = new RemoteRepository("central", "default", "http://repo1.maven.org/maven2/");
-            RemoteRepository force = new RemoteRepository("force", "default", "http://repo.t.salesforce.com/archiva/repository/releases");
-            RemoteRepository forcesnap = new RemoteRepository("forcesnap", "default", "http://repo.t.salesforce.com/archiva/repository/snapshots");
-
-
             Dependency dependency =
                     new Dependency(defaultArtifact, "runtime");
             CollectRequest collectRequest = new CollectRequest();
             collectRequest.setRoot(dependency);
-            collectRequest.addRepository(central);
-            collectRequest.addRepository(force);
-            collectRequest.addRepository(forcesnap);
+            for (RemoteRepository remoteRepository : remoteRepositories) {
+                collectRequest.addRepository(remoteRepository);
+            }
             DependencyNode node = repositorySystem.collectDependencies(session, collectRequest).getRoot();
 
             repositorySystem.resolveDependencies(session, node, null);
@@ -130,14 +131,11 @@ public class DependencyResolver {
             return new URLClassLoader(classpath.toArray(new URL[classpath.size()]), parent);
 
         } catch (DependencyCollectionException e) {
-            out.println(e, "Error resolving dependencies");
-            throw new RuntimeException(e);
+            throw new DependencyResolutionException(e);
         } catch (ArtifactResolutionException e) {
-            out.println(e, "Error resolving dependencies");
-            throw new RuntimeException(e);
+            throw new DependencyResolutionException(e);
         } catch (MalformedURLException e) {
-            out.println(e, "Error resolving dependencies");
-            throw new RuntimeException(e);
+            throw new DependencyResolutionException(e);
         }
 
     }
@@ -158,12 +156,23 @@ public class DependencyResolver {
         return true;
     }
 
-    public ClassLoader createClassLoaderFor(String groupId, String artifactId, ClassLoader parent, OutputAdapter out) {
+    public ClassLoader createClassLoaderFor(String groupId, String artifactId, ClassLoader parent, OutputAdapter out) throws DependencyResolutionException {
         return createClassLoaderFor(groupId, artifactId, latestMetaVersion, parent, out);
     }
 
-    public ClassLoader createClassLoaderFor(String groupId, String artifactId, String version, ClassLoader parent, OutputAdapter out) {
-        return createClassLoaderInternal(groupId, artifactId, version, parent, out);
+    public ClassLoader createClassLoaderFor(String groupId, String artifactId, String version, ClassLoader parent, OutputAdapter out) throws DependencyResolutionException {
+        try {
+            //TRY OFFLINE RESOLUTION FIRST FOR SPEED
+            return createClassLoaderInternal(groupId, artifactId, version, parent, true);
+        } catch (DependencyResolutionException e) {
+            try {
+                return createClassLoaderInternal(groupId, artifactId, version, parent, false);
+            } catch (DependencyResolutionException dre) {
+                out.println(dre, "Exception resolving dependencies after trying both offline and online mode");
+                throw dre;
+            }
+
+        }
     }
 
 

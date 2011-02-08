@@ -166,10 +166,13 @@ public class CLIForce {
         File plugins = new File(System.getProperty("user.home") + "/.force_plugins");
         try {
             if (!plugins.exists() && !plugins.createNewFile()) {
-                //silent or error
+                logger.debug(".force_plugins does not exist and was unable to create");
                 return;
             }
-            installedPlugins.load(new FileInputStream(plugins));
+
+            FileInputStream in = new FileInputStream(plugins);
+            installedPlugins.load(in);
+            in.close();
             for (String artifact : installedPlugins.stringPropertyNames()) {
                 String version = installedPlugins.getProperty(artifact);
                 DefaultPlugin.PluginArgs args = new DefaultPlugin.PluginArgs();
@@ -178,8 +181,7 @@ public class CLIForce {
                 p.executeWithArgs(getContext(new String[0]), args);
             }
         } catch (IOException e) {
-            //silent or error
-            return;
+            logger.debug("Caught IOException while loading previously installed plugins", e);
         }
     }
 
@@ -187,7 +189,9 @@ public class CLIForce {
         File plugins = new File(System.getProperty("user.home") + "/.force_plugins");
         if (plugins.exists()) {
             try {
-                installedPlugins.store(new FileOutputStream(plugins), "CLIForce plugins");
+                FileOutputStream fileOutputStream = new FileOutputStream(plugins);
+                installedPlugins.store(fileOutputStream, "CLIForce plugins");
+                fileOutputStream.close();
             } catch (IOException e) {
                 out.println("error persisting installation of plugin, you will have to re-plugin next time you run cliforce");
             }
