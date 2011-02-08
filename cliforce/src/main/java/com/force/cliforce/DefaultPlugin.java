@@ -14,7 +14,10 @@ import java.util.*;
 
 import static java.lang.String.format;
 
-
+/**
+ * The default cliforce plugin, provides the sh, banner, history, debug,
+ * info, help, plugin, unplug and require commands
+ */
 public class DefaultPlugin implements Plugin {
 
 

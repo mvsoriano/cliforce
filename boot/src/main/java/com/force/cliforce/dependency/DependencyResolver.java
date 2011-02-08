@@ -30,8 +30,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-/*
-NOT THREADSAFE, but there shouldnt be a reason it needs to be.
+/**
+ * DependencyResolver singleton that uses maven-aether to resolve the dependency graph for a given dependency.
+ * NOT THREADSAFE, (could be if we moved the session back to being a local var) but there shouldnt be a reason it needs to be.
  */
 public class DependencyResolver {
 
@@ -105,6 +106,7 @@ public class DependencyResolver {
             for (RemoteRepository remoteRepository : remoteRepositories) {
                 collectRequest.addRepository(remoteRepository);
             }
+            session.setOffline(offline);
             DependencyNode node = repositorySystem.collectDependencies(session, collectRequest).getRoot();
 
             repositorySystem.resolveDependencies(session, node, null);
@@ -156,10 +158,34 @@ public class DependencyResolver {
         return true;
     }
 
+    /**
+     * Create a classloader that contains all the runtime dependencies of the given maven dependency. If this
+     * is a SNAPSHOT version of cliforce, the maven meta version LATEST is used, if it is a release version of cliforce the maven
+     * meta version RELEASE is used.
+     *
+     * @param groupId    maven groupId
+     * @param artifactId maven artifactId
+     * @param parent     parent for the created classloader
+     * @param out        output adapter
+     * @return a classloader with all the runtime dependencies of the given maven artifact.
+     * @throws DependencyResolutionException if the artifact cant be resolved
+     */
     public ClassLoader createClassLoaderFor(String groupId, String artifactId, ClassLoader parent, OutputAdapter out) throws DependencyResolutionException {
         return createClassLoaderFor(groupId, artifactId, latestMetaVersion, parent, out);
     }
 
+    /**
+     * Create a classloader that contains all the runtime dependencies of the given maven dependency.
+     * Attempt offline resolution first, and if that fails, attempt online resolution.
+     *
+     * @param groupId    maven groupId
+     * @param artifactId maven artifactid
+     * @param version    maven version
+     * @param parent     for the created classloader
+     * @param out        output adapter
+     * @return a classloader with all the runtime dependencies of the given maven artifact.
+     * @throws DependencyResolutionException if the artifact cant be resolved
+     */
     public ClassLoader createClassLoaderFor(String groupId, String artifactId, String version, ClassLoader parent, OutputAdapter out) throws DependencyResolutionException {
         try {
             //TRY OFFLINE RESOLUTION FIRST FOR SPEED

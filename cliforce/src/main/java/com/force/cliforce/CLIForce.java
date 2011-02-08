@@ -260,6 +260,9 @@ public class CLIForce {
         return new Context(connector, forceClient, args, commandReader, writer);
     }
 
+    /**
+     * cliforce internal impl of CommandContext
+     */
     private static class Context implements CommandContext {
 
         ForceServiceConnector connector;
@@ -331,6 +334,9 @@ public class CLIForce {
         }
     }
 
+    /**
+     * cliforce internal impl of CommandWriter. Usually wraps system.out.
+     */
     public class Writer implements CommandWriter {
 
         private PrintWriter out;
@@ -361,7 +367,9 @@ public class CLIForce {
         }
     }
 
-
+    /**
+     * cliforce internal impl of CommandReader, uses apache commons-cli to parse command lines
+     */
     private class Reader implements CommandReader {
         @Override
         public String readLine(final String prompt) {

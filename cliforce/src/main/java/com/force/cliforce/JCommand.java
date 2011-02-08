@@ -11,7 +11,9 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * base class for Commands that use JCommander to do argument parsing, and JLine completion
+ * base class for Commands that use JCommander to do argument parsing, and JLine completion.
+ *
+ * typically, subclasses will implement the describe method by calling usage("Some Description")
  */
 public abstract class JCommand<T> implements Command {
 
