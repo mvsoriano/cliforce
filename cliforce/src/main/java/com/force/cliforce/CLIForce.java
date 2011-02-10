@@ -132,7 +132,7 @@ public class CLIForce {
         String[] defalutPlugins = {"app", "db", "template"};//TODO externalize
         for (String defalutPlugin : defalutPlugins) {
             DefaultPlugin.PluginArgs args = new DefaultPlugin.PluginArgs();
-            args.artifact = defalutPlugin;
+            args.setArtifact(defalutPlugin);
             args.version = "LATEST";
             args.internal = true;
             p.executeWithArgs(getContext(new String[0]), args);
@@ -176,7 +176,7 @@ public class CLIForce {
             for (String artifact : installedPlugins.stringPropertyNames()) {
                 String version = installedPlugins.getProperty(artifact);
                 DefaultPlugin.PluginArgs args = new DefaultPlugin.PluginArgs();
-                args.artifact = artifact;
+                args.setArtifact(artifact);
                 args.version = version;
                 p.executeWithArgs(getContext(new String[0]), args);
             }
