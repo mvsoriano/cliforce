@@ -134,8 +134,16 @@ public class DefaultPlugin implements Plugin {
 
     public static class PluginArgs {
 
-        @Parameter(names = {"-a", "--artifact"}, description = "maven artifact id for an artifact in group com.force.cliforce.plugin")
-        public String artifact;
+        @Parameter(description = "maven artifact id for an artifact in group com.force.cliforce.plugin")
+        public List<String> artifacts = new ArrayList<String>();
+
+        public void setArtifact(String artifact){
+            artifacts.add(0,artifact);
+        }
+
+        public String artifact() {
+            return artifacts.size() > 0 ? artifacts.get(0) : null;
+        }
 
         public String group = "com.force.cliforce.plugin";
 
@@ -174,7 +182,7 @@ public class DefaultPlugin implements Plugin {
         @Override
         public void executeWithArgs(final CommandContext ctx, PluginArgs arg) {
             CommandWriter output = ctx.getCommandWriter();
-            if (arg.artifact == null) {
+            if (arg.artifact() == null) {
                 output.println("Listing plugins...");
                 for (Map.Entry<String, Plugin> e : force.plugins.entrySet()) {
                     output.printf("Plugin: %s (%s)\n", e.getKey(), e.getValue().getClass().getName());
@@ -182,8 +190,8 @@ public class DefaultPlugin implements Plugin {
                 output.println("Done.");
             } else {
 
-                if (force.plugins.containsKey(arg.artifact)) {
-                    output.printf("Plugin %s is already installed, please execute 'unplug %s' before running this command", arg.artifact, arg.artifact);
+                if (force.plugins.containsKey(arg.artifact())) {
+                    output.printf("Plugin %s is already installed, please execute 'unplug %s' before running this command", arg.artifact(), arg.artifact());
                     return;
                 }
 
@@ -201,33 +209,33 @@ public class DefaultPlugin implements Plugin {
                 };
                 ClassLoader pcl = null;
                 if (arg.version != null) {
-                    pcl = DependencyResolver.getInstance().createClassLoaderFor(PLUGIN_GROUP, arg.artifact, arg.version, curr, oa);
+                    pcl = DependencyResolver.getInstance().createClassLoaderFor(PLUGIN_GROUP, arg.artifact(), arg.version, curr, oa);
                 } else {
-                    pcl = DependencyResolver.getInstance().createClassLoaderFor(PLUGIN_GROUP, arg.artifact, curr, oa);
+                    pcl = DependencyResolver.getInstance().createClassLoaderFor(PLUGIN_GROUP, arg.artifact(), curr, oa);
                 }
                 try {
                     Thread.currentThread().setContextClassLoader(pcl);
                     ServiceLoader<Plugin> loader = ServiceLoader.load(Plugin.class, pcl);
                     Iterator<Plugin> iterator = loader.iterator();
                     if (!iterator.hasNext()) {
-                        output.printf("Error: %s does not declare a Plugin in META-INF/services/com.force.cliforce.Plugin\n", arg.artifact);
+                        output.printf("Error: %s does not declare a Plugin in META-INF/services/com.force.cliforce.Plugin\n", arg.artifact());
                         return;
                     }
                     Plugin p = iterator.next();
 
                     List<Command> commands = p.getCommands();
-                    force.plugins.put(arg.artifact, p);
+                    force.plugins.put(arg.artifact(), p);
                     if (!arg.internal) {
-                        force.installedPlugins.setProperty(arg.artifact, arg.version);
+                        force.installedPlugins.setProperty(arg.artifact(), arg.version);
                         force.saveInstalledPlugins(output);
-                        output.printf("Adding Plugin: %s (%s)\n", arg.artifact, p.getClass().getName());
+                        output.printf("Adding Plugin: %s (%s)\n", arg.artifact(), p.getClass().getName());
                     }
 
                     for (Command command : commands) {
                         if (!arg.internal) {
-                            output.printf("\tadds command %s:%s (%s)\n", arg.artifact, command.name(), command.getClass().getName());
+                            output.printf("\tadds command %s:%s (%s)\n", arg.artifact(), command.name(), command.getClass().getName());
                         }
-                        force.commands.put(arg.artifact + ":" + command.name(), command);
+                        force.commands.put(arg.artifact() + ":" + command.name(), command);
                         if (command instanceof ForceEnvAware) {
                             ((ForceEnvAware) command).setForceEnv(force.forceEnv);
                         }
@@ -274,14 +282,14 @@ public class DefaultPlugin implements Plugin {
         @Override
         public void executeWithArgs(final CommandContext ctx, PluginArgs arg) {
             CommandWriter output = ctx.getCommandWriter();
-            String version = force.installedPlugins.getProperty(arg.artifact);
+            String version = force.installedPlugins.getProperty(arg.artifact());
             if (version == null) {
-                ctx.getCommandWriter().printf("Required Plugin %s version %s is not installed, exiting\n", arg.artifact, arg.version);
+                ctx.getCommandWriter().printf("Required Plugin %s version %s is not installed, exiting\n", arg.artifact(), arg.version);
                 throw new ExitException("Required Plugin Not Installed");
             }
             if (!version.equals(arg.version)) {
                 //this will be funny about RELEASE for now...best practice use and require explicit versions
-                ctx.getCommandWriter().printf("incorrect version %s of Required Plugin %s version %s is not installed, exiting\n", version, arg.artifact, arg.version);
+                ctx.getCommandWriter().printf("incorrect version %s of Required Plugin %s version %s is not installed, exiting\n", version, arg.artifact(), arg.version);
                 throw new ExitException("Required Plugin Not Installed");
             }
 
