@@ -110,13 +110,16 @@ public class CLIForce {
         config.setPrettyPrintXml(true);
         connector = new ForceServiceConnector("cliforce", config);
 
-        forceClient = new VMForceClient();
-        restConnector = new RestTemplateConnector();
-        restConnector.setTarget(new HttpHost("api.alpha.vmforce.com"));
-        restConnector.debug(false);
-        forceClient.setHttpConnector(restConnector);
-        forceClient.login(forceEnv.getUser(), forceEnv.getPassword());
-
+	try {
+       	    forceClient = new VMForceClient();
+            restConnector = new RestTemplateConnector();
+            restConnector.setTarget(new HttpHost("api.alpha.vmforce.com"));
+            restConnector.debug(false);
+            forceClient.setHttpConnector(restConnector);
+            forceClient.login(forceEnv.getUser(), forceEnv.getPassword());
+        } catch(Exception e) {
+            System.out.println("Couldn't authenticate with controller. Continuing. Error: "+e);
+        }
 
         Plugin def = new DefaultPlugin(this);
         for (Command command : def.getCommands()) {
