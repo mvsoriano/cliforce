@@ -91,7 +91,7 @@ Hostname is one of the login servers (test.salesforce.com for sandbox, login.sal
 
 Each takes precedence in the order listed above. For example, if FORCE_URL is specified, everything else is ignored. So you can execute the dbclean task on a sandbox org with user scott@acme.com and password tiger by doing the following:
 
-	$ export FORCE_URL=force://test.salesforce.com;user=scott@acme.com;password=tiger
+	$ export FORCE_URL="force://test.salesforce.com;user=scott@acme.com;password=tiger"
 	$ java -jar target/forcecli-0.0.1-SNAPSHOT-jar-with-dependencies.jar
 
 You see the force prompt.
