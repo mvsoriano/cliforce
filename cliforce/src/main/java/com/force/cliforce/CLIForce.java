@@ -1,8 +1,6 @@
 package com.force.cliforce;
 
 import ch.qos.logback.classic.Level;
-
-import com.force.sdk.connector.ForceConnectorConfig;
 import com.force.sdk.connector.ForceServiceConnector;
 import com.sforce.async.AsyncApiException;
 import com.sforce.async.RestConnection;
@@ -41,7 +39,7 @@ public class CLIForce {
     private volatile boolean debug = false;
     private ForceServiceConnector connector;
     private CommandWriter writer;
-    private ForceConnectorConfig config;
+    private ConnectorConfig config;
     private RestTemplateConnector restConnector;
 
 
@@ -104,7 +102,7 @@ public class CLIForce {
     public void init(InputStream in, PrintWriter out) throws IOException, ConnectionException, ServletException {
         SLF4JBridgeHandler.install();
         URL purl = new URL(com.sforce.soap.partner.Connector.END_POINT);
-        config = new ForceConnectorConfig();
+        config = new ConnectorConfig();
         config.setAuthEndpoint("https://" + forceEnv.getHost() + purl.getPath());
         config.setUsername(forceEnv.getUser());
         config.setPassword(forceEnv.getPassword());
