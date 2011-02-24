@@ -1,13 +1,14 @@
 package com.force.cliforce;
 
 import ch.qos.logback.classic.Level;
+
+import com.force.sdk.connector.ForceConnectorConfig;
 import com.force.sdk.connector.ForceServiceConnector;
 import com.sforce.async.AsyncApiException;
 import com.sforce.async.RestConnection;
 import com.sforce.soap.metadata.MetadataConnection;
 import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.ws.ConnectionException;
-import com.sforce.ws.ConnectorConfig;
 import com.vmforce.client.VMForceClient;
 import com.vmforce.client.connector.RestTemplateConnector;
 import jline.*;
@@ -39,7 +40,7 @@ public class CLIForce {
     private volatile boolean debug = false;
     private ForceServiceConnector connector;
     private CommandWriter writer;
-    private ConnectorConfig config;
+    private ForceConnectorConfig config;
     private RestTemplateConnector restConnector;
 
 
@@ -102,7 +103,7 @@ public class CLIForce {
     public void init(InputStream in, PrintWriter out) throws IOException, ConnectionException, ServletException {
         SLF4JBridgeHandler.install();
         URL purl = new URL(com.sforce.soap.partner.Connector.END_POINT);
-        config = new ConnectorConfig();
+        config = new ForceConnectorConfig();
         config.setAuthEndpoint("https://" + forceEnv.getHost() + purl.getPath());
         config.setUsername(forceEnv.getUser());
         config.setPassword(forceEnv.getPassword());
