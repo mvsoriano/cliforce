@@ -1,7 +1,6 @@
 package com.force.cliforce;
 
 import ch.qos.logback.classic.Level;
-
 import com.force.sdk.connector.ForceConnectorConfig;
 import com.force.sdk.connector.ForceServiceConnector;
 import com.sforce.async.AsyncApiException;
@@ -22,6 +21,8 @@ import javax.servlet.ServletException;
 import java.io.*;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.CountDownLatch;
 
 public class CLIForce {
 
@@ -29,8 +30,8 @@ public class CLIForce {
     private static Logger logger = LoggerFactory.getLogger(CLIForce.class);
     public static final String FORCEPROMPT = "force> ";
     public static final String EXITCMD = "exit";
-    /*package*/ Map<String, Command> commands = new TreeMap<String, Command>();
-    /*package*/ Map<String, Plugin> plugins = new TreeMap<String, Plugin>();
+    /*package*/ Map<String, Command> commands = new ConcurrentSkipListMap<String, Command>();
+    /*package*/ Map<String, Plugin> plugins = new ConcurrentSkipListMap<String, Plugin>();
     /*package*/ Properties installedPlugins = new Properties();
     /*package*/ ForceEnv forceEnv;
     /*package*/ ConsoleReader reader;
@@ -42,6 +43,8 @@ public class CLIForce {
     private CommandWriter writer;
     private ForceConnectorConfig config;
     private RestTemplateConnector restConnector;
+    private CountDownLatch initLatch = new CountDownLatch(1);
+    private Thread pluginInitThread;
 
 
     public static void main(String[] args) {
@@ -74,6 +77,9 @@ public class CLIForce {
             System.exit(1);
         } catch (ServletException e) {
             logger.error("ServletException Exception while initializing cliforce, exiting", e);
+            System.exit(1);
+        } catch (InterruptedException e) {
+            logger.error("Main Thread Interrupted while waiting for plugin initialization", e);
             System.exit(1);
         }
     }
@@ -111,15 +117,15 @@ public class CLIForce {
         config.setPrettyPrintXml(true);
         connector = new ForceServiceConnector("cliforce", config);
 
-	try {
-       	    forceClient = new VMForceClient();
+        try {
+            forceClient = new VMForceClient();
             restConnector = new RestTemplateConnector();
             restConnector.setTarget(new HttpHost("api.alpha.vmforce.com"));
             restConnector.debug(false);
             forceClient.setHttpConnector(restConnector);
             forceClient.login(forceEnv.getUser(), forceEnv.getPassword());
-        } catch(Exception e) {
-            System.out.println("Couldn't authenticate with controller. Continuing. Error: "+e);
+        } catch (Exception e) {
+            System.out.println("Couldn't authenticate with controller. Continuing. Error: " + e);
         }
 
         Plugin def = new DefaultPlugin(this);
@@ -131,16 +137,6 @@ public class CLIForce {
         reader = new ConsoleReader(in, out);
         reader.addCompletor(completor);
         writer = new Writer(out);
-
-        DefaultPlugin.PluginCommand p = (DefaultPlugin.PluginCommand) commands.get("plugin");
-        String[] defalutPlugins = {"app", "db", "template"};//TODO externalize
-        for (String defalutPlugin : defalutPlugins) {
-            DefaultPlugin.PluginArgs args = new DefaultPlugin.PluginArgs();
-            args.setArtifact(defalutPlugin);
-            args.version = "LATEST";
-            args.internal = true;
-            p.executeWithArgs(getContext(new String[0]), args);
-        }
 
 
         File hist = new File(System.getProperty("user.home") + "/.force_history");
@@ -162,7 +158,32 @@ public class CLIForce {
         reloadCompletions();
         reader.setBellEnabled(false);
         commandReader = new Reader();
-        loadInstalledPlugins();
+
+        Runnable backgroundPluginLoad = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    DefaultPlugin.PluginCommand p = (DefaultPlugin.PluginCommand) commands.get("plugin");
+                    String[] defalutPlugins = {"app", "db", "template"};//TODO externalize
+                    for (String defalutPlugin : defalutPlugins) {
+                        DefaultPlugin.PluginArgs args = new DefaultPlugin.PluginArgs();
+                        args.setArtifact(defalutPlugin);
+                        args.version = "LATEST";
+                        args.internal = true;
+                        p.executeWithArgs(getContext(new String[0]), args);
+                    }
+                    loadInstalledPlugins();
+                } catch (FileNotFoundException e) {
+                    logger.error("FileNotFoundException while loading previously installed plugins", e);
+                } finally {
+                    initLatch.countDown();
+                }
+            }
+        };
+        pluginInitThread = new Thread(backgroundPluginLoad);
+        pluginInitThread.setDaemon(true);
+        pluginInitThread.start();
+
     }
 
     private void loadInstalledPlugins() throws FileNotFoundException {
@@ -202,7 +223,7 @@ public class CLIForce {
         }
     }
 
-    void reloadCompletions() {
+    synchronized void reloadCompletions() {
         reader.removeCompletor(completor);
         List<Completor> completors = new ArrayList<Completor>();
         for (Map.Entry<String, Command> entry : commands.entrySet()) {
@@ -215,7 +236,7 @@ public class CLIForce {
         reader.addCompletor(completor);
     }
 
-    public void run() {
+    public void run() throws InterruptedException {
         try {
             commands.get("banner").execute(getContext(new String[0]));
         } catch (Exception e) {
@@ -224,6 +245,7 @@ public class CLIForce {
         String[] cmds = commandReader.readAndParseLine(FORCEPROMPT);
         String cmdKey = cmds[0];
         while (!cmdKey.equals(EXITCMD)) {
+            initLatch.await();
             executeWithArgs(cmds);
             cmds = commandReader.readAndParseLine(FORCEPROMPT);
             cmdKey = cmds[0];
