@@ -19,7 +19,9 @@ class NewProjectArgs {
   var version: String = "1.0-SNAPSHOT"
   @Parameter(names = Array("-p", "--package"), description = "root package for classes in project, defaults to groupId")
   var pkg: String = null
-  @Parameter(names = Array("-t", "type"), description = "type of project single|multi defaults to single")
+  /* uncomment when there is more than one choice
+  @Parameter(names = Array("-t", "type"), description = "type of project default:springmvc")
+  */
   var typ = "springmvc"
 
   def getpkg(): String = {
@@ -102,7 +104,7 @@ class ListTemplatesCommand extends Command {
   def describe = "list the available project templates"
 
   def execute(ctx: CommandContext) = {
-    ctx.getCommandWriter.println("single:  A simple maven based vmforce project using spring and jpa")
+    ctx.getCommandWriter.println("springmvc:  A simple maven based vmforce project using spring, springmvc and jpa")
   }
 }
 
