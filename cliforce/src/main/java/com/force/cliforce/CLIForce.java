@@ -252,12 +252,13 @@ public class CLIForce {
         }
     }
 
-    private void executeWithArgs(String[] cmds) {
+    private void executeWithArgs(String[] cmds) throws InterruptedException {
         String cmdKey = cmds[0];
         Command cmd = commands.get(cmdKey);
         String[] args = cmds.length > 1 ? Arrays.copyOfRange(cmds, 1, cmds.length) : new String[0];
         if (!cmdKey.equals("")) {
             if (cmd != null) {
+                initLatch.await();
                 executeCommand(cmdKey, cmd, args);
             } else {
                 writer.printf("Unknown Command %s\n", cmdKey);
