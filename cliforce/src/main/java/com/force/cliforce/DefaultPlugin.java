@@ -5,6 +5,7 @@ import com.force.cliforce.command.BannerCommand;
 import com.force.cliforce.command.DebugCommand;
 import com.force.cliforce.dependency.DependencyResolver;
 import com.force.cliforce.dependency.OutputAdapter;
+import com.sforce.ws.util.Verbose;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,7 +17,7 @@ import static java.lang.String.format;
 
 /**
  * The default cliforce plugin, provides the sh, banner, history, debug,
- * info, help, plugin, unplug and require commands
+ * info, help, plugin, unplug, version and require commands
  */
 public class DefaultPlugin implements Plugin {
 
@@ -39,6 +40,7 @@ public class DefaultPlugin implements Plugin {
                 new PluginCommand(force),
                 new RequirePluginCommand(force),
                 new UnplugCommand(force),
+                new VersionCommand(),
                 new Command() {
                     @Override
                     public String name() {
@@ -425,6 +427,28 @@ public class DefaultPlugin implements Plugin {
             }
         }
 
+    }
+
+    public static class VersionCommand implements Command{
+        @Override
+        public String name() {
+            return "version";
+
+        }
+
+        @Override
+        public String describe() {
+            return "Show the current running version of cliforce";
+        }
+
+        @Override
+        public void execute(CommandContext ctx) throws Exception {
+            Properties cliforceProperties = new Properties();
+            cliforceProperties.load(getClass().getClassLoader().getResourceAsStream("cliforce.properties"));
+            ctx.getCommandWriter().printf("groupId:%s\n", cliforceProperties.getProperty("groupId"));
+            ctx.getCommandWriter().printf("artifactId:%s\n", cliforceProperties.getProperty("artifactId"));
+            ctx.getCommandWriter().printf("version:%s\n", cliforceProperties.getProperty("version"));
+        }
     }
 
 

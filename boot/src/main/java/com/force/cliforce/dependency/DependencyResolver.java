@@ -57,7 +57,7 @@ public class DependencyResolver {
             RemoteRepository central = new RemoteRepository("central", "default", "http://repo1.maven.org/maven2/");
             RemoteRepository force = new RemoteRepository("force", "default", "http://repo.t.salesforce.com/archiva/repository/releases");
             RemoteRepository forcesnap = new RemoteRepository("forcesnap", "default", "http://repo.t.salesforce.com/archiva/repository/snapshots");
-            remoteRepositories = Arrays.asList(central, force, forcesnap);
+            remoteRepositories = Arrays.asList(forcesnap, force, central);
             cliforceProperties = new Properties();
             cliforceProperties.load(getClass().getClassLoader().getResourceAsStream("cliforce.properties"));
             //If cliforce itself is a snapshot, use "LATEST" instead of "RELEASE" to find dependencies with no version
