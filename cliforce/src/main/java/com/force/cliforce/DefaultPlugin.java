@@ -448,6 +448,7 @@ public class DefaultPlugin implements Plugin {
             ctx.getCommandWriter().printf("groupId:%s\n", cliforceProperties.getProperty("groupId"));
             ctx.getCommandWriter().printf("artifactId:%s\n", cliforceProperties.getProperty("artifactId"));
             ctx.getCommandWriter().printf("version:%s\n", cliforceProperties.getProperty("version"));
+            ctx.getCommandWriter().printf("builtAt:%s\n", cliforceProperties.getProperty("builtAt"));
         }
     }
 

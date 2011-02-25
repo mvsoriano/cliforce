@@ -24,6 +24,7 @@
         <jcommander.version>1.7</jcommander.version>
         <force.version>21.0.0-SNAPSHOT</force.version>
         <force.client.version>1.0.1-SNAPSHOT</force.client.version>
+        <built.at>${build.timestamp}</built.at>
     </properties>
     <licenses>
         <license>
