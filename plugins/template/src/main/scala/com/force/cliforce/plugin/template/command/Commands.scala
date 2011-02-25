@@ -20,15 +20,15 @@ class NewProjectArgs {
   @Parameter(names = Array("-p", "--package"), description = "root package for classes in project, defaults to groupId")
   var pkg: String = null
   @Parameter(names = Array("-t", "type"), description = "type of project single|multi defaults to single")
-  var typ = "single"
+  var typ = "springmvc"
 
   def getpkg(): String = {
     if (pkg eq null) group else pkg
   }
 
   def getGroupArtifact(): (String, String) = {
-    val ag = "com.vmforce.samples.service.singlemodule"
-    val art = if (typ eq "single") "sampleWebApp-archetype" else "multiWebApp?"
+    val ag = "com.force.sdk"
+    val art = typ+"-archetype"
     (ag, art)
   }
 
@@ -73,7 +73,7 @@ class NewProjectCommand extends JCommand[NewProjectArgs] with ForceEnvAware {
       "-DarchetypeCatalog=http://repo.t.salesforce.com/archiva/repository/snapshots/archetype-catalog.xml",
       "-DarchetypeGroupId=" + args.getGroupArtifact._1,
       "-DarchetypeArtifactId=" + args.getGroupArtifact._2,
-      "-DarchetypeVersion=0.0.1-SNAPSHOT",
+      "-DarchetypeVersion=LATEST",
       "-DgroupId=" + args.group,
       "-DartifactId=" + args.artifact,
       "-Dversion=" + args.version,
