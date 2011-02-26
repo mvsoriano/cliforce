@@ -64,7 +64,7 @@ public class DependencyResolver {
             if (cliforceProperties.getProperty("version").contains("SNAPSHOT")) {
                 latestMetaVersion = "LATEST";
             }
-            createClassLoaderFor(cliforceProperties.getProperty("groupId"), cliforceProperties.getProperty("artifactId"), cliforceProperties.getProperty("version"), Thread.currentThread().getContextClassLoader(), new Boot.SystemOutputAdapter());
+
         } catch (Exception e) {
             System.err.println("Exception configuring maven, cant continue");
             e.printStackTrace(System.err);
@@ -149,12 +149,12 @@ public class DependencyResolver {
      * @return
      */
     private boolean ok(Dependency dependency) {
-        if (dependency.getArtifact().getGroupId().equals("log4j") && dependency.getArtifact().getArtifactId().equals("log4j")) {
+       /* if (dependency.getArtifact().getGroupId().equals("log4j") && dependency.getArtifact().getArtifactId().equals("log4j")) {
             return false;
         }
         if (dependency.getArtifact().getGroupId().equals("commons-logging") && dependency.getArtifact().getArtifactId().equals("commons-logging")) {
             return false;
-        }
+        }*/
         return true;
     }
 
