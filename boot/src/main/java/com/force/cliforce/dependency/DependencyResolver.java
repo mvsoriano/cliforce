@@ -1,7 +1,6 @@
 package com.force.cliforce.dependency;
 
 
-import com.force.cliforce.Boot;
 import org.apache.maven.repository.internal.DefaultServiceLocator;
 import org.apache.maven.repository.internal.MavenRepositorySystemSession;
 import org.apache.maven.wagon.Wagon;
@@ -33,6 +32,9 @@ import java.util.Properties;
 /**
  * DependencyResolver singleton that uses maven-aether to resolve the dependency graph for a given dependency.
  * NOT THREADSAFE, (could be if we moved the session back to being a local var) but there shouldnt be a reason it needs to be.
+ * <p/>
+ * This class refuses to put log4j or commons logging onto a classpath, instead substituting log4j-over-slf4j and clogging-over-slf4j
+ * so that the debug --on command will cause all log output to be visible.
  */
 public class DependencyResolver {
 
@@ -44,6 +46,8 @@ public class DependencyResolver {
     MavenRepositorySystemSession session = new MavenRepositorySystemSession();
     String latestMetaVersion = "RELEASE";
     List<RemoteRepository> remoteRepositories;
+    URL log4jOverSlf4j;
+    URL cloggingOverSlf4j;
 
     {
         try {
@@ -130,6 +134,8 @@ public class DependencyResolver {
             for (File file : nlg.getFiles()) {
                 classpath.add(file.toURI().toURL());
             }
+            setupLoggingDependencies(groupId, artifactId, classpath);
+            addLoggingDependencies(classpath);
             return new URLClassLoader(classpath.toArray(new URL[classpath.size()]), parent);
 
         } catch (DependencyCollectionException e) {
@@ -142,6 +148,24 @@ public class DependencyResolver {
 
     }
 
+    private void setupLoggingDependencies(String groupId, String artifactId, List<URL> classpath) {
+        if (groupId.equals(cliforceProperties.getProperty("groupId")) && artifactId.equals(cliforceProperties.getProperty("artifactId"))) {
+            for (URL url : classpath) {
+                if (url.toString().contains("jcl-over-slf4j")) {
+                    cloggingOverSlf4j = url;
+                }
+                if (url.toString().contains("log4j-over-slf4j")) {
+                    log4jOverSlf4j = url;
+                }
+            }
+        }
+    }
+
+    private void addLoggingDependencies(List<URL> classpath) {
+        if (log4jOverSlf4j != null) classpath.add(log4jOverSlf4j);
+        if (cloggingOverSlf4j != null) classpath.add(cloggingOverSlf4j);
+    }
+
     /**
      * Filter out commons logging and log4j since we are bridging them back to slf4j
      *
@@ -149,12 +173,12 @@ public class DependencyResolver {
      * @return
      */
     private boolean ok(Dependency dependency) {
-       /* if (dependency.getArtifact().getGroupId().equals("log4j") && dependency.getArtifact().getArtifactId().equals("log4j")) {
+        if (dependency.getArtifact().getGroupId().equals("log4j") && dependency.getArtifact().getArtifactId().equals("log4j")) {
             return false;
         }
         if (dependency.getArtifact().getGroupId().equals("commons-logging") && dependency.getArtifact().getArtifactId().equals("commons-logging")) {
             return false;
-        }*/
+        }
         return true;
     }
 

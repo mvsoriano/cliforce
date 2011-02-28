@@ -19,6 +19,7 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import javax.servlet.ServletException;
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -27,7 +28,10 @@ import java.util.concurrent.CountDownLatch;
 public class CLIForce {
 
     /*package protected fields are accessed by commands in the default plugin*/
-    private static Logger logger = LoggerFactory.getLogger(CLIForce.class);
+    /**
+     * This field is lazy initialized by getLogger, probably shouldnt use directly.
+     */
+    private static Logger logger;
     public static final String FORCEPROMPT = "force> ";
     public static final String EXITCMD = "exit";
     /*package*/ Map<String, Command> commands = new ConcurrentSkipListMap<String, Command>();
@@ -70,20 +74,31 @@ public class CLIForce {
                 cliForce.executeWithArgs(args);
             }
         } catch (ConnectionException e) {
-            logger.error("Connection Exception while initializing cliforce, exiting", e);
+            getLogger().error("Connection Exception while initializing cliforce, exiting", e);
             System.exit(1);
         } catch (IOException e) {
-            logger.error("IOException Exception while initializing cliforce, exiting", e);
+            getLogger().error("IOException Exception while initializing cliforce, exiting", e);
             System.exit(1);
         } catch (ServletException e) {
-            logger.error("ServletException Exception while initializing cliforce, exiting", e);
+            getLogger().error("ServletException Exception while initializing cliforce, exiting", e);
             System.exit(1);
         } catch (InterruptedException e) {
-            logger.error("Main Thread Interrupted while waiting for plugin initialization", e);
+            getLogger().error("Main Thread Interrupted while waiting for plugin initialization", e);
             System.exit(1);
         }
     }
 
+    /**
+     * Lazy init the logger so we dont pay init costs at startup time
+     *
+     * @return
+     */
+    private static Logger getLogger() {
+        if (logger == null) {
+            logger = LoggerFactory.getLogger(CLIForce.class);
+        }
+        return logger;
+    }
 
     public CLIForce(ForceEnv env) {
         forceEnv = env;
@@ -108,25 +123,6 @@ public class CLIForce {
 
     public void init(InputStream in, PrintWriter out) throws IOException, ConnectionException, ServletException {
         SLF4JBridgeHandler.install();
-        URL purl = new URL(com.sforce.soap.partner.Connector.END_POINT);
-        config = new ForceConnectorConfig();
-        config.setAuthEndpoint("https://" + forceEnv.getHost() + purl.getPath());
-        config.setUsername(forceEnv.getUser());
-        config.setPassword(forceEnv.getPassword());
-        config.setTraceMessage(false);
-        config.setPrettyPrintXml(true);
-        connector = new ForceServiceConnector("cliforce", config);
-
-        try {
-            forceClient = new VMForceClient();
-            restConnector = new RestTemplateConnector();
-            restConnector.setTarget(new HttpHost("api.alpha.vmforce.com"));
-            restConnector.debug(false);
-            forceClient.setHttpConnector(restConnector);
-            forceClient.login(forceEnv.getUser(), forceEnv.getPassword());
-        } catch (Exception e) {
-            System.out.println("Couldn't authenticate with controller. Continuing. Error: " + e);
-        }
 
         Plugin def = new DefaultPlugin(this);
         for (Command command : def.getCommands()) {
@@ -163,6 +159,27 @@ public class CLIForce {
             @Override
             public void run() {
                 try {
+                    URL purl = new URL(com.sforce.soap.partner.Connector.END_POINT);
+                    config = new ForceConnectorConfig();
+                    config.setAuthEndpoint("https://" + forceEnv.getHost() + purl.getPath());
+                    config.setUsername(forceEnv.getUser());
+                    config.setPassword(forceEnv.getPassword());
+                    config.setTraceMessage(false);
+                    config.setPrettyPrintXml(true);
+                    connector = new ForceServiceConnector("cliforce", config);
+
+                    try {
+                        forceClient = new VMForceClient();
+                        restConnector = new RestTemplateConnector();
+                        restConnector.setTarget(new HttpHost("api.alpha.vmforce.com"));
+                        restConnector.debug(false);
+                        forceClient.setHttpConnector(restConnector);
+                        forceClient.login(forceEnv.getUser(), forceEnv.getPassword());
+                    } catch (Exception e) {
+                        System.out.println("Couldn't authenticate with controller. Continuing. Error: " + e);
+                    }
+
+
                     DefaultPlugin.PluginCommand p = (DefaultPlugin.PluginCommand) commands.get("plugin");
                     String[] defalutPlugins = {"app", "db", "template"};//TODO externalize
                     for (String defalutPlugin : defalutPlugins) {
@@ -174,7 +191,11 @@ public class CLIForce {
                     }
                     loadInstalledPlugins();
                 } catch (FileNotFoundException e) {
-                    logger.error("FileNotFoundException while loading previously installed plugins", e);
+                    getLogger().error("FileNotFoundException while loading previously installed plugins", e);
+                } catch (ConnectionException e) {
+                    getLogger().error("ConnectionException while creating ForceConfig", e);
+                } catch (MalformedURLException e) {
+                    getLogger().error("MalformedURLException while creating ForceConfig", e);
                 } finally {
                     initLatch.countDown();
                 }
@@ -191,7 +212,7 @@ public class CLIForce {
         File plugins = new File(System.getProperty("user.home") + "/.force_plugins");
         try {
             if (!plugins.exists() && !plugins.createNewFile()) {
-                logger.debug(".force_plugins does not exist and was unable to create");
+                getLogger().debug(".force_plugins does not exist and was unable to create");
                 return;
             }
 
@@ -206,7 +227,7 @@ public class CLIForce {
                 p.executeWithArgs(getContext(new String[0]), args);
             }
         } catch (IOException e) {
-            logger.debug("Caught IOException while loading previously installed plugins", e);
+            getLogger().debug("Caught IOException while loading previously installed plugins", e);
         }
     }
 
@@ -256,7 +277,7 @@ public class CLIForce {
         String cmdKey = cmds[0];
         Command cmd = commands.get(cmdKey);
         String[] args = cmds.length > 1 ? Arrays.copyOfRange(cmds, 1, cmds.length) : new String[0];
-        if (!cmdKey.equals("")) {
+        if (!cmdKey.equals("") && !cmdKey.equals(EXITCMD)) {
             if (cmd != null) {
                 initLatch.await();
                 executeCommand(cmdKey, cmd, args);
@@ -317,7 +338,7 @@ public class CLIForce {
             try {
                 return connector.getMetadataConnection();
             } catch (ConnectionException e) {
-                logger.error("Connection exception while getting metadata connection", e);
+                getLogger().error("Connection exception while getting metadata connection", e);
                 throw new RuntimeException(e);
             }
         }
@@ -327,7 +348,7 @@ public class CLIForce {
             try {
                 return connector.getConnection();
             } catch (ConnectionException e) {
-                logger.error("Connection exception while getting metadata connection", e);
+                getLogger().error("Connection exception while getting metadata connection", e);
                 throw new RuntimeException(e);
             }
         }
@@ -337,10 +358,10 @@ public class CLIForce {
             try {
                 return connector.getRestConnection();
             } catch (AsyncApiException e) {
-                logger.error("AsyncApiException exception while getting rest connection", e);
+                getLogger().error("AsyncApiException exception while getting rest connection", e);
                 throw new RuntimeException(e);
             } catch (ConnectionException e) {
-                logger.error("ConnectionException exception while getting rest connection", e);
+                getLogger().error("ConnectionException exception while getting rest connection", e);
                 throw new RuntimeException(e);
             }
         }
