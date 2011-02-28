@@ -2,6 +2,7 @@ package com.force.cliforce.plugin.db.command;
 
 import com.force.cliforce.Command;
 import com.force.cliforce.CommandContext;
+import com.force.cliforce.Util;
 import com.sforce.soap.metadata.*;
 import com.sforce.soap.partner.DescribeGlobalResult;
 import com.sforce.soap.partner.DescribeGlobalSObjectResult;
@@ -39,13 +40,8 @@ public class DBClean implements Command {
             }
         }
 
-        // A bit of a hack:
-        // Use same version as force-metadata-api: This is the last path element
-        // in the connector URL
 
-        String[] arr = com.sforce.soap.metadata.Connector.END_POINT.split("/");
-        String apiVersion = arr[arr.length - 1];
-
+        String apiVersion = Util.getApiVersion();
         destructiveChanges.setVersion(apiVersion);
 
         ByteArrayOutputStream bout = new ByteArrayOutputStream();

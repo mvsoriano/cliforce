@@ -1,16 +1,17 @@
 package com.force.cliforce.plugin.db.command
 
 import com.sforce.soap.metadata.ListMetadataQuery
-import com.force.cliforce.{Command, CommandContext}
+import com.force.cliforce.{Util, Command, CommandContext}
+
 
 class ListCustomObjects extends Command {
-  val version: Double = 21.0
+
 
   def execute(ctx: CommandContext) = {
     val q = new ListMetadataQuery
     q.setType("CustomObject")
 
-    val objs = ctx.getMetadataConnection.listMetadata(Array(q), version).map(_.getFullName).filter(_.endsWith("__c"))
+    val objs = ctx.getMetadataConnection.listMetadata(Array(q), Util.getApiVersionAsDouble.doubleValue).map(_.getFullName).filter(_.endsWith("__c"))
     ctx.getPartnerConnection.describeSObjects(objs).foreach{
       res => {
         ctx.getCommandWriter.printf("\n{\nCustom Object-> %s \n", res.getName());
