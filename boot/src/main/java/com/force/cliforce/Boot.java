@@ -18,7 +18,7 @@ public class Boot {
             System.out.println("Downloading dependencies, this can take some time the first time you run cliforce");
         }
         p.load(parent.getResourceAsStream("cliforce.properties"));
-        ClassLoader cl = DependencyResolver.getInstance().createClassLoaderFor(p.getProperty("groupId"), p.getProperty("artifactId"), p.getProperty("version"), null, new SystemOutputAdapter());
+        ClassLoader cl = DependencyResolver.getInstance().createClassLoaderFor(p.getProperty("groupId"), p.getProperty("artifactId"), null, new SystemOutputAdapter());
         Thread.currentThread().setContextClassLoader(cl);
         cl.loadClass(p.getProperty("main")).getMethod("main", new Class<?>[]{String[].class}).invoke(null, new Object[]{args});
     }
