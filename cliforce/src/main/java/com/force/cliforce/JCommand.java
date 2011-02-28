@@ -2,17 +2,18 @@ package com.force.cliforce;
 
 
 import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterDescription;
 import com.beust.jcommander.ParameterException;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 /**
  * base class for Commands that use JCommander to do argument parsing, and JLine completion.
- *
+ * <p/>
  * typically, subclasses will implement the describe method by calling usage("Some Description")
  */
 public abstract class JCommand<T> implements Command {
@@ -49,17 +50,7 @@ public abstract class JCommand<T> implements Command {
 
     public Map<String, String> getCommandOptions() {
         JCommander j = new JCommander(getArgs());
-        String mainParam = null;
-        try {
-            Method m = JCommander.class.getDeclaredMethod("createDescriptions");
-            m.setAccessible(true);
-            m.invoke(j, null);
-            Method mm = JCommander.class.getDeclaredMethod("getMainParameterDescription");
-            mm.setAccessible(true);
-            mainParam = (String) mm.invoke(j, null);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        String mainParam = j.getMainParameterDescription();
         Map<String, String> opts = new TreeMap<String, String>();
         for (ParameterDescription parameterDescription : j.getParameters()) {
             opts.put(parameterDescription.getNames(), parameterDescription.getDescription() + (parameterDescription.getParameter().required() ? "(required)" : ""));
@@ -89,4 +80,21 @@ public abstract class JCommand<T> implements Command {
         }
         return usage.toString();
     }
+
+    static class Arg {
+        @Parameter(names = {"-t"}, description = "test")
+        String test = null;
+
+        @Parameter(description = "main")
+        List<String> mainParams;
+    }
+
+    public static void main(String[] args) {
+        JCommander commander = new JCommander(new Arg());
+        System.out.println(commander.getParameters().size());
+        JCommander commander2 = new JCommander(new Arg(), "-t", "testing");
+        System.out.println(commander2.getParameters().size());
+
+    }
+
 }
