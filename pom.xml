@@ -78,9 +78,9 @@
         </snapshotRepository>
     </distributionManagement>
     <scm>
-        <connection>scm:git:git://github.com/jesperfj/cliforce.git</connection>
-        <developerConnection>scm:git:git@github.com:jesperfj/cliforce.git</developerConnection>
-        <url>http://github.com/jesperfj/cliforce</url>
+        <connection>scm:git:git://github.com/forcedotcom/cliforce.git</connection>
+        <developerConnection>scm:git:git@github.com:forcedotcom/cliforce.git</developerConnection>
+        <url>http://github.com/forcedotcom/cliforce</url>
     </scm>
 
     <build>
