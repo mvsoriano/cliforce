@@ -81,20 +81,5 @@ public abstract class JCommand<T> implements Command {
         return usage.toString();
     }
 
-    static class Arg {
-        @Parameter(names = {"-t"}, description = "test")
-        String test = null;
-
-        @Parameter(description = "main")
-        List<String> mainParams;
-    }
-
-    public static void main(String[] args) {
-        JCommander commander = new JCommander(new Arg());
-        System.out.println(commander.getParameters().size());
-        JCommander commander2 = new JCommander(new Arg(), "-t", "testing");
-        System.out.println(commander2.getParameters().size());
-
-    }
 
 }
