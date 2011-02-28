@@ -4,7 +4,7 @@ import com.sforce.soap.metadata.ListMetadataQuery
 import com.force.cliforce.{Command, CommandContext}
 
 class ListCustomObjects extends Command {
-  val version: Double = 20.0
+  val version: Double = 21.0
 
   def execute(ctx: CommandContext) = {
     val q = new ListMetadataQuery

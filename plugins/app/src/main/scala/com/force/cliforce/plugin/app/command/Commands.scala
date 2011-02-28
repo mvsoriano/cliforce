@@ -174,7 +174,7 @@ class TailArg {
 class TailFileCommand extends JCommand[TailArg] {
   def name = "tail"
 
-  def describe = usage("tail a file within a given app's instance")
+  def describe = usage("tail a file within a given app's instance. Note that the app must be running.")
 
   def executeWithArgs(ctx: CommandContext, args: TailArg) = {
     val tailer = ctx.getVmForceClient.getTailFile(args.app, args.instance, args.path);

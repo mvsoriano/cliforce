@@ -114,7 +114,7 @@ public class CLIForce {
         restConnector.debug(debug);
         Level level = Level.DEBUG;
         if (!debug) {
-            level = Level.INFO;
+            level = Level.ERROR;
         }
         writer.printf("Setting logger level to %s\n", level.levelStr);
         ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);

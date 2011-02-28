@@ -87,7 +87,7 @@ class NewProjectCommand extends JCommand[NewProjectArgs] with ForceEnvAware {
       shell.execute(new NewProjectContextWrapper(ctx, cmd));
     } catch {
       case ioe: IOException => {
-        ctx.getCommandWriter.println("It appears you either dont have maven installed or on your path. Both are required to run this command.")
+        ctx.getCommandWriter.println("It appears you either dont have maven installed, or it is not on your path. Both are required to run this command.")
         ctx.getCommandWriter.println(ioe.getMessage)
       }
     }
