@@ -17,9 +17,11 @@ public interface CommandContext {
 
     RestConnection getRestConnection();
 
+    ForceEnv getForceEnv();
+
     /**
      * This array will have the arguments passed to a given command, but not the actual command.
-     *
+     * <p/>
      * Example:<p/>
      * user types: "someplugin:somecommand -a somearg -b someotherarg somemainarg
      * getCommandArguments returns {"-a", "somearg", "-b", "someotherarg", "somemainarg"}

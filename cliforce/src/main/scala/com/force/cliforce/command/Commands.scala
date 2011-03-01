@@ -1,15 +1,7 @@
 package com.force.cliforce.command
 
-import com.sforce.soap.metadata.ListMetadataQuery
-import com.vmforce.client.bean.ApplicationInfo
-import collection.JavaConversions._
 import com.beust.jcommander.Parameter
-import java.util.{Collections, ArrayList}
-import com.vmforce.client.bean.ApplicationInfo.{StagingBean, ModelEnum, StackEnum, ResourcesBean}
-import com.force.cliforce.DefaultPlugin.ShellCommand
-import java.io.IOException
 import com.force.cliforce._
-
 
 
 class BannerCommand extends Command {
@@ -32,7 +24,6 @@ class BannerCommand extends Command {
 }
 
 
-
 class DebugArgs {
   @Parameter(names = Array("--on"), description = "Turns on debug logging to the console")
   val on = false
@@ -41,14 +32,14 @@ class DebugArgs {
 
 }
 
-class DebugCommand(force: CLIForce) extends JCommand[DebugArgs] {
+class DebugCommand() extends JCommand[DebugArgs] {
   def describe = usage("turns debug output on/off")
 
   def name = "debug"
 
   def executeWithArgs(ctx: CommandContext, args: DebugArgs) = {
     if (args.on ^ args.off) {
-      force.setDebug(args.on)
+      CLIForce.getInstance.setDebug(args.on)
     }
   }
 }

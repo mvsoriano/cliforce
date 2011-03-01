@@ -27,6 +27,7 @@ public class TestCommandContext implements CommandContext {
     private CommandReader commandReader;
     private VMForceClient vmForceClient;
     private CommandWriter commandWriter;
+    private ForceEnv forceEnv;
 
 
     @Override
@@ -64,6 +65,10 @@ public class TestCommandContext implements CommandContext {
         return commandWriter;
     }
 
+    @Override
+    public ForceEnv getForceEnv() {
+        return forceEnv;
+    }
 
     public TestCommandContext withMetadataConnection(MetadataConnection metadataConnection) {
         TestCommandContext copy = copy();
@@ -73,37 +78,43 @@ public class TestCommandContext implements CommandContext {
 
     public TestCommandContext withPartnerConnection(PartnerConnection partnerConnection) {
         TestCommandContext copy = copy();
-        this.partnerConnection = partnerConnection;
+        copy.partnerConnection = partnerConnection;
         return copy;
     }
 
     public TestCommandContext withRestConnection(RestConnection restConnection) {
         TestCommandContext copy = copy();
-        this.restConnection = restConnection;
+        copy.restConnection = restConnection;
         return copy;
     }
 
     public TestCommandContext withCommandArguments(String[] commandArguments) {
         TestCommandContext copy = copy();
-        this.commandArguments = commandArguments;
+        copy.commandArguments = commandArguments;
         return copy;
     }
 
     public TestCommandContext withCommandReader(CommandReader commandReader) {
         TestCommandContext copy = copy();
-        this.commandReader = commandReader;
+        copy.commandReader = commandReader;
         return copy;
     }
 
     public TestCommandContext withVmForceClient(VMForceClient vmForceClient) {
         TestCommandContext copy = copy();
-        this.vmForceClient = vmForceClient;
+        copy.vmForceClient = vmForceClient;
         return copy;
     }
 
     public TestCommandContext withCommandWriter(CommandWriter commandWriter) {
         TestCommandContext copy = copy();
-        this.commandWriter = commandWriter;
+        copy.commandWriter = commandWriter;
+        return copy;
+    }
+
+    public TestCommandContext withForceEnv(ForceEnv env) {
+        TestCommandContext copy = copy();
+        copy.forceEnv = env;
         return copy;
     }
 
@@ -116,6 +127,7 @@ public class TestCommandContext implements CommandContext {
         tcc.commandReader = commandReader;
         tcc.commandWriter = commandWriter;
         tcc.vmForceClient = vmForceClient;
+        tcc.forceEnv = forceEnv;
         return tcc;
     }
 }

@@ -30,7 +30,7 @@ class NewProjectArgs {
 
   def getGroupArtifact(): (String, String) = {
     val ag = "com.force.sdk"
-    val art = typ+"-archetype"
+    val art = typ + "-archetype"
     (ag, art)
   }
 
@@ -44,6 +44,8 @@ class NewProjectContextWrapper(val ctx: CommandContext, val args: Array[String])
 
   def getCommandReader = ctx.getCommandReader
 
+  def getForceEnv = ctx.getForceEnv
+
   def getCommandArguments = args
 
   def getRestConnection = ctx.getRestConnection
@@ -53,22 +55,17 @@ class NewProjectContextWrapper(val ctx: CommandContext, val args: Array[String])
   def getMetadataConnection = ctx.getMetadataConnection
 }
 
-class NewProjectCommand extends JCommand[NewProjectArgs] with ForceEnvAware {
+class NewProjectCommand extends JCommand[NewProjectArgs] {
 
-  var forceEnv: ForceEnv = null
 
-  def setForceEnv(env: ForceEnv) = {
-    forceEnv = env
-  }
-
-  def getGroupFromEnv(artifact: String) = {
+  def getGroupFromEnv(forceEnv: ForceEnv, artifact: String) = {
     val pkg = forceEnv.getUser.substring(forceEnv.getUser.indexOf("@") + 1)
     pkg.split("\\.").reverse.reduceLeft((acc, str) => acc + "." + str) + "." + artifact
   }
 
   def executeWithArgs(ctx: CommandContext, args: NewProjectArgs) = {
     if (args.group eq null) {
-      args.group = getGroupFromEnv(args.artifact)
+      args.group = getGroupFromEnv(ctx.getForceEnv, args.artifact)
     }
     val shell = new ShellCommand
     val cmd = Array("mvn", "archetype:generate", "-DinteractiveMode=false",
@@ -80,7 +77,7 @@ class NewProjectCommand extends JCommand[NewProjectArgs] with ForceEnvAware {
       "-DartifactId=" + args.artifact,
       "-Dversion=" + args.version,
       "-Dpackagename=" + args.getpkg,
-      "-DforceUrl=" + forceEnv.getUrl
+      "-DforceUrl=" + ctx.getForceEnv.getUrl
     )
     ctx.getCommandWriter.println("Executing:" + cmd.reduceLeft((acc, str) => acc + " " + str))
     try {

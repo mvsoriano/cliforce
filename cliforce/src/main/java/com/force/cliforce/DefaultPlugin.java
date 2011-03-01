@@ -5,7 +5,6 @@ import com.force.cliforce.command.BannerCommand;
 import com.force.cliforce.command.DebugCommand;
 import com.force.cliforce.dependency.DependencyResolver;
 import com.force.cliforce.dependency.OutputAdapter;
-import com.sforce.ws.util.Verbose;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,13 +32,12 @@ public class DefaultPlugin implements Plugin {
         return Arrays.asList(
                 new ShellCommand(),
                 new BannerCommand(),
-                new HistoryCommand(force),
-                new DebugCommand(force),
-                new ConnectionInfoCommand(force),
-                new HelpCommand(force),
-                new PluginCommand(force),
-                new RequirePluginCommand(force),
-                new UnplugCommand(force),
+                new HistoryCommand(),
+                new DebugCommand(),
+                new HelpCommand(),
+                new PluginCommand(),
+                new RequirePluginCommand(),
+                new UnplugCommand(),
                 new VersionCommand(),
                 new Command() {
                     @Override
@@ -61,11 +59,7 @@ public class DefaultPlugin implements Plugin {
 
 
     public static class HelpCommand implements Command {
-        private CLIForce force;
 
-        public HelpCommand(CLIForce it) {
-            force = it;
-        }
 
         @Override
         public String name() {
@@ -79,24 +73,25 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public void execute(CommandContext ctx) throws Exception {
+            Map<String, String> descs = CLIForce.getInstance().getCommandDescriptions();
             if (ctx.getCommandArguments().length == 0) {
                 int longCmd = 0;
-                for (String key : force.commands.keySet()) {
+                for (String key : descs.keySet()) {
                     longCmd = Math.max(longCmd, key.length());
                 }
                 int offset = longCmd + 4;
 
-                for (Map.Entry<String, Command> entry : force.commands.entrySet()) {
+                for (Map.Entry<String, String> entry : descs.entrySet()) {
                     String pad = pad(offset - entry.getKey().length());
-                    ctx.getCommandWriter().printf("%s:" + pad + "%s\n", entry.getKey(), entry.getValue().describe());
+                    ctx.getCommandWriter().printf("%s:" + pad + "%s\n", entry.getKey(), entry.getValue());
                 }
             } else {
                 String key = ctx.getCommandArguments()[0];
-                Command c = force.commands.get(key);
-                if (c == null) {
+                String desc = descs.get(key);
+                if (desc == null) {
                     ctx.getCommandWriter().printf("No such command: %s\n", key);
                 } else {
-                    ctx.getCommandWriter().printf("%s:\t\t\t %s\n", key, c.describe());
+                    ctx.getCommandWriter().printf("%s:\t\t\t %s\n", key, desc);
                 }
             }
         }
@@ -108,39 +103,15 @@ public class DefaultPlugin implements Plugin {
         }
     }
 
-    public static class ConnectionInfoCommand implements Command {
 
-        private CLIForce force;
-
-        @Override
-        public String name() {
-            return "connection";
-        }
-
-        public ConnectionInfoCommand(CLIForce it) {
-            force = it;
-        }
-
-
-        @Override
-        public String describe() {
-            return "Show the current connection info:";
-        }
-
-        @Override
-        public void execute(CommandContext ctx) throws Exception {
-            ctx.getCommandWriter().printf("Current User: %s\n", force.forceEnv.getUser());
-            ctx.getCommandWriter().printf("Current Endpoint: %s\n", force.forceEnv.getHost());
-        }
-    }
 
     public static class PluginArgs {
 
         @Parameter(description = "maven artifact id for an artifact in group com.force.cliforce.plugin")
         public List<String> artifacts = new ArrayList<String>();
 
-        public void setArtifact(String artifact){
-            artifacts.add(0,artifact);
+        public void setArtifact(String artifact) {
+            artifacts.add(0, artifact);
         }
 
         public String artifact() {
@@ -160,11 +131,7 @@ public class DefaultPlugin implements Plugin {
     public static class PluginCommand extends JCommand<PluginArgs> {
 
         public static final String PLUGIN_GROUP = "com.force.cliforce.plugin";
-        private CLIForce force;
 
-        public PluginCommand(CLIForce it) {
-            force = it;
-        }
 
         @Override
         public String name() {
@@ -186,13 +153,13 @@ public class DefaultPlugin implements Plugin {
             CommandWriter output = ctx.getCommandWriter();
             if (arg.artifact() == null) {
                 output.println("Listing plugins...");
-                for (Map.Entry<String, Plugin> e : force.plugins.entrySet()) {
-                    output.printf("Plugin: %s (%s)\n", e.getKey(), e.getValue().getClass().getName());
+                for (Map.Entry<String, String> e : CLIForce.getInstance().getInstalledPlugins().entrySet()) {
+                    output.printf("Plugin: %s (%s)\n", e.getKey(), e.getValue());
                 }
                 output.println("Done.");
             } else {
 
-                if (force.plugins.containsKey(arg.artifact())) {
+                if (CLIForce.getInstance().getInstalledPluginVersion(arg.artifact()) != null) {
                     output.printf("Plugin %s is already installed, please execute 'unplug %s' before running this command", arg.artifact(), arg.artifact());
                     return;
                 }
@@ -225,30 +192,13 @@ public class DefaultPlugin implements Plugin {
                     }
                     Plugin p = iterator.next();
 
-                    List<Command> commands = p.getCommands();
-                    force.plugins.put(arg.artifact(), p);
-                    if (!arg.internal) {
-                        force.installedPlugins.setProperty(arg.artifact(), arg.version);
-                        force.saveInstalledPlugins(output);
-                        output.printf("Adding Plugin: %s (%s)\n", arg.artifact(), p.getClass().getName());
-                    }
-
-                    for (Command command : commands) {
-                        if (!arg.internal) {
-                            output.printf("\tadds command %s:%s (%s)\n", arg.artifact(), command.name(), command.getClass().getName());
-                        }
-                        force.commands.put(arg.artifact() + ":" + command.name(), command);
-                        if (command instanceof ForceEnvAware) {
-                            ((ForceEnvAware) command).setForceEnv(force.forceEnv);
-                        }
-                    }
+                    CLIForce.getInstance().installPlugin(arg.artifact(), arg.version, p, arg.internal);
 
                     while (iterator.hasNext()) {
                         Plugin ignore = iterator.next();
                         output.printf("only one plugin per artifact is supported, %s will not be registered\n", ignore.getClass().getName());
                     }
                     loader.reload();
-                    force.reloadCompletions();
                 } finally {
                     Thread.currentThread().setContextClassLoader(curr);
                 }
@@ -260,11 +210,7 @@ public class DefaultPlugin implements Plugin {
 
     public static class RequirePluginCommand extends JCommand<PluginArgs> {
 
-        private CLIForce force;
 
-        public RequirePluginCommand(CLIForce it) {
-            force = it;
-        }
 
         @Override
         public String name() {
@@ -284,7 +230,7 @@ public class DefaultPlugin implements Plugin {
         @Override
         public void executeWithArgs(final CommandContext ctx, PluginArgs arg) {
             CommandWriter output = ctx.getCommandWriter();
-            String version = force.installedPlugins.getProperty(arg.artifact());
+            String version = CLIForce.getInstance().getInstalledPluginVersion(arg.artifact());
             if (version == null) {
                 ctx.getCommandWriter().printf("Required Plugin %s version %s is not installed, exiting\n", arg.artifact(), arg.version);
                 throw new ExitException("Required Plugin Not Installed");
@@ -300,11 +246,7 @@ public class DefaultPlugin implements Plugin {
 
 
     public static class UnplugCommand implements Command {
-        private CLIForce force;
 
-        public UnplugCommand(CLIForce it) {
-            force = it;
-        }
 
         @Override
         public String name() {
@@ -320,21 +262,7 @@ public class DefaultPlugin implements Plugin {
         public void execute(CommandContext ctx) throws Exception {
             for (String arg : ctx.getCommandArguments()) {
                 ctx.getCommandWriter().printf("Removing plugin: %s\n", arg);
-                Plugin p = force.plugins.remove(arg);
-                if (p == null) {
-                    ctx.getCommandWriter().println("....not found");
-                } else {
-                    for (Command command : p.getCommands()) {
-                        force.commands.remove(arg + ":" + command.name());
-                        ctx.getCommandWriter().printf("\tremoved command: %s\n", command.name());
-                    }
-                    force.reloadCompletions();
-                    force.installedPlugins.remove(arg);
-                    force.saveInstalledPlugins(ctx.getCommandWriter());
-                    ctx.getCommandWriter().println("Done");
-                }
-
-
+                CLIForce.getInstance().removePlugin(arg);
             }
         }
     }
@@ -342,11 +270,6 @@ public class DefaultPlugin implements Plugin {
 
     public static class HistoryCommand implements Command {
 
-        private CLIForce force;
-
-        public HistoryCommand(CLIForce force) {
-            this.force = force;
-        }
 
         @Override
         public String name() {
@@ -360,7 +283,7 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public void execute(CommandContext ctx) throws Exception {
-            List<String> historyList = (List<String>) force.reader.getHistory().getHistoryList();
+            List<String> historyList = CLIForce.getInstance().getHistoryList();
             for (String s : historyList) {
                 ctx.getCommandWriter().println(s);
             }
@@ -429,7 +352,7 @@ public class DefaultPlugin implements Plugin {
 
     }
 
-    public static class VersionCommand implements Command{
+    public static class VersionCommand implements Command {
         @Override
         public String name() {
             return "version";
