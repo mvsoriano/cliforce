@@ -3,7 +3,7 @@
   <groupId>com.force.cliforce</groupId>
   <artifactId>cliforce-parent</artifactId>
   <packaging>pom</packaging>
-  <version>0.0.2-BETA</version>
+  <version>0.0.3-SNAPSHOT</version>
   <modules>
     <module>boot</module>
     <module>cliforce</module>
