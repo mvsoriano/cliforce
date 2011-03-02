@@ -21,12 +21,6 @@ import static java.lang.String.format;
 public class DefaultPlugin implements Plugin {
 
 
-    private CLIForce force;
-
-    public DefaultPlugin(CLIForce it) {
-        force = it;
-    }
-
     @Override
     public List<Command> getCommands() {
         return Arrays.asList(
@@ -39,6 +33,8 @@ public class DefaultPlugin implements Plugin {
                 new RequirePluginCommand(),
                 new UnplugCommand(),
                 new VersionCommand(),
+                new EnvCommand(),
+                new SyspropsCommand(),
                 new Command() {
                     @Override
                     public String name() {
@@ -102,7 +98,6 @@ public class DefaultPlugin implements Plugin {
             return padb.toString();
         }
     }
-
 
 
     public static class PluginArgs {
@@ -211,7 +206,6 @@ public class DefaultPlugin implements Plugin {
     public static class RequirePluginCommand extends JCommand<PluginArgs> {
 
 
-
         @Override
         public String name() {
             return "require";
@@ -309,7 +303,19 @@ public class DefaultPlugin implements Plugin {
                 b.append(s).append(" ");
             }
 
-            Process start = new ProcessBuilder(ctx.getCommandArguments()).start();
+            String[] args;
+            if (System.getProperty("os.name").toLowerCase().contains("win")) {
+                args = new String[ctx.getCommandArguments().length + 2];
+                args[0] = "cmd";
+                args[1] = "/c";
+                System.arraycopy(ctx.getCommandArguments(), 0, args, 2, ctx.getCommandArguments().length);
+            } else {
+                args = ctx.getCommandArguments();
+            }
+            if (CLIForce.getInstance().isDebug()) {
+                ctx.getCommandWriter().printf("sh: Executing: %s\n", Arrays.toString(args));
+            }
+            Process start = new ProcessBuilder(args).start();
             Thread t = new Thread(new Reader(start.getInputStream(), ctx.getCommandWriter(), format("sh->%s:stdout#", ctx.getCommandArguments()[0])));
             Thread err = new Thread(new Reader(start.getErrorStream(), ctx.getCommandWriter(), format("sh->%s:stderr#", ctx.getCommandArguments()[0])));
             t.setDaemon(true);
@@ -372,6 +378,44 @@ public class DefaultPlugin implements Plugin {
             ctx.getCommandWriter().printf("artifactId:%s\n", cliforceProperties.getProperty("artifactId"));
             ctx.getCommandWriter().printf("version:%s\n", cliforceProperties.getProperty("version"));
             ctx.getCommandWriter().printf("builtAt:%s\n", cliforceProperties.getProperty("builtAt"));
+        }
+    }
+
+    public static class EnvCommand implements Command {
+        @Override
+        public String name() {
+            return "env";
+        }
+
+        @Override
+        public String describe() {
+            return "Display the current environment variables";
+        }
+
+        @Override
+        public void execute(CommandContext ctx) throws Exception {
+            for (Map.Entry<String, String> env : System.getenv().entrySet()) {
+                ctx.getCommandWriter().printf("%s = %s\n", env.getKey(), env.getValue());
+            }
+        }
+    }
+
+    public static class SyspropsCommand implements Command {
+        @Override
+        public String name() {
+            return "sysprops";
+        }
+
+        @Override
+        public String describe() {
+            return "Display the current java system properties";
+        }
+
+        @Override
+        public void execute(CommandContext ctx) throws Exception {
+            for (String prop : System.getProperties().stringPropertyNames()) {
+                ctx.getCommandWriter().printf("%s = %s\n", prop, System.getProperty(prop));
+            }
         }
     }
 

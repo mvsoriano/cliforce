@@ -279,7 +279,7 @@ public class CLIForce {
         SLF4JBridgeHandler.install();
 
 
-        Plugin def = new DefaultPlugin(this);
+        Plugin def = new DefaultPlugin();
         for (Command command : def.getCommands()) {
             commands.put(command.name(), command);
         }
