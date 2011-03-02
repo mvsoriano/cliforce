@@ -26,11 +26,11 @@ import java.util.concurrent.*;
 
 public class CLIForce {
 
-    /*package protected fields are accessed by commands in the default plugin*/
+
     /**
      * This field is lazy initialized by getLogger, shouldnt use directly.
      */
-    private static CLIForce cliForce;
+    private static CLIForce cliForce = new CLIForce();
     private static Logger logger;
     public static final String FORCEPROMPT = "force> ";
     public static final String EXITCMD = "exit";
@@ -70,7 +70,7 @@ public class CLIForce {
 
     public static void main(String[] args) {
 
-        cliForce = new CLIForce();
+
         try {
             cliForce.init(System.in, new PrintWriter(
                     new OutputStreamWriter(System.out,
@@ -422,6 +422,10 @@ public class CLIForce {
         reader.addCompletor(completor);
     }
 
+    /**
+     * Main run loop.
+     * @throws InterruptedException
+     */
     public void run() throws InterruptedException {
         try {
             commands.get("banner").execute(getContext(new String[0]));
@@ -681,6 +685,13 @@ public class CLIForce {
         }
     }
 
+    /**
+     * base class for tasks that should be run asynchronously on startup.
+     *
+     * need to instantiate these and add them with addSetupTask(task) in init(), sometime before
+     * executeSetupTasks is called.
+     *
+     */
     private abstract class SetupTask implements Runnable {
 
         public abstract void setup();
