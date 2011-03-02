@@ -475,7 +475,7 @@ public class CLIForce {
             return new Context(currentEnv, envConnections.forceServiceConnector, envConnections.vmForceClient, args, commandReader, writer);
         } else {
             if (initLatch.getCount() == 0) {
-                getLogger().error("Could not get a valid connection for the current force url. Executing the command without force service connector or vmforce client");
+                getLogger().warn("Could not get a valid connection for the current force url. Executing the command without force service connector or vmforce client");
             }
             return new Context(currentEnv, null, null, args, commandReader, writer);
         }

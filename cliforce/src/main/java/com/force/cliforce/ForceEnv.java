@@ -140,7 +140,7 @@ public class ForceEnv {
 
 
     /**
-     * Equals and hashcode are relied upon to
+     * Equals and hashcode are relied upon so we can use these as a map key to lookup cached connections.
      * @param o
      * @return
      */
