@@ -24,6 +24,7 @@
       <groupId>com.force.cliforce</groupId>
       <artifactId>cliforce</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 </project>

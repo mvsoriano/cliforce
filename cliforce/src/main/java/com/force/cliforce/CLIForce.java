@@ -21,6 +21,7 @@ import javax.servlet.ServletException;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -92,7 +93,7 @@ public class CLIForce {
         } catch (InterruptedException e) {
             getLogger().error("Main Thread Interrupted while waiting for plugin initialization", e);
             System.exit(1);
-        } catch(ExitException e){
+        } catch (ExitException e) {
             getLogger().error("ExitException->Exiting");
             System.exit(1);
         }
@@ -427,6 +428,7 @@ public class CLIForce {
 
     /**
      * Main run loop.
+     *
      * @throws InterruptedException
      */
     public void run() throws InterruptedException {
@@ -475,6 +477,17 @@ public class CLIForce {
         }
     }
 
+    public List<URL> getClasspathForPlugin(String plugin) {
+        if (plugin == null) {
+            return Arrays.asList(((URLClassLoader) CLIForce.class.getClassLoader()).getURLs());
+        }
+        Plugin p = plugins.get(plugin);
+        if (p == null) {
+            return null;
+        } else {
+            return Arrays.asList(((URLClassLoader) p.getClass().getClassLoader()).getURLs());
+        }
+    }
 
     private CommandContext getContext(String[] args) {
         EnvConnections envConnections = getEnvConnections(currentEnv);
@@ -690,10 +703,9 @@ public class CLIForce {
 
     /**
      * base class for tasks that should be run asynchronously on startup.
-     *
+     * <p/>
      * need to instantiate these and add them with addSetupTask(task) in init(), sometime before
      * executeSetupTasks is called.
-     *
      */
     private abstract class SetupTask implements Runnable {
 

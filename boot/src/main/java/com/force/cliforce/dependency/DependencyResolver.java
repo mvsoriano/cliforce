@@ -181,6 +181,10 @@ public class DependencyResolver {
         if (dependency.getArtifact().getGroupId().equals("commons-logging") && dependency.getArtifact().getArtifactId().equals("commons-logging")) {
             return false;
         }
+
+        if (dependency.getArtifact().getGroupId().equals("commons-logging") && dependency.getArtifact().getArtifactId().equals("commons-logging-api")) {
+            return false;
+        }
         return true;
     }
 

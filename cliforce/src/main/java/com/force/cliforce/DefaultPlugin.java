@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.*;
 
 import static java.lang.String.format;
@@ -35,6 +36,7 @@ public class DefaultPlugin implements Plugin {
                 new VersionCommand(),
                 new EnvCommand(),
                 new SyspropsCommand(),
+                new ClasspathCommand(),
                 new Command() {
                     @Override
                     public String name() {
@@ -415,6 +417,39 @@ public class DefaultPlugin implements Plugin {
         public void execute(CommandContext ctx) throws Exception {
             for (String prop : System.getProperties().stringPropertyNames()) {
                 ctx.getCommandWriter().printf("%s = %s\n", prop, System.getProperty(prop));
+            }
+        }
+    }
+
+
+    public static class ClasspathArg {
+        @Parameter(description = "name of the plugin to get the classpath for, or none for the cliforce classpath")
+        public List<String> plugins = new ArrayList<String>();
+
+
+        public String plugin() {
+            return plugins.size() > 0 ? plugins.get(0) : null;
+        }
+    }
+
+    public static class ClasspathCommand extends JCommand<ClasspathArg> {
+
+        @Override
+        public String name() {
+            return "classpath";
+        }
+
+        @Override
+        public String describe() {
+            return usage("show the classpath for a cliforce plugin, or for cliforce itself. \n " +
+                    "Note that the classloader of cliforce is the parent classloader of plugin classloaders");
+        }
+
+        @Override
+        public void executeWithArgs(CommandContext ctx, ClasspathArg args) {
+            List<URL> classpathForCommand = CLIForce.getInstance().getClasspathForPlugin(args.plugin());
+            for (URL url : classpathForCommand) {
+                ctx.getCommandWriter().println(url.toString());
             }
         }
     }
