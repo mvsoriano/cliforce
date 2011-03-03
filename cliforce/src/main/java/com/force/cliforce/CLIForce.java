@@ -500,7 +500,7 @@ public class CLIForce {
                 config.setPassword(env.getPassword());
                 config.setTraceMessage(false);
                 config.setPrettyPrintXml(true);
-                ForceServiceConnector connector = new ForceServiceConnector("cliforce", config);
+                ForceServiceConnector connector = new ForceServiceConnector(config);
                 VMForceClient forceClient = new VMForceClient();
                 RestTemplateConnector restConnector = new RestTemplateConnector();
                 try {
