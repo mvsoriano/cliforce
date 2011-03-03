@@ -449,7 +449,12 @@ public class CLIForce {
 
     private void executeWithArgs(String[] cmds) throws InterruptedException {
         String cmdKey = cmds[0];
-        initLatch.await();
+        if (!cmdKey.equals(EXITCMD)) {
+            //we dont wait on the latch if somone runs cliforce exit.
+            //this is useful to measure "startup time to get to the prompt"
+            //by running> time cliforce exit
+            initLatch.await();
+        }
         Command cmd = commands.get(cmdKey);
         String[] args = cmds.length > 1 ? Arrays.copyOfRange(cmds, 1, cmds.length) : new String[0];
         if (!cmdKey.equals("") && !cmdKey.equals(EXITCMD)) {
