@@ -92,6 +92,9 @@ public class CLIForce {
         } catch (InterruptedException e) {
             getLogger().error("Main Thread Interrupted while waiting for plugin initialization", e);
             System.exit(1);
+        } catch(ExitException e){
+            getLogger().error("ExitException->Exiting");
+            System.exit(1);
         }
     }
 
