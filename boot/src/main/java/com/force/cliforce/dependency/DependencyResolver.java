@@ -25,7 +25,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -42,6 +41,7 @@ public class DependencyResolver {
     private static DependencyResolver instance = new DependencyResolver();
 
     Properties cliforceProperties;
+    Properties repositories;
     RepositorySystem repositorySystem;
     MavenRepositorySystemSession session = new MavenRepositorySystemSession();
     String latestMetaVersion = "RELEASE";
@@ -58,10 +58,12 @@ public class DependencyResolver {
             String local = System.getProperty("user.home") + "/.m2/repository/";
             LocalRepository localRepo = new LocalRepository(local);
             session.setLocalRepositoryManager(repositorySystem.newLocalRepositoryManager(localRepo));
-            RemoteRepository central = new RemoteRepository("central", "default", "http://repo1.maven.org/maven2/");
-            RemoteRepository force = new RemoteRepository("force", "default", "http://repo.t.salesforce.com/archiva/repository/releases");
-            RemoteRepository forcesnap = new RemoteRepository("forcesnap", "default", "http://repo.t.salesforce.com/archiva/repository/snapshots");
-            remoteRepositories = Arrays.asList(forcesnap, force, central);
+            repositories = new Properties();
+            repositories.load(getClass().getClassLoader().getResourceAsStream("repositories.properties"));
+            remoteRepositories = new ArrayList<RemoteRepository>(repositories.size());
+            for (String name : repositories.stringPropertyNames()) {
+                remoteRepositories.add(new RemoteRepository(name, "default", repositories.getProperty(name)));
+            }
             cliforceProperties = new Properties();
             cliforceProperties.load(getClass().getClassLoader().getResourceAsStream("cliforce.properties"));
             //If cliforce itself is a snapshot, use "LATEST" instead of "RELEASE" to find dependencies with no version
@@ -213,6 +215,7 @@ public class DependencyResolver {
     public ClassLoader createClassLoaderFor(String groupId, String artifactId, String version, ClassLoader parent, OutputAdapter out) throws DependencyResolutionException {
         try {
             //TRY OFFLINE RESOLUTION FIRST FOR SPEED
+            //TODO verify that this is worth it..and will we ever try and download updated snapshots in the same version?
             return createClassLoaderInternal(groupId, artifactId, version, parent, true);
         } catch (DependencyResolutionException e) {
             try {
