@@ -24,9 +24,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * DependencyResolver singleton that uses maven-aether to resolve the dependency graph for a given dependency.
@@ -120,7 +118,7 @@ public class DependencyResolver {
             PreorderNodeListGenerator nlg = new PreorderNodeListGenerator();
 
             node.accept(nlg);
-            List<URL> classpath = new ArrayList<URL>();
+            Set<URL> classpath = new HashSet<URL>();
 
 
             for (DependencyNode dn : nlg.getNodes()) {
@@ -150,7 +148,7 @@ public class DependencyResolver {
 
     }
 
-    private void setupLoggingDependencies(String groupId, String artifactId, List<URL> classpath) {
+    private void setupLoggingDependencies(String groupId, String artifactId, Collection<URL> classpath) {
         if (groupId.equals(cliforceProperties.getProperty("groupId")) && artifactId.equals(cliforceProperties.getProperty("artifactId"))) {
             for (URL url : classpath) {
                 if (url.toString().contains("jcl-over-slf4j")) {
@@ -163,7 +161,7 @@ public class DependencyResolver {
         }
     }
 
-    private void addLoggingDependencies(List<URL> classpath) {
+    private void addLoggingDependencies(Collection<URL> classpath) {
         if (log4jOverSlf4j != null) classpath.add(log4jOverSlf4j);
         if (cloggingOverSlf4j != null) classpath.add(cloggingOverSlf4j);
     }

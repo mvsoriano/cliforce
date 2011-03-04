@@ -426,6 +426,9 @@ public class DefaultPlugin implements Plugin {
         @Parameter(description = "name of the plugin to get the classpath for, or none for the cliforce classpath")
         public List<String> plugins = new ArrayList<String>();
 
+        @Parameter(names = {"-s", "--sort"})
+        public Boolean sort = false;
+
 
         public String plugin() {
             return plugins.size() > 0 ? plugins.get(0) : null;
@@ -447,7 +450,19 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public void executeWithArgs(CommandContext ctx, ClasspathArg args) {
-            List<URL> classpathForCommand = CLIForce.getInstance().getClasspathForPlugin(args.plugin());
+            Collection<URL> classpathForCommand;
+            if (args.sort) {
+                classpathForCommand = new TreeSet<URL>(new Comparator<URL>() {
+                    @Override
+                    public int compare(URL o1, URL o2) {
+                        return o1.toString().compareTo(o2.toString());
+                    }
+                });
+                classpathForCommand.addAll(CLIForce.getInstance().getClasspathForPlugin(args.plugin()));
+            } else {
+                classpathForCommand = CLIForce.getInstance().getClasspathForPlugin(args.plugin());
+            }
+
             for (URL url : classpathForCommand) {
                 ctx.getCommandWriter().println(url.toString());
             }
