@@ -2,10 +2,10 @@ package com.force.cliforce.plugin.app.command
 
 import com.beust.jcommander.Parameter
 import com.vmforce.client.bean.ApplicationInfo
-import com.force.cliforce.{JCommand, CommandContext, Command}
 import com.vmforce.client.bean.ApplicationInfo.{StackEnum, ModelEnum, StagingBean, ResourcesBean}
 import java.util.{Collections, ArrayList}
 import collection.JavaConversions._
+import com.force.cliforce.{CommandWriter, JCommand, CommandContext, Command}
 
 class AppArg {
   @Parameter(description = "the name of the application", required = true)

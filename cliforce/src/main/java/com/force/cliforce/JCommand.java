@@ -2,14 +2,15 @@ package com.force.cliforce;
 
 
 import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterDescription;
 import com.beust.jcommander.ParameterException;
+import jline.Completor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * base class for Commands that use JCommander to do argument parsing, and JLine completion.
@@ -17,6 +18,8 @@ import java.util.TreeMap;
  * typically, subclasses will implement the describe method by calling usage("Some Description")
  */
 public abstract class JCommand<T> implements Command {
+
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     /**
      * Instance of an object annotated with JCommander annotations. You need to override this method if
@@ -81,5 +84,76 @@ public abstract class JCommand<T> implements Command {
         return usage.toString();
     }
 
+    /**
+     * get command completors for this command.
+     *
+     * @param writer can be used to write to cliforce, such as for displaying usage before completions
+     * @return
+     */
+    public Completor getCommandCompletor(CommandWriter writer) {
+        return new JCommandCompletor();
+    }
+
+    private class JCommandCompletor implements Completor {
+
+
+        @Override
+        public int complete(String buffer, int cursor, List candidates) {
+
+            if (buffer == null) buffer = "";
+            logger.debug(buffer);
+            logger.debug("Cursor:" + cursor);
+            JCommander j = new JCommander(getArgs());
+            String[] argv = Util.parseCommand(buffer);
+            try {
+                if (argv.length > 0 && !argv[0].equals("")) {
+                    logger.debug("JCommand parsing for autocomplete");
+                    j.parse(argv);
+                }
+            } catch (ParameterException ex) {
+                logger.debug("JCommander parameter exception during parse");
+            }
+            Set<Field> fieldsAssigned = new HashSet<Field>();
+            Field f = null;
+            Map<String, ParameterDescription> descs = new HashMap<String, ParameterDescription>();
+            try {
+                f = JCommander.class.getDeclaredField("m_descriptions");
+                f.setAccessible(true);
+                descs = (Map<String, ParameterDescription>) f.get(j);
+            } catch (NoSuchFieldException e) {
+                logger.error("error while reflecting on jcommander", e);
+            } catch (IllegalAccessException e) {
+                logger.error("error while reflecting on jcommander", e);
+            }
+
+
+            for (ParameterDescription parameterDescription : descs.values()) {
+                if (parameterDescription.isAssigned()) {
+                    fieldsAssigned.add(parameterDescription.getField());
+                }
+            }
+            for (ParameterDescription parameterDescription : j.getParameters()) {
+
+                if (!fieldsAssigned.contains(parameterDescription.getField())) {
+                    String names = parameterDescription.getNames();
+                    String complete = names;
+                    Field field = parameterDescription.getField();
+                    if (!(field.getType().equals(boolean.class) || field.getType().equals(Boolean.class))) {
+                        complete += " <" + parameterDescription.getDescription() + ">";
+                    }
+                    candidates.add(complete);
+
+
+                }
+            }
+            if (j.getMainParameterDescription() != null) {
+                if(candidates.size() == 0){
+                   candidates.add(" ");
+                }
+                candidates.add("<" + j.getMainParameterDescription() + ">");
+            }
+            return cursor;
+        }
+    }
 
 }

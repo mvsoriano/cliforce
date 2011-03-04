@@ -3,6 +3,7 @@ package com.force.cliforce;
 import ch.qos.logback.classic.Level;
 import com.force.sdk.connector.ForceConnectorConfig;
 import com.force.sdk.connector.ForceServiceConnector;
+import com.google.common.base.Joiner;
 import com.sforce.async.AsyncApiException;
 import com.sforce.async.RestConnection;
 import com.sforce.soap.metadata.MetadataConnection;
@@ -10,8 +11,10 @@ import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.ws.ConnectionException;
 import com.vmforce.client.VMForceClient;
 import com.vmforce.client.connector.RestTemplateConnector;
-import jline.*;
-import org.apache.commons.exec.CommandLine;
+import jline.Completor;
+import jline.ConsoleReader;
+import jline.History;
+import jline.SimpleCompletor;
 import org.apache.commons.httpclient.HttpHost;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +51,7 @@ public class CLIForce {
     private volatile ForceEnv currentEnv;
     private volatile String currentEnvName;
     private CommandReader commandReader;
-    private Completor completor = new SimpleCompletor(EXITCMD);
+    private Completor completor = new CliforceCompletor();
     private volatile boolean debug = false;
     private CommandWriter writer;
 
@@ -117,6 +120,13 @@ public class CLIForce {
         return plugins;
     }
 
+    public List<String> getActivePlugins() {
+        List<String> pi = new ArrayList<String>();
+        pi.addAll(plugins.keySet());
+        Collections.sort(pi);
+        return pi;
+    }
+
     /**
      * return the currently installed version of a plugin or null if not installed.
      *
@@ -133,16 +143,20 @@ public class CLIForce {
         if (!internal) {
             installedPlugins.setProperty(artifact, version);
             saveInstalledPlugins(writer);
-            writer.printf("Adding Plugin: %s (%s)\n", artifact, p.getClass().getName());
+            if (initLatch.getCount() == 0) {
+                writer.printf("Adding Plugin: %s (%s)\n", artifact, p.getClass().getName());
+            }
         }
 
         for (Command command : pcommands) {
             if (!internal) {
-                writer.printf("\tadds command %s:%s (%s)\n", artifact, command.name(), command.getClass().getName());
+                if (initLatch.getCount() == 0) {
+                    writer.printf("\tadds command %s:%s (%s)\n", artifact, command.name(), command.getClass().getName());
+                }
             }
             commands.put(artifact + ":" + command.name(), command);
         }
-        reloadCompletions();
+
     }
 
     void removePlugin(String artifactId) {
@@ -154,7 +168,7 @@ public class CLIForce {
                 commands.remove(artifactId + ":" + command.name());
                 writer.printf("\tremoved command: %s\n", command.name());
             }
-            reloadCompletions();
+
             installedPlugins.remove(artifactId);
             saveInstalledPlugins(writer);
             writer.println("Done");
@@ -310,7 +324,7 @@ public class CLIForce {
         } else {
             reader.setHistory(new History(hist));
         }
-        reloadCompletions();
+
         reader.setBellEnabled(false);
         commandReader = new Reader();
 
@@ -413,17 +427,34 @@ public class CLIForce {
 
     }
 
-    private synchronized void reloadCompletions() {
-        reader.removeCompletor(completor);
-        List<Completor> completors = new ArrayList<Completor>();
-        for (Map.Entry<String, Command> entry : commands.entrySet()) {
-            List<Completor> cmdCompletors = new ArrayList<Completor>();
-            cmdCompletors.add(new SimpleCompletor(entry.getKey()));
-            cmdCompletors.add(new SimpleCompletor(new String[]{" ", entry.getValue().describe()}));
-            completors.add(new ArgumentCompletor(cmdCompletors));
+
+    private class CliforceCompletor implements Completor {
+        @Override
+        public int complete(String buffer, int cursor, List candidates) {
+            String[] args = Util.parseCommand(buffer);
+            int cmd = new SimpleCompletor(commands.keySet().toArray(new String[0])).complete(args[0], cursor, candidates);
+            if (candidates.size() == 0 && buffer != null && buffer.length() > 0) {
+                return 0;
+            } else if (candidates.size() == 1 && (buffer.endsWith(" ") || args.length > 1)) {
+                String candidate = (String) candidates.remove(0);
+                Command command = commands.get(args[0]);
+                if (command != null) {
+                    if (command instanceof JCommand) {
+                        String rest = Joiner.on(" ").join(Arrays.copyOfRange(args, 1, args.length));
+                        return ((JCommand<?>) command).getCommandCompletor(writer).complete(rest, cursor, candidates);
+                    } else {
+                        candidates.add(" ");
+                        candidates.add(command.describe());
+                        return cursor;
+                    }
+                } else {
+                    return cmd;
+                }
+
+            } else {
+                return cmd;
+            }
         }
-        completor = new MultiCompletor(completors);
-        reader.addCompletor(completor);
     }
 
     /**
@@ -692,14 +723,7 @@ public class CLIForce {
             try {
                 String line = reader.readLine(prompt);
                 if (line == null) line = EXITCMD;
-                if (line.equals("")) return new String[]{""};
-                CommandLine c = CommandLine.parse(line);
-                String exe = c.getExecutable();
-                String[] args = c.getArguments();
-                String[] all = new String[args.length + 1];
-                all[0] = exe;
-                System.arraycopy(args, 0, all, 1, args.length);
-                return all;
+                return Util.parseCommand(line);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

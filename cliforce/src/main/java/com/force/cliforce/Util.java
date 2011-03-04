@@ -1,6 +1,8 @@
 package com.force.cliforce;
 
 
+import org.apache.commons.exec.CommandLine;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -59,6 +61,23 @@ public class Util {
 
     static File getForcePropertiesFile(String name) {
         return new File(System.getProperty("user.home") + "/.force_" + name);
+    }
+
+    /**
+     * parse a command string into a string array, interpreting quoted values as a single string.
+     *
+     * @param cmd
+     * @return
+     */
+    public static String[] parseCommand(String cmd) {
+        if (cmd == null || cmd.equals("")) return new String[]{""};
+        CommandLine c = CommandLine.parse(cmd);
+        String exe = c.getExecutable();
+        String[] args = c.getArguments();
+        String[] all = new String[args.length + 1];
+        all[0] = exe;
+        System.arraycopy(args, 0, all, 1, args.length);
+        return all;
     }
 
 
