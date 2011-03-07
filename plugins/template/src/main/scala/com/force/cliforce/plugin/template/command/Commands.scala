@@ -58,7 +58,10 @@ class NewProjectContextWrapper(val ctx: CommandContext, val args: Array[String])
 class NewProjectCommand extends JCommand[NewProjectArgs] {
 
 
-  def getGroupFromEnv(forceEnv: ForceEnv, artifact: String) = {
+  def getGroupFromEnv(forceEnv: ForceEnv, artifact: String): String = {
+    if (forceEnv == null) {
+      return "com.force"
+    }
     val pkg = forceEnv.getUser.substring(forceEnv.getUser.indexOf("@") + 1)
     pkg.split("\\.").reverse.reduceLeft((acc, str) => acc + "." + str) + "." + artifact
   }
@@ -76,8 +79,7 @@ class NewProjectCommand extends JCommand[NewProjectArgs] {
       "-DgroupId=" + args.group,
       "-DartifactId=" + args.artifact,
       "-Dversion=" + args.version,
-      "-Dpackagename=" + args.getpkg,
-      "-DforceUrl=" + ctx.getForceEnv.getUrl
+      "-Dpackagename=" + args.getpkg
     )
     ctx.getCommandWriter.println("Executing:" + cmd.reduceLeft((acc, str) => acc + " " + str))
     try {

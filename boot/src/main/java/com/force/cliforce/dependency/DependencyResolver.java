@@ -99,7 +99,7 @@ public class DependencyResolver {
     }
 
 
-    private URLClassLoader createClassLoaderInternal(String groupId, String artifactId, String version, ClassLoader parent, boolean offline) {
+    private URLClassLoader createClassLoaderInternal(String groupId, String artifactId, String version, ClassLoader parent) {
         try {
 
             DefaultArtifact defaultArtifact = new DefaultArtifact(groupId + ":" + artifactId + ":" + version);
@@ -110,7 +110,7 @@ public class DependencyResolver {
             for (RemoteRepository remoteRepository : remoteRepositories) {
                 collectRequest.addRepository(remoteRepository);
             }
-            session.setOffline(offline);
+
             DependencyNode node = repositorySystem.collectDependencies(session, collectRequest).getRoot();
 
             repositorySystem.resolveDependencies(session, node, null);
@@ -216,18 +216,12 @@ public class DependencyResolver {
      */
     public ClassLoader createClassLoaderFor(String groupId, String artifactId, String version, ClassLoader parent, OutputAdapter out) throws DependencyResolutionException {
         try {
-            //TRY OFFLINE RESOLUTION FIRST FOR SPEED
-            //TODO verify that this is worth it..and will we ever try and download updated snapshots in the same version?
-            return createClassLoaderInternal(groupId, artifactId, version, parent, true);
-        } catch (DependencyResolutionException e) {
-            try {
-                return createClassLoaderInternal(groupId, artifactId, version, parent, false);
-            } catch (DependencyResolutionException dre) {
-                out.println(dre, "Exception resolving dependencies after trying both offline and online mode");
-                throw dre;
-            }
-
+            return createClassLoaderInternal(groupId, artifactId, version, parent);
+        } catch (DependencyResolutionException dre) {
+            out.println(dre, "Exception resolving dependencies after trying both offline and online mode");
+            throw dre;
         }
+
     }
 
 
