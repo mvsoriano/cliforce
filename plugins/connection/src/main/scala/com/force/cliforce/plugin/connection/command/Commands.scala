@@ -53,6 +53,13 @@ class AddConnectionCommand extends Command {
         val env = new ForceEnv(ctx.getCommandArguments.apply(1), "cliforce");
         if (env.isValid) {
           CLIForce.getInstance.setAvailableEnvironment(name, env)
+          if (CLIForce.getInstance.getAvailableEnvironments.size == 1) {
+            CLIForce.getInstance.setDefaultEnvironment(name)
+            CLIForce.getInstance.setCurrentEnvironment(name)
+          }
+
+        } else {
+          ctx.getCommandWriter.printf("The url entered is invalid, reason:%s\n", env.getMessage)
         }
       }
     }
