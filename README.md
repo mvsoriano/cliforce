@@ -92,7 +92,7 @@ You see the force prompt.
 
 Enter the following command at the prompt.
 
-       force> connection:add test force://test.salesforce.com;user=scott@acme.com;password=tiger
+    force> connection:add test force://test.salesforce.com;user=scott@acme.com;password=tiger
 
 This will add a connection to cliforce, which is persisted in ~/.force_urls, so you only have to perform this step once.
 
