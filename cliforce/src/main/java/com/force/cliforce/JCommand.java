@@ -89,12 +89,6 @@ public abstract class JCommand<T> implements Command {
      * return the offset of where the cursor should be placed.
      */
     public int complete(String origBuff, String[] parsed, int cursor, List candidates) {
-        int parsedLength = 0;
-        for (String s : parsed) {
-            parsedLength += s.length();
-        }
-
-
         String[] argv = Arrays.copyOfRange(parsed, 1, parsed.length);
         String last = getLastArgumentForCompletion(argv);
         String bufWithoutLast = origBuff.substring(0, origBuff.lastIndexOf(last));
@@ -188,7 +182,7 @@ public abstract class JCommand<T> implements Command {
         */
         logger.debug("sub candidates:" + subCandidates.size());
 
-        if (subCandidates.size() == 1 && !subCandidates.get(0).startsWith("<")) {
+        if (subCandidates.size() == 1 && !isMainParam(subCandidates.get(0))) {
             StringBuilder b = new StringBuilder(bufWithoutLast);
             if (isLastArgAVal) {
                 b.append(last).append(" ");
@@ -198,23 +192,26 @@ public abstract class JCommand<T> implements Command {
         } else if (subCandidates.size() == 0) {
             return -1;
         } else {
-
-            for (String subCandidate : subCandidates) {
-                if (isLastArgAVal) {
-                    candidates.add(" " + getDescriptiveCandidate(subCandidate, descs, largestSwitch));
-                } else {
-                    candidates.add(getDescriptiveCandidate(subCandidate, descs, largestSwitch));
-                }
-                Collections.sort(candidates, new Comparator<String>() {
-                    @Override
-                    public int compare(String o1, String o2) {
-                        return stripLeadingDashes(o1).compareTo(stripLeadingDashes(o2));
-                    }
-                });
-            }
-            if (candidates.size() == 1 && ((String) candidates.get(0)).startsWith(" " + MAIN_PARAM)) {
-                candidates.set(0, ((String) candidates.get(0)).substring(MAIN_PARAM.length() + 2));
+            //either there are multiple candidates or the only candiate is the main-param
+            //in which case we cause the descriptions of the candidates to be rendered, and nothing to be completed
+            if (subCandidates.size() == 1 && isMainParam(subCandidates.get(0))) {
+                candidates.add("main param: " + descs.get(subCandidates.get(0).trim()).getDescription());
+                //add an invisible candidate so jline dosent complete for us, but just displays choices
                 candidates.add(" ");
+            } else {
+                for (String subCandidate : subCandidates) {
+                    if (isLastArgAVal) {
+                        candidates.add(" " + getDescriptiveCandidate(subCandidate, descs, largestSwitch));
+                    } else {
+                        candidates.add(getDescriptiveCandidate(subCandidate, descs, largestSwitch));
+                    }
+                    Collections.sort(candidates, new Comparator<String>() {
+                        @Override
+                        public int compare(String o1, String o2) {
+                            return stripLeadingDashes(o1).compareTo(stripLeadingDashes(o2));
+                        }
+                    });
+                }
             }
             logger.debug("candidates:" + candidates.size());
             logger.debug("ret:" + cursor);
@@ -230,6 +227,10 @@ public abstract class JCommand<T> implements Command {
             }
         }
 
+    }
+
+    boolean isMainParam(String candidate) {
+        return candidate.trim().startsWith("<");
     }
 
     String stripLeadingDashes(String switchh) {
