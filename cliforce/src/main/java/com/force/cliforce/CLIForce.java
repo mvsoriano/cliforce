@@ -741,7 +741,7 @@ public class CLIForce {
                 Command command = commands.get(args[0]);
                 if (command != null) {
                     if (command instanceof JCommand) {
-                        return ((JCommand<?>) command).complete(buffer, args, cursor, candidates);
+                        return ((JCommand<?>) command).complete(buffer, args, cursor, (List<String>)candidates);
                     } else {
                         getLogger().debug("cliforce completor executing standard completion");
                         candidates.add(" ");

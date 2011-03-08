@@ -88,7 +88,7 @@ public abstract class JCommand<T> implements Command {
     /**
      * return the offset of where the cursor should be placed.
      */
-    public int complete(String origBuff, String[] parsed, int cursor, List candidates) {
+    public int complete(String origBuff, String[] parsed, int cursor, List<String> candidates) {
         String[] argv = Arrays.copyOfRange(parsed, 1, parsed.length);
         String last = getLastArgumentForCompletion(argv);
         String bufWithoutLast = origBuff.substring(0, origBuff.lastIndexOf(last));
@@ -144,6 +144,7 @@ public abstract class JCommand<T> implements Command {
         SimpleCompletor completor = new SimpleCompletor(switches.toArray(new String[0]));
         int res = completor.complete(last, cursor, subCandidates);
         boolean isLastArgAVal = isLastArgAValue(argv, descs);
+        //if the last arg is a value, then try to complete the next switch
         if (subCandidates.size() == 0 && isLastArgAVal) {
             completor.complete("", cursor, subCandidates);
         }
@@ -180,23 +181,21 @@ public abstract class JCommand<T> implements Command {
                     }
                 }
         */
-        logger.debug("sub candidates:" + subCandidates.size());
-
         if (subCandidates.size() == 1 && !isMainParam(subCandidates.get(0))) {
             StringBuilder b = new StringBuilder(bufWithoutLast);
             if (isLastArgAVal) {
                 b.append(last).append(" ");
             }
-            candidates.add(b.append(subCandidates.get(0)));
+            candidates.add(b.append(subCandidates.get(0)).toString());
             return 0;
         } else if (subCandidates.size() == 0) {
             return -1;
         } else {
-            //either there are multiple candidates or the only candiate is the main-param
+            //either there are multiple candidates or the only candidate is the main-param
             //in which case we cause the descriptions of the candidates to be rendered, and nothing to be completed
             if (subCandidates.size() == 1 && isMainParam(subCandidates.get(0))) {
                 candidates.add("main param: " + descs.get(subCandidates.get(0).trim()).getDescription());
-                //add an invisible candidate so jline dosent complete for us, but just displays choices
+                //add an invisible candidate so jline doesnt complete for us, but just displays choices
                 candidates.add(" ");
             } else {
                 for (String subCandidate : subCandidates) {
@@ -213,8 +212,6 @@ public abstract class JCommand<T> implements Command {
                     });
                 }
             }
-            logger.debug("candidates:" + candidates.size());
-            logger.debug("ret:" + cursor);
             String frag = getUnambiguousCompletions(candidates);
             if (frag.length() > 0 && !isLastArgAVal) {
                 return cursor - frag.length();
