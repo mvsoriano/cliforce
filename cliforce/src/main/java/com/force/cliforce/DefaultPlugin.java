@@ -5,8 +5,6 @@ import com.force.cliforce.command.BannerCommand;
 import com.force.cliforce.command.DebugCommand;
 import com.force.cliforce.dependency.DependencyResolver;
 import com.force.cliforce.dependency.OutputAdapter;
-import jline.Completor;
-import jline.SimpleCompletor;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -470,17 +468,6 @@ public class DefaultPlugin implements Plugin {
             }
         }
 
-        @Override
-        public Completor getCommandCompletor(final CommandWriter writer) {
-            return new SimpleCompletor("") {
-                @Override
-                public int complete(String buffer, int cursor, List clist) {
-                    writer.println(describe());
-                    setCandidateStrings(CLIForce.getInstance().getActivePlugins().toArray(new String[0]));
-                    return super.complete(buffer, cursor, clist);
-                }
-            };
-        }
     }
 
 

@@ -5,7 +5,9 @@ import com.vmforce.client.bean.ApplicationInfo
 import com.vmforce.client.bean.ApplicationInfo.{StackEnum, ModelEnum, StagingBean, ResourcesBean}
 import java.util.{Collections, ArrayList}
 import collection.JavaConversions._
-import com.force.cliforce.{CommandWriter, JCommand, CommandContext, Command}
+import com.force.cliforce.{JCommand, CommandContext, Command}
+import java.io.File
+import com.beust.jcommander.converters.FileConverter
 
 class AppArg {
   @Parameter(description = "the name of the application", required = true)
@@ -70,8 +72,9 @@ class PushArgs {
   @Parameter(
     names = Array("-p", "--path"),
     description = "Local path to the deployable app",
-    required = true)
-  var path: String = null;
+    required = true,
+    converter = classOf[FileConverter])
+  var path: File = null;
 }
 
 class PushCommand extends JCommand[PushArgs] {
@@ -95,7 +98,7 @@ class PushCommand extends JCommand[PushArgs] {
       ctx.getVmForceClient.createApplication(appInfo)
       appInfo = ctx.getVmForceClient.getApplication(args.name)
     }
-    ctx.getVmForceClient.deployApplication(args.name, args.path)
+    ctx.getVmForceClient.deployApplication(args.name, args.path.getAbsolutePath)
     ctx.getCommandWriter.printf("Application Deployed: %s\n", args.name)
     ctx.getCommandWriter.printf("Instances: %s\n", appInfo.getInstances.toString)
     ctx.getCommandWriter.printf("Memory: %sMB\n", appInfo.getResources.getMemory.toString)
