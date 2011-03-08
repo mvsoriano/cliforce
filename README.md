@@ -80,20 +80,21 @@ This tool uses a URL format similar to JDBC drivers for connecting to Force.com.
 
 	force://login.salesforce.com;user=scott@acme.com;password=tiger
 
-Hostname is one of the login servers (test.salesforce.com for sandbox, login.salesforce.com for production). You can set this URL in 3 different ways:
+Hostname is one of the login servers (test.salesforce.com for sandbox, login.salesforce.com for production). 
 
-* In the FORCE_URL environment variable
-* In the force.url Java system property
-* Stored in the file ~/.force_url (where ~ means your home directory)
+So, for example you can execute the dbclean task on a sandbox org with user scott@acme.com and password tiger by doing the following:
 
-Each takes precedence in the order listed above. For example, if FORCE_URL is specified, everything else is ignored. So you can execute the dbclean task on a sandbox org with user scott@acme.com and password tiger by doing the following:
-
-	$ export FORCE_URL="force://test.salesforce.com;user=scott@acme.com;password=tiger"
-	$ java -jar target/forcecli-0.0.1-SNAPSHOT-jar-with-dependencies.jar
+	$ java -jar boot/target/cliforce-0.0.3-SNAPSHOT-boot.jar
 
 You see the force prompt.
 
     force>
+
+Enter the following command at the prompt.
+
+   force> connection:add test force://test.salesforce.com;user=scott@acme.com;password=tiger
+
+This will add a connection to cliforce, which is persisted in ~/.force_urls, so you only have to perform this step once.
 
 Hit the tab key to see available commands or type help to see the description of the behavior of each command.
 
