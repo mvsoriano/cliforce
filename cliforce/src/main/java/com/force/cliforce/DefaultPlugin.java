@@ -72,6 +72,7 @@ public class DefaultPlugin implements Plugin {
         @Override
         public void execute(CommandContext ctx) throws Exception {
             Map<String, String> descs = CLIForce.getInstance().getCommandDescriptions();
+            descs = new TreeMap<String,String>(descs);
             if (ctx.getCommandArguments().length == 0) {
                 int longCmd = 0;
                 for (String key : descs.keySet()) {

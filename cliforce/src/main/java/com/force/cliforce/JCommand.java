@@ -4,10 +4,12 @@ package com.force.cliforce;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterDescription;
 import com.beust.jcommander.ParameterException;
+import jline.FileNameCompletor;
 import jline.SimpleCompletor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
@@ -46,8 +48,8 @@ public abstract class JCommand<T> implements Command {
             JCommander j = new JCommander(args, ctx.getCommandArguments());
             executeWithArgs(ctx, args);
         } catch (ParameterException e) {
-            ctx.getCommandWriter().printf("Exception while executing command %s:\n", name());
-            ctx.getCommandWriter().printStackTrace(e);
+            ctx.getCommandWriter().printf("Exception while executing command: %s -> %s\n", name(), e.getMessage());
+            logger.debug("Exception while executing command", e);
         }
     }
 
@@ -82,6 +84,24 @@ public abstract class JCommand<T> implements Command {
             usage.append("\t").append(e.getKey()).append("\t").append(e.getValue()).append("\n");
         }
         return usage.toString();
+    }
+
+
+    /**
+     * Return the candidate set of completions for a given switch and partial value.
+     * Subclasses should call super.getCompletionsForSwitch(j,zwitch,partialValue) for switches they
+     * do not implement handling for.
+     * <p/>
+     * This implementation handles completion of values for @Parameters of type java.io.File, and for no-op value completions
+     */
+    protected List<String> getCompletionsForSwitch(String zwitch, String partialValue, ParameterDescription parameterDescription) {
+        if (parameterDescription.getField().getType().equals(File.class)) {
+            List<String> candidates = new ArrayList<String>();
+            int ret = new FileNameCompletor().complete(partialValue, partialValue.length(), candidates);
+            return candidates;
+        } else {
+            return Collections.emptyList();
+        }
     }
 
 
@@ -136,7 +156,7 @@ public abstract class JCommand<T> implements Command {
             }
         }
 
-        if (descs.containsKey(last)) {
+        if (descs.containsKey(last) && !origBuff.endsWith(" ")) {
             candidates.add(origBuff.trim() + " ");
             return 0;
         }
