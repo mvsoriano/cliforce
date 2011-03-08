@@ -8,7 +8,6 @@ import jline.SimpleCompletor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
@@ -189,9 +188,9 @@ public abstract class JCommand<T> implements Command {
         */
         logger.debug("sub candidates:" + subCandidates.size());
 
-        if (subCandidates.size() == 1) {
+        if (subCandidates.size() == 1 && !subCandidates.get(0).startsWith("<")) {
             StringBuilder b = new StringBuilder(bufWithoutLast);
-            if(isLastArgAVal){
+            if (isLastArgAVal) {
                 b.append(last).append(" ");
             }
             candidates.add(b.append(subCandidates.get(0)));
@@ -199,7 +198,7 @@ public abstract class JCommand<T> implements Command {
         } else if (subCandidates.size() == 0) {
             return -1;
         } else {
-            //getCompletorFor(j,descs).complete(last,cursor,candidates);
+
             for (String subCandidate : subCandidates) {
                 if (isLastArgAVal) {
                     candidates.add(" " + getDescriptiveCandidate(subCandidate, descs, largestSwitch));
@@ -213,7 +212,8 @@ public abstract class JCommand<T> implements Command {
                     }
                 });
             }
-            if (candidates.size() == 1 && ((String) candidates.get(0)).startsWith(MAIN_PARAM)) {
+            if (candidates.size() == 1 && ((String) candidates.get(0)).startsWith(" " + MAIN_PARAM)) {
+                candidates.set(0, ((String) candidates.get(0)).substring(MAIN_PARAM.length() + 2));
                 candidates.add(" ");
             }
             logger.debug("candidates:" + candidates.size());
