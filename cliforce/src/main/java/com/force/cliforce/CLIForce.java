@@ -697,6 +697,15 @@ public class CLIForce {
                 throw new RuntimeException(e);
             }
         }
+
+        @Override
+        public String readLine(String prompt, Character mask) {
+            try {
+                return reader.readLine(prompt, mask);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     /**

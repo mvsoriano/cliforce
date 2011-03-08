@@ -23,4 +23,10 @@ public interface CommandReader {
      */
     String[] readAndParseLine(String prompt);
 
+    /**
+     * read and return the raw string entered by the user, outputting the mask character for every character entered.
+     * For masking password input.
+     */
+    String readLine(String prompt, Character mask);
+
 }
