@@ -192,7 +192,7 @@ public abstract class JCommand<T> implements Command {
         if (subCandidates.size() == 1) {
             StringBuilder b = new StringBuilder(bufWithoutLast);
             if(isLastArgAVal){
-                b.append(" ").append(last).append(" ");
+                b.append(last).append(" ");
             }
             candidates.add(b.append(subCandidates.get(0)));
             return 0;
@@ -268,31 +268,6 @@ public abstract class JCommand<T> implements Command {
         } else {
             return "";
         }
-    }
-
-
-    SimpleCompletor getCompletorFor(JCommander j, Map<String, ParameterDescription> descs) {
-        List<String> candidates = new ArrayList<String>();
-        for (ParameterDescription parameterDescription : j.getParameters()) {
-            if (!parameterDescription.isAssigned()) {
-                String names = parameterDescription.getNames();
-                String complete = names;
-                Field field = parameterDescription.getField();
-                if (!(field.getType().equals(boolean.class) || field.getType().equals(Boolean.class))) {
-                    complete += " <" + parameterDescription.getDescription() + ">";
-                }
-                candidates.add(complete);
-            }
-        }
-        if (j.getMainParameter() != null && !j.getMainParameter().isAssigned()) {
-            if (candidates.size() == 0) {
-                candidates.add(" ");
-            }
-            candidates.add("<main arg:" + j.getMainParameterDescription() + ">");
-        }
-
-
-        return new SimpleCompletor(candidates.toArray(new String[0]));
     }
 
     private final String getUnambiguousCompletions(final List candidates) {
