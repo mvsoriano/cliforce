@@ -92,7 +92,7 @@ public abstract class JCommand<T> implements Command {
         String[] argv = Arrays.copyOfRange(parsed, 1, parsed.length);
         String last = getLastArgumentForCompletion(argv);
         String bufWithoutLast = origBuff.substring(0, origBuff.lastIndexOf(last));
-        JCommander j = j = new JCommander(getArgs());
+        JCommander j = new JCommander(getArgs());
 
 
         if (argv.length > 0 && !argv[0].equals("")) {
