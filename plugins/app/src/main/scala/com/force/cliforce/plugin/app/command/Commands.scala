@@ -129,6 +129,7 @@ class PushCommand extends JCommand[PushArgs] {
       staging.setStack(StackEnum.JT10.getRequestValue)
       appInfo.setStaging(staging)
       ctx.getVmForceClient.createApplication(appInfo)
+      AppNameCache.populate(ctx)
       appInfo = ctx.getVmForceClient.getApplication(args.name)
     }
     ctx.getVmForceClient.deployApplication(args.name, args.path.getAbsolutePath)
