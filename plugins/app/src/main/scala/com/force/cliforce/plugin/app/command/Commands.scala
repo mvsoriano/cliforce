@@ -1,13 +1,45 @@
 package com.force.cliforce.plugin.app.command
 
-import com.beust.jcommander.Parameter
 import com.vmforce.client.bean.ApplicationInfo
 import com.vmforce.client.bean.ApplicationInfo.{StackEnum, ModelEnum, StagingBean, ResourcesBean}
 import java.util.{Collections, ArrayList}
 import collection.JavaConversions._
-import com.force.cliforce.{JCommand, CommandContext, Command}
 import java.io.File
 import com.beust.jcommander.converters.FileConverter
+import collection.mutable.HashMap
+import com.force.cliforce.{ForceEnv, JCommand, CommandContext, Command}
+import com.beust.jcommander.{ParameterDescription, Parameter}
+import java.lang.String
+import jline.SimpleCompletor
+
+object AppNameCache {
+  lazy val cache = new HashMap[ForceEnv, List[String]];
+
+  def populate(ctx: CommandContext): List[String] = {
+    val apps = asScalaIterable(ctx.getVmForceClient.getApplications).map(_.getName).toList
+    cache += ctx.getForceEnv -> apps
+    apps
+  }
+
+  def getApps(ctx: CommandContext): List[String] = {
+    cache.get(ctx.getForceEnv).getOrElse{
+      populate(ctx)
+    }
+  }
+}
+
+abstract class AppCommand extends JCommand[AppArg] {
+  protected override def getCompletionsForSwitch(switchForCompletion: String, partialValue: String, parameterDescription: ParameterDescription, ctx: CommandContext) = {
+    if (switchForCompletion eq JCommand.MAIN_PARAM) {
+      val apps = AppNameCache.getApps(ctx)
+      val candidates = new ArrayList[String]
+      val cursor = new SimpleCompletor(apps.toArray[String]).complete(partialValue, partialValue.length, candidates)
+      candidates
+    } else {
+      super.getCompletionsForSwitch(switchForCompletion, partialValue, parameterDescription, ctx)
+    }
+  }
+}
 
 class AppArg {
   @Parameter(description = "the name of the application", required = true)
@@ -37,7 +69,7 @@ Memory:    %dMB
   def name = "apps"
 }
 
-class DeleteAppCommand extends JCommand[AppArg] {
+class DeleteAppCommand extends AppCommand {
 
 
   def executeWithArgs(ctx: CommandContext, arg: AppArg) = {
@@ -117,7 +149,7 @@ class PushCommand extends JCommand[PushArgs] {
 }
 
 
-class StartCommand extends JCommand[AppArg] {
+class StartCommand extends AppCommand {
 
 
   def executeWithArgs(ctx: CommandContext, arg: AppArg) = {
@@ -131,7 +163,7 @@ class StartCommand extends JCommand[AppArg] {
   def name = "start"
 }
 
-class StopCommand extends JCommand[AppArg] {
+class StopCommand extends AppCommand {
 
 
   def executeWithArgs(ctx: CommandContext, arg: AppArg) = {
@@ -146,7 +178,7 @@ class StopCommand extends JCommand[AppArg] {
   def name = "stop"
 }
 
-class RestartCommand extends JCommand[AppArg] {
+class RestartCommand extends AppCommand {
 
 
   def executeWithArgs(ctx: CommandContext, arg: AppArg) = {

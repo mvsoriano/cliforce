@@ -1,10 +1,12 @@
 package com.force.cliforce;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterDescription;
 import com.force.cliforce.command.BannerCommand;
 import com.force.cliforce.command.DebugCommand;
 import com.force.cliforce.dependency.DependencyResolver;
 import com.force.cliforce.dependency.OutputAdapter;
+import jline.SimpleCompletor;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -72,7 +74,7 @@ public class DefaultPlugin implements Plugin {
         @Override
         public void execute(CommandContext ctx) throws Exception {
             Map<String, String> descs = CLIForce.getInstance().getCommandDescriptions();
-            descs = new TreeMap<String,String>(descs);
+            descs = new TreeMap<String, String>(descs);
             if (ctx.getCommandArguments().length == 0) {
                 int longCmd = 0;
                 for (String key : descs.keySet()) {
@@ -427,7 +429,7 @@ public class DefaultPlugin implements Plugin {
         @Parameter(description = "name of the plugin to get the classpath for, or none for the cliforce classpath")
         public List<String> plugins = new ArrayList<String>();
 
-        @Parameter(names = {"-s", "--sort"})
+        @Parameter(names = {"-s", "--sort"}, description = "sort the returned list of files on the classpath alphabetically")
         public Boolean sort = false;
 
 
@@ -469,6 +471,20 @@ public class DefaultPlugin implements Plugin {
             }
         }
 
+        @Override
+        protected List<String> getCompletionsForSwitch(String switchForCompletion, String partialValue, ParameterDescription parameterDescription, CommandContext context) {
+            if (switchForCompletion.equals(MAIN_PARAM)) {
+                List<String> candidates = new ArrayList<String>();
+                List<String> activePlugins = CLIForce.getInstance().getActivePlugins();
+                new SimpleCompletor(activePlugins.toArray(new String[0])).complete(partialValue, partialValue.length(), candidates);
+                if (candidates.size() > 1) {
+                    candidates.add("<or none for the cliforce classpath>");
+                }
+                return candidates;
+            } else {
+                return super.getCompletionsForSwitch(switchForCompletion, partialValue, parameterDescription, context);
+            }
+        }
     }
 
 

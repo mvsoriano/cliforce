@@ -28,7 +28,14 @@ public abstract class JCommand<T> implements Command {
      * your args type does not have a default constructor.
      */
     public T getArgs() {
-        ParameterizedType genericSuperclass = (ParameterizedType) this.getClass().getGenericSuperclass();
+        Class clazz = this.getClass();
+        while (!(clazz.getGenericSuperclass() instanceof ParameterizedType)) {
+            clazz = (Class) clazz.getGenericSuperclass();
+            if (clazz == null) {
+                throw new RuntimeException("Unable to determine type of args for class:" + this.getClass().getName());
+            }
+        }
+        ParameterizedType genericSuperclass = (ParameterizedType) clazz.getGenericSuperclass();
         try {
             return (T) ((Class) genericSuperclass.getActualTypeArguments()[0]).newInstance();
         } catch (InstantiationException e) {
@@ -94,7 +101,7 @@ public abstract class JCommand<T> implements Command {
      * <p/>
      * This implementation handles completion of values for @Parameters of type java.io.File, and for no-op value completions
      */
-    protected List<String> getCompletionsForSwitch(String switchForCompletion, String partialValue, ParameterDescription parameterDescription) {
+    protected List<String> getCompletionsForSwitch(String switchForCompletion, String partialValue, ParameterDescription parameterDescription, CommandContext context) {
         if (parameterDescription.getField().getType().equals(File.class)) {
             List<String> candidates = new ArrayList<String>();
             int ret = new FileNameCompletor().complete(partialValue, partialValue.length(), candidates);
@@ -117,9 +124,10 @@ public abstract class JCommand<T> implements Command {
      * return the offset of where the cursor should be placed.
      * When there is only one completion it is easiest to append the completion to the origBuff - partialArg
      * and return 0.
-     *
+     * <p/>
+     * todo build an FSM diagram of the states we can be in.
      */
-    public int complete(String origBuff, String[] parsed, int cursor, List<String> candidates) {
+    public int complete(String origBuff, String[] parsed, int cursor, List<String> candidates, CommandContext ctx) {
         String[] commandArgs = Arrays.copyOfRange(parsed, 1, parsed.length);
         String lastArg = getLastArgumentForCompletion(commandArgs);
         String bufWithoutLast = origBuff.substring(0, origBuff.lastIndexOf(lastArg));
@@ -162,11 +170,13 @@ public abstract class JCommand<T> implements Command {
             }
         }
 
-        if (j.getMainParameter() != null && !j.getMainParameter().isAssigned()) {
+        if (j.getMainParameter() != null) {
             descs.put(MAIN_PARAM, j.getMainParameter());
-            switches.add(MAIN_PARAM);
-            if (largestSwitch < MAIN_PARAM.length()) {
-                largestSwitch = MAIN_PARAM.length();
+            if (!j.getMainParameter().isAssigned()) {
+                switches.add(MAIN_PARAM);
+                if (largestSwitch < MAIN_PARAM.length()) {
+                    largestSwitch = MAIN_PARAM.length();
+                }
             }
         }
 
@@ -175,6 +185,9 @@ public abstract class JCommand<T> implements Command {
         if (descs.containsKey(lastArg) && !origBuff.endsWith(" ")) {
             candidates.add(origBuff.trim() + " ");
             return 0;
+        } else if (descs.containsKey(lastArg) && isBooleanParam(descs.get(lastArg))) {
+            bufWithoutLast = bufWithoutLast + lastArg;
+            lastArg = "";
         }
         List<String> subCandidates = new ArrayList<String>();
 
@@ -184,22 +197,28 @@ public abstract class JCommand<T> implements Command {
         String partial = null;
         if (lastArgIsValue && !origBuff.endsWith(" ")) {
             switchForCompletion = getSecondLastArgumentForCompletion(commandArgs);
+            if (isBooleanParam(descs.get(switchForCompletion))) {
+                switchForCompletion = MAIN_PARAM;
+            }
             partial = lastArg;
         } else if (descs.containsKey(lastArg) && origBuff.endsWith(" ")) {
             switchForCompletion = lastArg;
             partial = "";
+        } else if (descs.containsKey(MAIN_PARAM) && descs.get(MAIN_PARAM).isAssigned()) {
+            //we are completing a partial main arg
+            switchForCompletion = MAIN_PARAM;
+            partial = lastArg;
         }
 
         if (switchForCompletion != null && descs.containsKey(switchForCompletion)) {
             ParameterDescription desc = descs.get(switchForCompletion);
-            List<String> valCandidates = getCompletionsForSwitch(switchForCompletion, partial, desc);
+            List<String> valCandidates = getCompletionsForSwitch(switchForCompletion, partial, desc, ctx);
             if (valCandidates.size() > 1) {
                 candidates.addAll(valCandidates);
                 String unambig = getUnambiguousCompletions(candidates);
                 int overlap = getOverlap(partial, unambig);
                 return cursor - overlap;
             } else if (valCandidates.size() == 1) {
-
                 candidates.add(bufWithoutLast + valCandidates.get(0));
                 return 0;
             }
@@ -228,9 +247,17 @@ public abstract class JCommand<T> implements Command {
             //either there are multiple candidates or the only candidate is the main-param
             //in which case we cause the descriptions of the candidates to be rendered, and nothing to be completed
             if (subCandidates.size() == 1 && isMainParam(subCandidates.get(0))) {
-                candidates.add("main param: " + descs.get(subCandidates.get(0).trim()).getDescription());
-                //add an invisible candidate so jline doesnt complete for us, but just displays choices
-                candidates.add(" ");
+                //attempt value completion for main parameter
+                ParameterDescription parameterDescription = descs.get(MAIN_PARAM);
+                List<String> valCandidates = getCompletionsForSwitch(MAIN_PARAM, lastArg, parameterDescription, ctx);
+                if (valCandidates.size() == 0) {
+                    //the leading space is important, as it generates an unambiguous completion of 1 space
+                    candidates.add(" main param: " + parameterDescription.getDescription());
+                    //add an invisible candidate so jline doesnt complete for us, but just displays choices
+                    candidates.add(" ");
+                } else {
+                    candidates.addAll(valCandidates);
+                }
             } else {
                 for (String subCandidate : subCandidates) {
                     if (lastArgIsValue) {
@@ -248,9 +275,13 @@ public abstract class JCommand<T> implements Command {
             }
             String frag = getUnambiguousCompletions(candidates);
             if (frag.length() > 0 && !lastArgIsValue) {
-                return cursor - frag.length();
+                return cursor - getOverlap(lastArg, frag);
             } else {
-                if (origBuff.endsWith(" ")) {
+                //this is annoying not sure if its a bug in jline or
+                //me not understanding it but the cursor stuff seems inconsistent
+                if (origBuff.equals(bufWithoutLast)) {
+                    return cursor;
+                } else if (origBuff.endsWith(" ")) {
                     return cursor - 1;
                 } else {
                     return cursor + 1;
@@ -262,6 +293,7 @@ public abstract class JCommand<T> implements Command {
 
     protected int getOverlap(String partial, String unambig) {
         if (unambig.length() == 0) return 0;
+        if (partial.length() == 0) return 0;
         if (partial.endsWith(unambig)) return unambig.length();
         for (int i = unambig.length() - 1; i > 0; i--) {
             String sub = unambig.substring(0, unambig.length() - i);
@@ -272,15 +304,19 @@ public abstract class JCommand<T> implements Command {
         return 0;
     }
 
+    protected boolean isBooleanParam(ParameterDescription description) {
+        return description.getField().getType().equals(boolean.class) || description.getField().getType().equals(Boolean.class);
+    }
+
     protected boolean isMainParam(String candidate) {
         return candidate.trim().startsWith("<");
     }
 
-    protected String stripLeadingDashes(String switchh) {
-        while (switchh.startsWith("-")) {
-            switchh = switchh.substring(1);
+    protected String stripLeadingDashes(String swich) {
+        while (swich.startsWith("-")) {
+            swich = swich.substring(1);
         }
-        return switchh;
+        return swich;
     }
 
     protected String getDescriptiveCandidate(String key, Map<String, ParameterDescription> descs, int largestKey) {
@@ -290,6 +326,7 @@ public abstract class JCommand<T> implements Command {
         }
         return b.append(" <").append(descs.get(key.trim()).getDescription()).append(">").toString();
     }
+
 
     protected boolean isLastArgAValue(String[] args, Map<String, ParameterDescription> descs) {
         if (descs.containsKey(getLastArgumentForCompletion(args))) {
@@ -307,7 +344,8 @@ public abstract class JCommand<T> implements Command {
 
 
     protected String getSecondLastArgumentForCompletion(String[] args) {
-        if (args.length > 1) {
+        //we dont grab the command here so > 2 not >1
+        if (args.length > 2) {
             return args[args.length - 2];
         } else {
             return "";
@@ -349,6 +387,5 @@ public abstract class JCommand<T> implements Command {
     }
 
 }
-
 
 
