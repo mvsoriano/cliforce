@@ -98,7 +98,14 @@ public abstract class JCommand<T> implements Command {
         if (parameterDescription.getField().getType().equals(File.class)) {
             List<String> candidates = new ArrayList<String>();
             int ret = new FileNameCompletor().complete(partialValue, partialValue.length(), candidates);
+            if (candidates.size() == 1 && partialValue.contains("/")) {
+                String dir = partialValue.substring(0, partialValue.lastIndexOf("/")) + "/";
+                for (int i = 0; i < candidates.size(); i++) {
+                    candidates.set(i, dir + candidates.get(i));
+                }
+            }
             return candidates;
+
         } else {
             return Collections.emptyList();
         }
@@ -156,14 +163,42 @@ public abstract class JCommand<T> implements Command {
             }
         }
 
+        boolean isLastArgAVal = isLastArgAValue(argv, descs);
+
         if (descs.containsKey(last) && !origBuff.endsWith(" ")) {
             candidates.add(origBuff.trim() + " ");
             return 0;
         }
         List<String> subCandidates = new ArrayList<String>();
+        //if the last arg is a possibly uncompleted value or the last arg is a switch with a space after it
+        String zwitchForCompletion = null;
+        String partial = null;
+        if (isLastArgAVal && !origBuff.endsWith(" ")) {
+            zwitchForCompletion = getSecondLastArgumentForCompletion(argv);
+            partial = last;
+        } else if (descs.containsKey(last) && origBuff.endsWith(" ")) {
+            zwitchForCompletion = last;
+            partial = "";
+        }
+
+        if (zwitchForCompletion != null && descs.containsKey(zwitchForCompletion)) {
+            ParameterDescription desc = descs.get(zwitchForCompletion);
+            List<String> valCandidates = getCompletionsForSwitch(zwitchForCompletion, partial, desc);
+            if (valCandidates.size() > 1) {
+                candidates.addAll(valCandidates);
+                return cursor - getUnambiguousCompletions(candidates).length() + 1;
+            } else if (valCandidates.size() == 1) {
+
+                candidates.add(bufWithoutLast + valCandidates.get(0));
+                return 0;
+            }
+        }
+
+
         SimpleCompletor completor = new SimpleCompletor(switches.toArray(new String[0]));
+
         int res = completor.complete(last, cursor, subCandidates);
-        boolean isLastArgAVal = isLastArgAValue(argv, descs);
+
         //if the last arg is a value, then try to complete the next switch
         if (subCandidates.size() == 0 && isLastArgAVal) {
             completor.complete("", cursor, subCandidates);
