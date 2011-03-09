@@ -94,7 +94,7 @@ public abstract class JCommand<T> implements Command {
      * <p/>
      * This implementation handles completion of values for @Parameters of type java.io.File, and for no-op value completions
      */
-    protected List<String> getCompletionsForSwitch(String zwitch, String partialValue, ParameterDescription parameterDescription) {
+    protected List<String> getCompletionsForSwitch(String switchForCompletion, String partialValue, ParameterDescription parameterDescription) {
         if (parameterDescription.getField().getType().equals(File.class)) {
             List<String> candidates = new ArrayList<String>();
             int ret = new FileNameCompletor().complete(partialValue, partialValue.length(), candidates);
@@ -113,26 +113,30 @@ public abstract class JCommand<T> implements Command {
 
 
     /**
+     * Fill the candidates list with possible completions.
      * return the offset of where the cursor should be placed.
+     * When there is only one completion it is easiest to append the completion to the origBuff - partialArg
+     * and return 0.
+     *
      */
     public int complete(String origBuff, String[] parsed, int cursor, List<String> candidates) {
-        String[] argv = Arrays.copyOfRange(parsed, 1, parsed.length);
-        String last = getLastArgumentForCompletion(argv);
-        String bufWithoutLast = origBuff.substring(0, origBuff.lastIndexOf(last));
+        String[] commandArgs = Arrays.copyOfRange(parsed, 1, parsed.length);
+        String lastArg = getLastArgumentForCompletion(commandArgs);
+        String bufWithoutLast = origBuff.substring(0, origBuff.lastIndexOf(lastArg));
         JCommander j = new JCommander(getArgs());
 
-
-        if (argv.length > 0 && !argv[0].equals("")) {
+        //parse the args with jcommander
+        if (commandArgs.length > 0 && !commandArgs[0].equals("")) {
             logger.debug("JCommand parsing for autocomplete");
             try {
-                j.parseWithoutValidation(argv);
+                j.parseWithoutValidation(commandArgs);
             } catch (ParameterException ex) {
                 logger.debug("JCommander parameter exception during parse");
                 //last param may be partial and cause this
-                if (argv.length > 1) {
+                if (commandArgs.length > 1) {
                     j = new JCommander(getArgs());
                     try {
-                        j.parseWithoutValidation(Arrays.copyOfRange(argv, 0, argv.length - 1));
+                        j.parseWithoutValidation(Arrays.copyOfRange(commandArgs, 0, commandArgs.length - 1));
                     } catch (ParameterException e) {
                         logger.debug("JCommander parameter exception during parse2");
                     }
@@ -140,6 +144,9 @@ public abstract class JCommand<T> implements Command {
             }
         }
 
+        //take the result of parsing and create a map of the
+        //unassigned parameters that will then be eligibie for completion
+        //largestSwitch is used to pad the output of eligible completions
         int largestSwitch = 0;
         Map<String, ParameterDescription> descs = new HashMap<String, ParameterDescription>();
         List<String> switches = new ArrayList<String>();
@@ -163,83 +170,55 @@ public abstract class JCommand<T> implements Command {
             }
         }
 
-        boolean isLastArgAVal = isLastArgAValue(argv, descs);
-
-        if (descs.containsKey(last) && !origBuff.endsWith(" ")) {
+        boolean lastArgIsValue = isLastArgAValue(commandArgs, descs);
+        //if the last arg is a full switch, just add a space to the buf
+        if (descs.containsKey(lastArg) && !origBuff.endsWith(" ")) {
             candidates.add(origBuff.trim() + " ");
             return 0;
         }
         List<String> subCandidates = new ArrayList<String>();
+
+        /*START ATTEMPT VALUE COMPLETION*/
         //if the last arg is a possibly uncompleted value or the last arg is a switch with a space after it
-        String zwitchForCompletion = null;
+        String switchForCompletion = null;
         String partial = null;
-        if (isLastArgAVal && !origBuff.endsWith(" ")) {
-            zwitchForCompletion = getSecondLastArgumentForCompletion(argv);
-            partial = last;
-        } else if (descs.containsKey(last) && origBuff.endsWith(" ")) {
-            zwitchForCompletion = last;
+        if (lastArgIsValue && !origBuff.endsWith(" ")) {
+            switchForCompletion = getSecondLastArgumentForCompletion(commandArgs);
+            partial = lastArg;
+        } else if (descs.containsKey(lastArg) && origBuff.endsWith(" ")) {
+            switchForCompletion = lastArg;
             partial = "";
         }
 
-        if (zwitchForCompletion != null && descs.containsKey(zwitchForCompletion)) {
-            ParameterDescription desc = descs.get(zwitchForCompletion);
-            List<String> valCandidates = getCompletionsForSwitch(zwitchForCompletion, partial, desc);
+        if (switchForCompletion != null && descs.containsKey(switchForCompletion)) {
+            ParameterDescription desc = descs.get(switchForCompletion);
+            List<String> valCandidates = getCompletionsForSwitch(switchForCompletion, partial, desc);
             if (valCandidates.size() > 1) {
                 candidates.addAll(valCandidates);
-                return cursor - getUnambiguousCompletions(candidates).length() + 1;
+                String unambig = getUnambiguousCompletions(candidates);
+                int overlap = getOverlap(partial, unambig);
+                return cursor - overlap;
             } else if (valCandidates.size() == 1) {
 
                 candidates.add(bufWithoutLast + valCandidates.get(0));
                 return 0;
             }
         }
+        /*END ATTEMPT VALUE COMPLETION*/
 
-
+        /*No value completion happened attempt switch completion*/
         SimpleCompletor completor = new SimpleCompletor(switches.toArray(new String[0]));
-
-        int res = completor.complete(last, cursor, subCandidates);
+        int res = completor.complete(lastArg, cursor, subCandidates);
 
         //if the last arg is a value, then try to complete the next switch
-        if (subCandidates.size() == 0 && isLastArgAVal) {
+        if (subCandidates.size() == 0 && lastArgIsValue) {
             completor.complete("", cursor, subCandidates);
         }
 
-
-        /* if (l.size() <= 1) {
-                    //check if the currently being completed arg has its own completion
-                    //should add method getCompletorForArg("--conn") which could return a completor for a set of connections
-                    //right now just special sauce for fileName completion for parameters that are of type File.
-                    String arg = getLastArgumentForCompletion(argv);
-                    ParameterDescription desc = descs.get(arg);
-                    String compBuf = "";
-                    if (desc == null && argv.length > 1) {
-                        compBuf = arg;
-                        arg = argv[argv.length - 2];
-                        desc = descs.get(arg);
-                    }
-                    if (desc != null) {
-                        if (desc.getField().getType().equals(File.class)) {
-                            int ret = new FileNameCompletor().complete(compBuf, cursor, candidates);
-                            if (candidates.size() > 1) {
-                                return  cursor - getUnambiguousCompletions(candidates).length() + 1;
-                            } else if (candidates.size() == 1) {
-                                String last = getLastArgumentForCompletion(argv);
-                                int minus = last.length();
-                                if (last.contains("/")) {
-                                    minus = last.lastIndexOf("/");
-                                }
-                                return cursor - minus;
-                            } else if (candidates.size() == 0) {
-                                return cursor;
-                            }
-                        }
-                    }
-                }
-        */
         if (subCandidates.size() == 1 && !isMainParam(subCandidates.get(0))) {
             StringBuilder b = new StringBuilder(bufWithoutLast);
-            if (isLastArgAVal) {
-                b.append(last).append(" ");
+            if (lastArgIsValue) {
+                b.append(lastArg).append(" ");
             }
             candidates.add(b.append(subCandidates.get(0)).toString());
             return 0;
@@ -254,7 +233,7 @@ public abstract class JCommand<T> implements Command {
                 candidates.add(" ");
             } else {
                 for (String subCandidate : subCandidates) {
-                    if (isLastArgAVal) {
+                    if (lastArgIsValue) {
                         candidates.add(" " + getDescriptiveCandidate(subCandidate, descs, largestSwitch));
                     } else {
                         candidates.add(getDescriptiveCandidate(subCandidate, descs, largestSwitch));
@@ -268,7 +247,7 @@ public abstract class JCommand<T> implements Command {
                 }
             }
             String frag = getUnambiguousCompletions(candidates);
-            if (frag.length() > 0 && !isLastArgAVal) {
+            if (frag.length() > 0 && !lastArgIsValue) {
                 return cursor - frag.length();
             } else {
                 if (origBuff.endsWith(" ")) {
@@ -281,18 +260,30 @@ public abstract class JCommand<T> implements Command {
 
     }
 
-    boolean isMainParam(String candidate) {
+    protected int getOverlap(String partial, String unambig) {
+        if (unambig.length() == 0) return 0;
+        if (partial.endsWith(unambig)) return unambig.length();
+        for (int i = unambig.length() - 1; i > 0; i--) {
+            String sub = unambig.substring(0, unambig.length() - i);
+            if (partial.endsWith(sub)) {
+                return sub.length();
+            }
+        }
+        return 0;
+    }
+
+    protected boolean isMainParam(String candidate) {
         return candidate.trim().startsWith("<");
     }
 
-    String stripLeadingDashes(String switchh) {
+    protected String stripLeadingDashes(String switchh) {
         while (switchh.startsWith("-")) {
             switchh = switchh.substring(1);
         }
         return switchh;
     }
 
-    String getDescriptiveCandidate(String key, Map<String, ParameterDescription> descs, int largestKey) {
+    protected String getDescriptiveCandidate(String key, Map<String, ParameterDescription> descs, int largestKey) {
         StringBuilder b = new StringBuilder(key);
         for (int i = 0; i <= largestKey - key.length(); i++) {
             b.append(" ");
@@ -300,13 +291,13 @@ public abstract class JCommand<T> implements Command {
         return b.append(" <").append(descs.get(key.trim()).getDescription()).append(">").toString();
     }
 
-    boolean isLastArgAValue(String[] args, Map<String, ParameterDescription> descs) {
+    protected boolean isLastArgAValue(String[] args, Map<String, ParameterDescription> descs) {
         if (descs.containsKey(getLastArgumentForCompletion(args))) {
             return false;
         } else return descs.containsKey(getSecondLastArgumentForCompletion(args));
     }
 
-    String getLastArgumentForCompletion(String[] args) {
+    protected String getLastArgumentForCompletion(String[] args) {
         if (args.length > 0) {
             return args[args.length - 1];
         } else {
@@ -315,7 +306,7 @@ public abstract class JCommand<T> implements Command {
     }
 
 
-    String getSecondLastArgumentForCompletion(String[] args) {
+    protected String getSecondLastArgumentForCompletion(String[] args) {
         if (args.length > 1) {
             return args[args.length - 2];
         } else {
@@ -323,7 +314,7 @@ public abstract class JCommand<T> implements Command {
         }
     }
 
-    private final String getUnambiguousCompletions(final List candidates) {
+    protected String getUnambiguousCompletions(final List candidates) {
         if ((candidates == null) || (candidates.size() == 0)) {
             return "";
         }
@@ -346,8 +337,8 @@ public abstract class JCommand<T> implements Command {
         return candidate.toString();
     }
 
-    private final boolean startsWith(final String starts,
-                                     final String[] candidates) {
+    protected boolean startsWith(final String starts,
+                                 final String[] candidates) {
         for (int i = 0; i < candidates.length; i++) {
             if (!candidates[i].startsWith(starts)) {
                 return false;
