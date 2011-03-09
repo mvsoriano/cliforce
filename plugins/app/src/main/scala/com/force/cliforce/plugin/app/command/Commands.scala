@@ -75,6 +75,7 @@ class DeleteAppCommand extends AppCommand {
   def executeWithArgs(ctx: CommandContext, arg: AppArg) = {
     ctx.getCommandWriter.println("Deleting %s".format(arg.app))
     ctx.getVmForceClient.deleteApplication(arg.app)
+    AppNameCache.populate(ctx)
     ctx.getCommandWriter.println("done")
   }
 
