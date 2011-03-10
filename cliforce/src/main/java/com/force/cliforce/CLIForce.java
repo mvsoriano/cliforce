@@ -381,10 +381,10 @@ public class CLIForce {
                 if (hist.createNewFile()) {
                     reader.setHistory(new History(hist));
                 } else {
-                    out.println("cant create history file");
+                    out.println("can't create history file");
                 }
             } catch (IOException e) {
-                out.println("cant create history file");
+                out.println("can't create history file");
             }
 
         } else {
@@ -493,10 +493,10 @@ public class CLIForce {
     void saveInstalledPlugins(CommandWriter out) {
         try {
             if (!Util.writeProperties("plugins", installedPlugins)) {
-                out.println("Unable to create .force_plugins file cannot save installed plugins, you will have to re-plugin next time you run cliforce");
+                out.println("Unable to create .force_plugins file, can't save installed plugins. You will have to re-plugin next time you run cliforce");
             }
         } catch (IOException e) {
-            out.println("error persisting installation of plugin, you will have to re-plugin next time you run cliforce");
+            out.println("error persisting installation of plugin. You will have to re-plugin next time you run cliforce");
         }
 
     }
@@ -554,7 +554,7 @@ public class CLIForce {
             //or otherwise indicate they need a force env
             if (currentEnv == null) {
                 writer.println("The command failed to execute");
-                writer.println("It looks like you need to add a connection using the connection:add command before executing this command");
+                writer.println("You must add a connection using the connection:add command before executing this command");
                 writer.println("run 'help connection:add' for more info");
             } else {
                 writer.printf("Exception while executing command %s\n", cmdKey);
@@ -586,7 +586,7 @@ public class CLIForce {
             return new Context(currentEnv, envConnections.forceServiceConnector, vmForceClient, args, commandReader, writer);
         } else {
             if (initLatch.getCount() == 0) {
-                getLogger().warn("Could not get a valid connection for the current force url. Executing the command without force service connector or vmforce client");
+                getLogger().warn("Couldn't get a valid connection for the current force url. Executing the command without force service connector or VMforce client");
             }
             return new Context(currentEnv, null, null, args, commandReader, writer);
         }
@@ -678,7 +678,7 @@ public class CLIForce {
             try {
                 return connector.getConnection();
             } catch (ConnectionException e) {
-                getLogger().error("Connection exception while getting metadata connection", e);
+                getLogger().error("ConnectionException while getting metadata connection", e);
                 throw new RuntimeException(e);
             }
         }
