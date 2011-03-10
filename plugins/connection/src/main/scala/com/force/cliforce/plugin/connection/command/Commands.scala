@@ -5,9 +5,12 @@ import com.force.cliforce.{ForceEnv, CLIForce, CommandContext, Command}
 
 class ListConnectionsCommand extends Command {
   def execute(ctx: CommandContext) = {
-    CLIForce.getInstance.getAvailableEnvironments.foreach{
-      kv => kv match {
-        case (name, env) => ctx.getCommandWriter.println("""
+    if (CLIForce.getInstance.getAvailableEnvironments.size == 0) {
+        ctx.getCommandWriter.println("There are no connections configured. Please use connection:add to add one.")
+    } else {
+      CLIForce.getInstance.getAvailableEnvironments.foreach{
+        kv => kv match {
+          case (name, env) => ctx.getCommandWriter.println("""
 ===========================
 Name:     %s
 URL:      %s
@@ -17,7 +20,8 @@ Password: %s
 Valid:    %s
 Message:  %s
 ==========================="""
-          .format(name, env.getUrl, env.getHost, env.getUser, env.getPassword, env.isValid.toString, Option(env.getMessage).toString))
+            .format(name, env.getUrl, env.getHost, env.getUser, env.getPassword, env.isValid.toString, Option(env.getMessage).toString))
+        }
       }
     }
   }
