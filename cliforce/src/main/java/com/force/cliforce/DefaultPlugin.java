@@ -160,7 +160,7 @@ public class DefaultPlugin implements Plugin {
             } else {
 
                 if (CLIForce.getInstance().getActivePlugins().contains(arg.artifact())) {
-                    output.printf("Plugin %s is already installed, please execute 'unplug %s' before running this command", arg.artifact(), arg.artifact());
+                    output.printf("Plugin %s is already installed. Please execute 'unplug %s' before running this command", arg.artifact(), arg.artifact());
                     return;
                 }
 
@@ -187,7 +187,7 @@ public class DefaultPlugin implements Plugin {
                     ServiceLoader<Plugin> loader = ServiceLoader.load(Plugin.class, pcl);
                     Iterator<Plugin> iterator = loader.iterator();
                     if (!iterator.hasNext()) {
-                        output.printf("Error: %s does not declare a Plugin in META-INF/services/com.force.cliforce.Plugin\n", arg.artifact());
+                        output.printf("Error: %s doesn't declare a Plugin in META-INF/services/com.force.cliforce.Plugin\n", arg.artifact());
                         return;
                     }
                     Plugin p = iterator.next();
@@ -254,7 +254,7 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public String describe() {
-            return "removes a plugin and it's commands from the shell";
+            return "removes a plugin and its commands from the shell";
         }
 
         @Override
@@ -413,7 +413,7 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public String describe() {
-            return "Display the current java system properties";
+            return "Display the current Java system properties";
         }
 
         @Override

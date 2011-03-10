@@ -2,68 +2,68 @@
 
 This tool supports the following commands.
 
-	app:apps:           lists deployed apps
-	app:delete:         deletes an application from vmforce
-		Usage: delete <the name of the application>
+	app:apps:           list deployed applications
+	app:delete:         delete an application from VMforce
+		Usage: delete <name of the application>
 
-	app:push:           push an application to VMForce.
-		Usage: push [args] <Name of the Application to push>
+	app:push:           push an application to VMforce.
+		Usage: push [args] <name of the application to push>
 		args:
-		-i, --instances	Number of instances to deploy (default 1)
-		-m, --mem	Memory to allocate to the app, in MB (default 512)
-		-p, --path	Local path to the deployable app(required)
+		-i, --instances	number of instances to deploy (default 1)
+		-m, --mem	memory to allocate to the application, in MB (default 512)
+		-p, --path	local path to the deployable application(required)
 
 	app:restart:        restart an application
-		Usage: restart <the name of the application>
+		Usage: restart <name of the application>
 
 	app:start:          start an application
-		Usage: start <the name of the application>
+		Usage: start <name of the application>
 
-	app:stop:           Stop an application
-		Usage: stop <the name of the application>
+	app:stop:           stop an application
+		Usage: stop <name of the application>
 
-	app:tail:           tail a file within a given app's instance
-		Usage: tail [args] <App on which to tail a file>
+	app:tail:           tail a file within a given application's instance
+		Usage: tail [args] <name of the application>
 		args:
-		-i, --instance	Instance on which to tail a file, default:0
+		-i, --instance	instance on which to tail a file, default:0
 		-p, --path	path to file(required)
 
 	banner:             print the banner
-	connection:         Show the current connection info:
-	db:clean:           Deletes all custom objects in the current org
+	connection:         show the current connection info
+	db:clean:           delete all custom objects in the current org
 	db:list:            list custom objects
-	debug:              turns debug output on/off
+	debug:              turn debug output on/off
 		Usage: debug [args] 
 		args:
-		--off	Turns off debug logging to the console
-		--on	Turns on debug logging to the console
+		--off	turn off debug logging to the console
+		--on	turn on debug logging to the console
 
-	exit:               Exit this shell
-	help:               Display this help message, or help for a specific command
+	exit:               exit this shell
+	help:               display this help message, or help for a specific command
 		Usage: help <command>
-	history:            Show history of previous commands
-	plugin:             adds a plugin to the shell
+	history:            show history of previous commands
+	plugin:             add a plugin to the shell
 		Usage: plugin [args] <maven artifact id for an artifact in group com.force.cliforce.plugin>
 		args:
-		-v, --version	maven artifact version for the specified artifact, if unspecified RELEASE meta-version is used
+		-v, --version	maven artifact version for the specified artifact; if unspecified, RELEASE meta-version is used
 
 	require:            exit the shell if a specified version of a plugin is not installed
 		Usage: require [args] <maven artifact id for an artifact in group com.force.cliforce.plugin>
 		args:
-		-v, --version	maven artifact version for the specified artifact, if unspecified RELEASE meta-version is used
+		-v, --version	maven artifact version for the specified artifact; if unspecified, RELEASE meta-version is used
 
-	sh:                 Execute the rest of the command on the OS
-	template:create:    creates a new vmforce maven project from a maven archetype
+	sh:                 execute the rest of the command on the OS
+	template:create:    create a new VMforce maven project from a maven archetype
 		Usage: create [args] <artifactId/name of the project to create>
 		args:
 		-g, --group	groupId of the project to create, defaults to org name(reversed, ie my.org = org.my).artifactId
 		-p, --package	root package for classes in project, defaults to groupId
-		-t, type	type of project single|multi defaults to single
+		-t, type	type of project {single|multi}; defaults to single
 		-v, --version	version of the project to create, default 1.0-SNAPSHOT
 
 	template:list:      list the available project templates
-	unplug:             removes a plugin and it's commands from the shell
-	version:            Show the current running version of cliforce
+	unplug:             remove a plugin and it's commands from the shell
+	version:            show the current running version of cliforce
 
 # How to use
 
@@ -119,7 +119,7 @@ Put the line (replacing <VERSION> with your version)
 
         java -Xmx512M -jar `dirname $0`/cliforce-boot<VERSION>.boot.jar "$@"
 
-in a file called cliforce in your ~/bin directory and do
+in a file called cliforce in your ~/bin directory and run
 
 	$ chmod u+x ~/bin/cliforce
 
@@ -130,7 +130,7 @@ to create a single executable file by combining a bash script and the jar.
 
 ##Windows
 
-Create a batch file cliforce.bat:
+Create a cliforce.bat batch file:
 
         set SCRIPT_DIR=%~dp0
         java -Xmx512M -jar "%SCRIPT_DIR%cliforce-boot<VERSION>.boot.jar" %*

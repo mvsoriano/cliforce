@@ -86,13 +86,13 @@ class NewProjectCommand extends JCommand[NewProjectArgs] {
       shell.execute(new NewProjectContextWrapper(ctx, cmd));
     } catch {
       case ioe: IOException => {
-        ctx.getCommandWriter.println("It appears you either dont have maven installed, or it is not on your path. Both are required to run this command.")
+        ctx.getCommandWriter.println("It appears you either don't have maven installed, or it is not on your path. Both are required to run this command.")
         ctx.getCommandWriter.println(ioe.getMessage)
       }
     }
   }
 
-  def describe = usage("creates a new vmforce maven project from a maven archetype")
+  def describe = usage("creates a new VMforce maven project from a maven archetype")
 
   def name = "create"
 }
@@ -103,7 +103,7 @@ class ListTemplatesCommand extends Command {
   def describe = "list the available project templates"
 
   def execute(ctx: CommandContext) = {
-    ctx.getCommandWriter.println("springmvc:  A simple maven based vmforce project using spring, springmvc and jpa")
+    ctx.getCommandWriter.println("springmvc:  A simple maven-based VMforce project using spring, springmvc and jpa")
   }
 }
 

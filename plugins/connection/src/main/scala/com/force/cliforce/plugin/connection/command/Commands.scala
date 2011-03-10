@@ -47,7 +47,7 @@ class CurrentConnectionCommand extends Command {
 class AddConnectionCommand extends Command {
   def execute(ctx: CommandContext) = {
     if (ctx.getCommandArguments.size != 2) {
-      ctx.getCommandWriter.println("Error, command expects exaxtly 2 arguments")
+      ctx.getCommandWriter.println("Error, command expects exactly two arguments")
       ctx.getCommandWriter.println(describe)
     } else {
       val name = ctx.getCommandArguments.apply(0)
@@ -69,7 +69,7 @@ class AddConnectionCommand extends Command {
     }
   }
 
-  def describe = "add an available conenction. Usage connection:add <connectionName> <connectionUrl>"
+  def describe = "add an available connection. Usage connection:add <connectionName> <connectionUrl>"
 
   def name = "add"
 }
@@ -79,7 +79,7 @@ class DefaultConnectionCommand extends Command {
     if (ctx.getCommandArguments.size == 0) {
       ctx.getCommandWriter.printf("The currently selected default connection name is: %s\n", CLIForce.getInstance.getDefaultEnvironment)
     } else if (ctx.getCommandArguments.size != 1) {
-      ctx.getCommandWriter.println("Error, command expects exaxtly 1 argument")
+      ctx.getCommandWriter.println("Error, command expects exactly one argument")
       ctx.getCommandWriter.println(describe)
     } else {
       val name = ctx.getCommandArguments.apply(0)
@@ -87,7 +87,7 @@ class DefaultConnectionCommand extends Command {
         CLIForce.getInstance.setDefaultEnvironment(name)
         CLIForce.getInstance.setCurrentEnvironment(name)
       } else {
-        ctx.getCommandWriter.printf("There is no such environment: %s avaiable\n", name)
+        ctx.getCommandWriter.printf("There is no such environment: %s available\n", name)
       }
     }
   }
@@ -100,19 +100,19 @@ class DefaultConnectionCommand extends Command {
 class SetConnectionCommand extends Command {
   def execute(ctx: CommandContext) = {
     if (ctx.getCommandArguments.size != 1) {
-      ctx.getCommandWriter.println("Error, command expects exactly 1 argument")
+      ctx.getCommandWriter.println("Error, command expects exactly one argument")
       ctx.getCommandWriter.println(describe)
     } else {
       val name = ctx.getCommandArguments.apply(0)
       if (CLIForce.getInstance.getAvailableEnvironments.containsKey(name)) {
         CLIForce.getInstance.setCurrentEnvironment(name)
       } else {
-        ctx.getCommandWriter.printf("There is no such environment: %s avaiable\n", name)
+        ctx.getCommandWriter.printf("There is no such environment: %s available\n", name)
       }
     }
   }
 
-  def describe = "set the current conenction for cliforce. Usage connection:set <connectionName>"
+  def describe = "set the current connection for cliforce. Usage connection:set <connectionName>"
 
   def name = "set"
 }
@@ -120,7 +120,7 @@ class SetConnectionCommand extends Command {
 class RenameConnectionCommand extends Command {
   def execute(ctx: CommandContext) = {
     if (ctx.getCommandArguments.size != 2) {
-      ctx.getCommandWriter.println("Error, command expects exaxtly 2 arguments")
+      ctx.getCommandWriter.println("Error, command expects exactly two arguments")
       ctx.getCommandWriter.println(describe)
     } else {
       val name = ctx.getCommandArguments.apply(0)
@@ -141,7 +141,7 @@ class RenameConnectionCommand extends Command {
 class RemoveConnectionCommand extends Command {
   def execute(ctx: CommandContext) = {
     if (ctx.getCommandArguments.size != 1) {
-      ctx.getCommandWriter.println("Error, command expects exactly 1 argument")
+      ctx.getCommandWriter.println("Error, command expects exactly one argument")
       ctx.getCommandWriter.println(describe)
     } else {
       val name = ctx.getCommandArguments.apply(0)
@@ -149,7 +149,7 @@ class RemoveConnectionCommand extends Command {
         CLIForce.getInstance.removeEnvironment(name)
         ctx.getCommandWriter.printf("Connection: %s removed\n",name)
       } else {
-        ctx.getCommandWriter.printf("There is no such environment: %s avaiable\n", name)
+        ctx.getCommandWriter.printf("There is no such environment: %s available\n", name)
       }
     }
   }

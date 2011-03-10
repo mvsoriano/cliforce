@@ -79,14 +79,14 @@ class DeleteAppCommand extends AppCommand {
     ctx.getCommandWriter.println("done")
   }
 
-  def describe = usage("deletes an application from vmforce")
+  def describe = usage("deletes an application from VMforce")
 
   def name = "delete"
 }
 
 class PushArgs {
   @Parameter(
-    description = "Name of the Application to push",
+    description = "Name of the application to push",
     required = true)
   var names = new ArrayList[String]
 
@@ -94,7 +94,7 @@ class PushArgs {
 
   @Parameter(
     names = Array("-m", "--mem"),
-    description = "Memory to allocate to the app, in MB (default 512)")
+    description = "Memory to allocate to the application, in MB (default 512)")
   var mem: Int = 512
 
   @Parameter(
@@ -104,7 +104,7 @@ class PushArgs {
 
   @Parameter(
     names = Array("-p", "--path"),
-    description = "Local path to the deployable app",
+    description = "Local path to the deployable application",
     required = true,
     converter = classOf[FileConverter])
   var path: File = null;
@@ -140,11 +140,11 @@ class PushCommand extends JCommand[PushArgs] {
       ctx.getCommandWriter.printf("URI: http://%s\n", _)
     }
 
-    ctx.getCommandWriter.printf("Note that push does not start/restart apps, please run 'app:start %s' or 'app:restart %s' as appropriate\n", args.name, args.name)
+    ctx.getCommandWriter.printf("Note that push does not start/restart applications, please run 'app:start %s' or 'app:restart %s' as appropriate\n", args.name, args.name)
   }
 
   def describe = {
-    usage("push an application to VMForce.")
+    usage("push an application to VMforce.")
   }
 
   def name = "push"
@@ -196,7 +196,7 @@ class RestartCommand extends AppCommand {
 
 
 class TailArg {
-  @Parameter(description = "App on which to tail a file", required = true)
+  @Parameter(description = "Application on which to tail a file", required = true)
   var apps = new ArrayList[String]
 
   def app = apps.get(0)
@@ -211,7 +211,7 @@ class TailArg {
 class TailFileCommand extends JCommand[TailArg] {
   def name = "tail"
 
-  def describe = usage("tail a file within a given app's instance. Note that the app must be running.")
+  def describe = usage("tail a file within a given application's instance. Note that the application must be running.")
 
   def executeWithArgs(ctx: CommandContext, args: TailArg) = {
     val tailer = ctx.getVmForceClient.getTailFile(args.app, args.instance, args.path);
