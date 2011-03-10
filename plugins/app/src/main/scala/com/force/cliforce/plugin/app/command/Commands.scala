@@ -54,12 +54,13 @@ class AppsCommand extends Command {
       app: ApplicationInfo => {
         ctx.getCommandWriter.println("""
 ===========================
-App:       %s
-Instances: %d
-State:     %s
-Memory:    %dMB
+App:              %s
+Running Instances:%d
+Total Instances:  %d
+State:            %s
+Memory:           %dMB
 ==========================="""
-          .format(app.getName, app.getInstances, app.getState, app.getResources.getMemory))
+          .format(app.getName, app.getRunningInstances, app.getInstances, app.getState, app.getResources.getMemory))
       }
     }
   }

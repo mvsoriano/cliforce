@@ -345,7 +345,7 @@ public abstract class JCommand<T> implements Command {
 
     protected String getSecondLastArgumentForCompletion(String[] args) {
         //we dont grab the command here so > 2 not >1
-        if (args.length > 2) {
+        if (args.length >= 2) {
             return args[args.length - 2];
         } else {
             return "";
