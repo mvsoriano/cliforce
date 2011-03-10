@@ -147,6 +147,7 @@ class RemoveConnectionCommand extends Command {
       val name = ctx.getCommandArguments.apply(0)
       if (CLIForce.getInstance.getAvailableEnvironments.containsKey(name)) {
         CLIForce.getInstance.removeEnvironment(name)
+        ctx.getCommandWriter.printf("Connection: %s removed\n",name)
       } else {
         ctx.getCommandWriter.printf("There is no such environment: %s avaiable\n", name)
       }
