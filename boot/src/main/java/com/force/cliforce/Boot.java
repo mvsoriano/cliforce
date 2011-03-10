@@ -14,7 +14,7 @@ public class Boot {
     public static void main(String[] args) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
         ClassLoader parent = Thread.currentThread().getContextClassLoader();
         Properties p = new Properties();
-        if (!(new File(System.getProperty("user.home") + "/.force_plugins").exists())) {
+        if (!(new File(System.getProperty("user.home") + "/.force/cliforce_plugins").exists())) {
             System.out.println("Downloading dependencies, this can take some time the first time you run cliforce");
         }
         p.load(parent.getResourceAsStream("cliforce.properties"));

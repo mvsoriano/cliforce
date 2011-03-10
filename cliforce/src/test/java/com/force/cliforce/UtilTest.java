@@ -24,6 +24,9 @@ public class UtilTest {
         p.setProperty("test", "123");
         String id = Long.toString(System.currentTimeMillis());
         File f = Util.getForcePropertiesFile(id);
+        if(!f.getParentFile().exists()){
+            f.getParentFile().mkdir();
+        }
         f.deleteOnExit();
         p.store(new FileOutputStream(f), "utilTest");
         Properties read = new Properties();

@@ -38,6 +38,9 @@ public class CLIForce {
     public static final String FORCEPROMPT = "force> ";
     public static final String EXITCMD = "exit";
     public static final String DEFAULT_URL_PROP_NAME = "__default__";
+    public static final String TARGET = "target";
+    public static final String PASSWORD = "password";
+    public static final String USER = "user";
     private ConcurrentMap<String, Command> commands = new ConcurrentSkipListMap<String, Command>();
     private ConcurrentMap<String, Plugin> plugins = new ConcurrentSkipListMap<String, Plugin>();
     private ConcurrentMap<ForceEnv, EnvConnections> connections = new ConcurrentHashMap<ForceEnv, EnvConnections>();
@@ -46,6 +49,9 @@ public class CLIForce {
     private Properties envProperties = new Properties();
     /*key=pluginArtifactId,value=pluginVersion*/
     private Properties installedPlugins = new Properties();
+    private Properties loginProperties = new Properties();
+    private volatile VMForceClient vmForceClient;
+    private volatile RestTemplateConnector restTemplateConnector;
     private ConsoleReader reader;
     private volatile ForceEnv currentEnv;
     private volatile String currentEnvName;
@@ -206,6 +212,60 @@ public class CLIForce {
         return debug;
     }
 
+    public synchronized boolean setLogin(String user, String password, String target) {
+        try {
+            resetVMForceClient(user, password, target);
+        } catch (Exception e) {
+            getLogger().debug("Unable to log in", e);
+            return false;
+        }
+
+        loginProperties.setProperty(USER, user);
+        loginProperties.setProperty(PASSWORD, password);
+        loginProperties.setProperty(TARGET, target);
+
+        try {
+            Util.writeProperties("login", loginProperties);
+            return true;
+        } catch (IOException e) {
+            getLogger().error("Exception persisting new login settings", e);
+            return false;
+        }
+    }
+
+    private void resetVMForceClient(String user, String password, String target) {
+        VMForceClient forceClient = new VMForceClient();
+        RestTemplateConnector restConnector = new RestTemplateConnector();
+        restConnector.setTarget(new HttpHost(target));
+        restConnector.debug(false);
+        forceClient.setHttpConnector(restConnector);
+        try {
+            forceClient.login(user, password);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to login", e);
+        } catch (ServletException e) {
+            throw new RuntimeException("Failed to login", e);
+        }
+        restTemplateConnector = restConnector;
+        vmForceClient = forceClient;
+    }
+
+    private boolean loadLogin() {
+        try {
+            if (!Util.readProperties("login", loginProperties)) {
+                return false;
+            } else {
+                if (!(loginProperties.containsKey(USER) && loginProperties.containsKey(PASSWORD) && loginProperties.containsKey(TARGET))) {
+                    return false;
+                }
+            }
+            resetVMForceClient(loginProperties.getProperty(USER), loginProperties.getProperty(PASSWORD), loginProperties.getProperty(TARGET));
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
     public Map<String, ForceEnv> getAvailableEnvironments() {
         return Collections.unmodifiableMap(envs);
     }
@@ -281,8 +341,11 @@ public class CLIForce {
         this.debug = debug;
         for (EnvConnections envConnections : connections.values()) {
             envConnections.config.setTraceMessage(debug);
-            envConnections.restConnector.debug(debug);
         }
+        if (restTemplateConnector != null) {
+            restTemplateConnector.debug(debug);
+        }
+
         Level level = Level.DEBUG;
         if (!debug) {
             level = Level.ERROR;
@@ -307,8 +370,12 @@ public class CLIForce {
         writer = new Writer(out);
 
 
-        File hist = new File(System.getProperty("user.home") + "/.force_history");
-
+        File hist = new File(System.getProperty("user.home") + "/.force/history");
+        if (!hist.getParentFile().exists()) {
+            if (!hist.getParentFile().mkdir()) {
+                out.println("cant create .force directory");
+            }
+        }
         if (!hist.exists()) {
             try {
                 if (hist.createNewFile()) {
@@ -326,6 +393,14 @@ public class CLIForce {
 
         reader.setBellEnabled(false);
         commandReader = new Reader();
+
+        if (!loadLogin()) {
+            try {
+                commands.get("login").execute(new Context(null, null, null, new String[0], commandReader, writer));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
 
         addSetupTask(new SetupTask() {
             @Override
@@ -474,16 +549,16 @@ public class CLIForce {
         } catch (ExitException e) {
             writer.println("Exit Exception thrown, exiting");
             throw e;
-        } catch(NullPointerException e){
+        } catch (NullPointerException e) {
             //todo think about a mechanism for commands to do precondition checks on the context
             //or otherwise indicate they need a force env
-            if(currentEnv == null){
+            if (currentEnv == null) {
                 writer.println("The command failed to execute");
                 writer.println("It looks like you need to add a connection using the connection:add command before executing this command");
                 writer.println("run 'help connection:add' for more info");
             } else {
-              writer.printf("Exception while executing command %s\n", cmdKey);
-              writer.printStackTrace(e);
+                writer.printf("Exception while executing command %s\n", cmdKey);
+                writer.printStackTrace(e);
             }
         } catch (Exception e) {
             writer.printf("Exception while executing command %s\n", cmdKey);
@@ -508,7 +583,7 @@ public class CLIForce {
     private CommandContext getContext(String[] args) {
         EnvConnections envConnections = getEnvConnections(currentEnv);
         if (envConnections != null) {
-            return new Context(currentEnv, envConnections.forceServiceConnector, envConnections.vmForceClient, args, commandReader, writer);
+            return new Context(currentEnv, envConnections.forceServiceConnector, vmForceClient, args, commandReader, writer);
         } else {
             if (initLatch.getCount() == 0) {
                 getLogger().warn("Could not get a valid connection for the current force url. Executing the command without force service connector or vmforce client");
@@ -530,18 +605,7 @@ public class CLIForce {
                 config.setTraceMessage(false);
                 config.setPrettyPrintXml(true);
                 ForceServiceConnector connector = new ForceServiceConnector(config);
-                VMForceClient forceClient = new VMForceClient();
-                RestTemplateConnector restConnector = new RestTemplateConnector();
-                try {
-                    restConnector.setTarget(new HttpHost("api.alpha.vmforce.com"));
-                    restConnector.debug(false);
-                    forceClient.setHttpConnector(restConnector);
-                    forceClient.login(env.getUser(), env.getPassword());
-                } catch (Exception e) {
-                    System.out.println("Couldn't authenticate with controller. Continuing. Error: " + e);
-                }
-
-                current = new EnvConnections(config, connector, forceClient, restConnector);
+                current = new EnvConnections(config, connector);
                 EnvConnections prev = connections.putIfAbsent(env, current);
                 return prev == null ? current : prev;
             } catch (ConnectionException e) {
@@ -560,14 +624,10 @@ public class CLIForce {
     private static class EnvConnections {
         public final ForceConnectorConfig config;
         public final ForceServiceConnector forceServiceConnector;
-        public final VMForceClient vmForceClient;
-        public final RestTemplateConnector restConnector;
 
-        private EnvConnections(ForceConnectorConfig config, ForceServiceConnector forceServiceConnector, VMForceClient vmForceClient, RestTemplateConnector restConnector) {
+        private EnvConnections(ForceConnectorConfig config, ForceServiceConnector forceServiceConnector) {
             this.config = config;
             this.forceServiceConnector = forceServiceConnector;
-            this.vmForceClient = vmForceClient;
-            this.restConnector = restConnector;
         }
     }
 
@@ -752,7 +812,7 @@ public class CLIForce {
                 Command command = commands.get(args[0]);
                 if (command != null) {
                     if (command instanceof JCommand) {
-                        return ((JCommand<?>) command).complete(buffer, args, cursor, (List<String>)candidates, getContext(args));
+                        return ((JCommand<?>) command).complete(buffer, args, cursor, (List<String>) candidates, getContext(args));
                     } else {
                         getLogger().debug("cliforce completor executing standard completion");
                         candidates.add(" ");

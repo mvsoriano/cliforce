@@ -30,6 +30,9 @@ public class Util {
      */
     public static boolean readProperties(String name, Properties properties) throws IOException {
         File propFile = getForcePropertiesFile(name);
+        if (!propFile.getParentFile().exists()) {
+            if (!propFile.getParentFile().mkdir()) return false;
+        }
         if (propFile.exists() || propFile.createNewFile()) {
             FileInputStream fileInputStream = new FileInputStream(propFile);
             properties.load(fileInputStream);
@@ -49,6 +52,9 @@ public class Util {
      */
     public static boolean writeProperties(String name, Properties properties) throws IOException {
         File propFile = getForcePropertiesFile(name);
+        if (!propFile.getParentFile().exists()) {
+            if (!propFile.getParentFile().mkdir()) return false;
+        }
         if (propFile.exists() || propFile.createNewFile()) {
             FileOutputStream fileOutputStream = new FileOutputStream(propFile);
             properties.store(fileOutputStream, "CLIForce " + name);
@@ -60,7 +66,7 @@ public class Util {
     }
 
     static File getForcePropertiesFile(String name) {
-        return new File(System.getProperty("user.home") + "/.force_" + name);
+        return new File(System.getProperty("user.home") + "/.force/cliforce_" + name);
     }
 
     /**

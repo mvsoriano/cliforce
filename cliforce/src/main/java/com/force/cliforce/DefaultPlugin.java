@@ -39,6 +39,7 @@ public class DefaultPlugin implements Plugin {
                 new EnvCommand(),
                 new SyspropsCommand(),
                 new ClasspathCommand(),
+                new LoginCommand(),
                 new Command() {
                     @Override
                     public String name() {
@@ -55,6 +56,47 @@ public class DefaultPlugin implements Plugin {
                         //No-op, will exit
                     }
                 });
+    }
+
+    public static class LoginArgs {
+        @Parameter(names = "--target", description = "The controller endpoint to authenticate against")
+        public String target = "api.alpha.vmforce.com";
+    }
+
+    public static class LoginCommand extends JCommand<LoginArgs> {
+        @Override
+        public void executeWithArgs(CommandContext ctx, LoginArgs args) {
+            String go = "Y";
+            while (!login(ctx, args)) {
+                go = ctx.getCommandReader().readLine("Enter Y to try again, anything else to exit.");
+                if (!go.toUpperCase().startsWith("Y")) {
+                    System.exit(1);
+                }
+            }
+        }
+
+        private boolean login(CommandContext ctx, LoginArgs args) {
+            ctx.getCommandWriter().printf("Logging into %s...\n", args.target);
+            String user = ctx.getCommandReader().readLine("Username:");
+            String password = ctx.getCommandReader().readLine("Password:", '*');
+            if (CLIForce.getInstance().setLogin(user, password, args.target)) {
+                ctx.getCommandWriter().println("Login successful.");
+                return true;
+            } else {
+                ctx.getCommandWriter().println("Unable to log in with provided credentials");
+                return false;
+            }
+        }
+
+        @Override
+        public String name() {
+            return "login";
+        }
+
+        @Override
+        public String describe() {
+            return usage("login to a controller endpoint and save the login info for future use");
+        }
     }
 
 
