@@ -100,7 +100,7 @@ class DefaultConnectionCommand extends Command {
 class SetConnectionCommand extends Command {
   def execute(ctx: CommandContext) = {
     if (ctx.getCommandArguments.size != 1) {
-      ctx.getCommandWriter.println("Error, command expects exaxtly 1 argument")
+      ctx.getCommandWriter.println("Error, command expects exactly 1 argument")
       ctx.getCommandWriter.println(describe)
     } else {
       val name = ctx.getCommandArguments.apply(0)
@@ -141,7 +141,7 @@ class RenameConnectionCommand extends Command {
 class RemoveConnectionCommand extends Command {
   def execute(ctx: CommandContext) = {
     if (ctx.getCommandArguments.size != 1) {
-      ctx.getCommandWriter.println("Error, command expects exaxtly 1 argument")
+      ctx.getCommandWriter.println("Error, command expects exactly 1 argument")
       ctx.getCommandWriter.println(describe)
     } else {
       val name = ctx.getCommandArguments.apply(0)
@@ -154,7 +154,7 @@ class RemoveConnectionCommand extends Command {
     }
   }
 
-  def describe = "remove a conenction from cliforce. Usage connection:remove <connectionName>"
+  def describe = "remove a connection from cliforce. Usage connection:remove <connectionName>"
 
   def name = "remove"
 }
