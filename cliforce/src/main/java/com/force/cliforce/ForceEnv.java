@@ -1,10 +1,7 @@
 package com.force.cliforce;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.StringTokenizer;
+import java.util.*;
 
 public class ForceEnv {
 
@@ -69,41 +66,48 @@ public class ForceEnv {
 
     public boolean parseAndValidate() {
         //expects force://<host>;user=<user>;password=<password>
-        StringTokenizer t = new StringTokenizer(url);
-        Map<String, String> map = new HashMap<String, String>();
-        protocol = t.nextToken("://");
-        if (!protocol.equalsIgnoreCase("force")) {
-            valid = false;
-            message = "Unsupported protocol: " + protocol + ". Only 'force' is supported as protocol.";
-            return false;
-        }
 
-        host = t.nextToken(";").substring(3);
-        if (host.length() == 0) {
-            valid = false;
-            message = "Endpoint could not be found in URL";
-            return false;
-        }
+        try {
+            StringTokenizer t = new StringTokenizer(url);
+            Map<String, String> map = new HashMap<String, String>();
+            protocol = t.nextToken("://");
+            if (!protocol.equalsIgnoreCase("force")) {
+                valid = false;
+                message = "Unsupported protocol: " + protocol + ". Only 'force' is supported as protocol.";
+                return false;
+            }
 
-        while (t.hasMoreTokens()) {
-            String key = t.nextToken("=").substring(1);
-            String value = t.nextToken(";").substring(1);
-            map.put(key, value);
-        }
+            host = t.nextToken(";").substring(3);
+            if (host.length() == 0) {
+                valid = false;
+                message = "Endpoint could not be found in URL";
+                return false;
+            }
 
-        user = map.get("user");
-        if (user == null || user.length() == 0) {
-            valid = false;
-            message = "User could not be found in URL";
-            return false;
+            while (t.hasMoreTokens()) {
+                String key = t.nextToken("=").substring(1);
+                String value = t.nextToken(";").substring(1);
+                map.put(key, value);
+            }
+
+            user = map.get("user");
+            if (user == null || user.length() == 0) {
+                valid = false;
+                message = "User could not be found in URL";
+                return false;
+            }
+            password = map.get("password");
+            if (password == null || password.length() == 0) {
+                valid = false;
+                message = "Password could not be found in URL";
+                return false;
+            }
+            return true;
+        } catch (NoSuchElementException e) {
+           valid = false;
+           message = "Unable to successfully parse the URL";
+           return false;
         }
-        password = map.get("password");
-        if (password == null || password.length() == 0) {
-            valid = false;
-            message = "Password could not be found in URL";
-            return false;
-        }
-        return true;
     }
 
     public String getUser() {
