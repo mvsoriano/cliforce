@@ -38,7 +38,7 @@
     <dependency>
       <groupId>com.force.sdk</groupId>
       <artifactId>force-connector</artifactId>
-      <version>${force.version}</version>
+      <version>${force.sdk.version}</version>
     </dependency>
     <dependency>
       <groupId>com.vmforce</groupId>
