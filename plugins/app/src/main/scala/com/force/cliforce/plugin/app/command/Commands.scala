@@ -52,15 +52,17 @@ class AppsCommand extends Command {
   def execute(ctx: CommandContext) = {
     asScalaIterable(ctx.getVmForceClient.getApplications).foreach{
       app: ApplicationInfo => {
+        val health = ctx.getVmForceClient.getApplicationHealth(app)
         ctx.getCommandWriter.println("""
 ===========================
 App:              %s
 Running Instances:%d
 Total Instances:  %d
+Health:           %s
 State:            %s
 Memory:           %dMB
 ==========================="""
-          .format(app.getName, app.getRunningInstances, app.getInstances, app.getState, app.getResources.getMemory))
+          .format(app.getName, app.getRunningInstances, app.getInstances, health.name, app.getState, app.getResources.getMemory))
       }
     }
   }
