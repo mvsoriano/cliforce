@@ -5,6 +5,7 @@ import com.force.sdk.connector.ForceConnectorConfig;
 import com.force.sdk.connector.ForceServiceConnector;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.name.Named;
 import com.sforce.async.AsyncApiException;
 import com.sforce.async.RestConnection;
 import com.sforce.soap.metadata.MetadataConnection;
@@ -22,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.servlet.ServletException;
 import java.io.*;
 import java.net.MalformedURLException;
@@ -44,6 +44,7 @@ public class CLIForce {
     public static final String TARGET = "target";
     public static final String PASSWORD = "password";
     public static final String USER = "user";
+    public static final String INTERNAL_PLUGINS = "internalPlugins";
     private ConcurrentMap<String, Command> commands = new ConcurrentSkipListMap<String, Command>();
     private ConcurrentMap<String, Plugin> plugins = new ConcurrentSkipListMap<String, Plugin>();
     private ConcurrentMap<String, Injector> pluginInjectors = new ConcurrentHashMap<String, Injector>();
@@ -63,7 +64,10 @@ public class CLIForce {
     private Completor completor = new CliforceCompletor();
     private volatile boolean debug = false;
     private CommandWriter writer;
-    @Named("internalPlugins")
+    @Inject
+    private Injector mainInjector;
+    @Inject
+    @Named(INTERNAL_PLUGINS)
     private String[] internalPlugins;
     @Inject
     private DefaultPlugin def;
@@ -152,7 +156,7 @@ public class CLIForce {
 
     void installPlugin(String artifact, String version, Plugin p, boolean internal) {
         PluginModule module = new PluginModule(p);
-        Injector injector = Guice.createInjector(module);
+        Injector injector = mainInjector.createChildInjector(module);
         plugins.put(artifact, p);
         if (!internal) {
             installedPlugins.setProperty(artifact, version);
@@ -367,7 +371,7 @@ public class CLIForce {
     public void init(InputStream in, PrintWriter out) throws IOException, ConnectionException, ServletException {
         SLF4JBridgeHandler.install();
         PluginModule pluginModule = new PluginModule(def);
-        Injector injector = Guice.createInjector(pluginModule);
+        Injector injector = mainInjector.createChildInjector(pluginModule);
 
         for (Class<? extends Command> cmdClass : def.getCommands()) {
             Command command = injector.getInstance(cmdClass);
