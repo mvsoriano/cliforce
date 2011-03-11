@@ -13,6 +13,6 @@ import java.util.List;
  */
 public interface Plugin {
 
-    List<Command> getCommands();
+    List<Class<? extends Command>> getCommands();
 
 }

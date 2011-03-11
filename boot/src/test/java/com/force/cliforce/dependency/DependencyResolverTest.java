@@ -1,13 +1,19 @@
 package com.force.cliforce.dependency;
 
 
+import com.force.cliforce.Boot;
 import org.testng.annotations.Test;
+
+import java.io.IOException;
 
 public class DependencyResolverTest {
 
+
+
+
     @Test
-    public void testSingleDependencyResolution() throws ClassNotFoundException {
-        ClassLoader loader = DependencyResolver.getInstance().createClassLoaderFor("log4j", "log4j", "1.2.16", null, new OutputAdapter() {
+    public void testSingleDependencyResolution() throws ClassNotFoundException, IOException {
+        ClassLoader loader = Boot.getBootResolver().createClassLoaderFor("log4j", "log4j", "1.2.16", null, new OutputAdapter() {
             @Override
             public void println(String msg) {
                 System.out.println(msg);
@@ -24,8 +30,8 @@ public class DependencyResolverTest {
     }
 
     @Test
-    public void testReleaseDependencyResolution() throws ClassNotFoundException {
-        ClassLoader loader = DependencyResolver.getInstance().createClassLoaderFor("log4j", "log4j", "RELEASE",null, new OutputAdapter() {
+    public void testReleaseDependencyResolution() throws ClassNotFoundException, IOException {
+        ClassLoader loader = Boot.getBootResolver().createClassLoaderFor("log4j", "log4j", "RELEASE",null, new OutputAdapter() {
             @Override
             public void println(String msg) {
                 System.out.println(msg);
@@ -45,8 +51,8 @@ public class DependencyResolverTest {
 
 
     @Test
-    public void testPluginDependencyResolution() throws ClassNotFoundException {
-        ClassLoader loader = DependencyResolver.getInstance().createClassLoaderFor("com.force.cliforce.plugin", "cliplugin", null, new OutputAdapter() {
+    public void testPluginDependencyResolution() throws ClassNotFoundException, IOException {
+        ClassLoader loader = Boot.getBootResolver().createClassLoaderFor("com.force.cliforce.plugin", "cliplugin", null, new OutputAdapter() {
             @Override
             public void println(String msg) {
                 System.out.println(msg);

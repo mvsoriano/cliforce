@@ -29,7 +29,7 @@ object AppNameCache {
 }
 
 abstract class AppCommand extends JCommand[AppArg] {
-  protected override def getCompletionsForSwitch(switchForCompletion: String, partialValue: String, parameterDescription: ParameterDescription, ctx: CommandContext) = {
+  override def getCompletionsForSwitch(switchForCompletion: String, partialValue: String, parameterDescription: ParameterDescription, ctx: CommandContext) = {
     if (switchForCompletion eq JCommand.MAIN_PARAM) {
       val apps = AppNameCache.getApps(ctx)
       val candidates = new ArrayList[String]

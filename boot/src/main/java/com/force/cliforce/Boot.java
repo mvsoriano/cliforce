@@ -11,16 +11,50 @@ import java.util.Properties;
 
 public class Boot {
 
+    static Properties cliforce;
+    static Properties repositories;
+
     public static void main(String[] args) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
-        ClassLoader parent = Thread.currentThread().getContextClassLoader();
-        Properties p = new Properties();
         if (!(new File(System.getProperty("user.home") + "/.force/cliforce_plugins").exists())) {
             System.out.println("Downloading dependencies, this can take some time the first time you run cliforce");
         }
-        p.load(parent.getResourceAsStream("cliforce.properties"));
-        ClassLoader cl = DependencyResolver.getInstance().createClassLoaderFor(p.getProperty("groupId"), p.getProperty("artifactId"), null, new SystemOutputAdapter());
+        DependencyResolver resolver = getBootResolver();
+        ClassLoader cl = resolver.createClassLoaderFor(cliforce.getProperty("groupId"), cliforce.getProperty("artifactId"), null, new SystemOutputAdapter());
         Thread.currentThread().setContextClassLoader(cl);
-        cl.loadClass(p.getProperty("main")).getMethod("main", new Class<?>[]{String[].class}).invoke(null, new Object[]{args});
+        cl.loadClass(cliforce.getProperty("main")).getMethod("main", new Class<?>[]{String[].class}).invoke(null, new Object[]{args});
+    }
+
+    public static DependencyResolver getBootResolver() throws IOException {
+        return getBootResolver(getCLIForceProperties(), getRepositories());
+    }
+
+    private static DependencyResolver getBootResolver(Properties cli, Properties repo) {
+        DependencyResolver resolver = new DependencyResolver();
+        resolver.setRepositories(repo);
+        resolver.setCLIForceMavenCoordinates(cli.getProperty("groupId") + ":" + cli.getProperty("artifactId") + ":" + cli.getProperty("version"));
+        return resolver;
+    }
+
+
+    static Properties getCLIForceProperties() throws IOException {
+        if (cliforce == null) {
+            cliforce = new Properties();
+            cliforce.load(Boot.class.getClassLoader().getResourceAsStream("cliforce.properties"));
+        }
+        return cliforce;
+    }
+
+    static Properties getRepositories() throws IOException {
+        if (repositories == null) {
+            repositories = new Properties();
+            if (getCLIForceProperties().getProperty("version").contains("SNAPSHOT")) {
+                repositories.load(Boot.class.getClassLoader().getResourceAsStream("snapshot-repositories.properties"));
+            } else {
+                repositories.load(Boot.class.getClassLoader().getResourceAsStream("release-repositories.properties"));
+            }
+
+        }
+        return repositories;
     }
 
     public static class SystemOutputAdapter implements OutputAdapter {

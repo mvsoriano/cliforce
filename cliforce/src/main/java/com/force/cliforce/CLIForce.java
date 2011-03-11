@@ -3,6 +3,8 @@ package com.force.cliforce;
 import ch.qos.logback.classic.Level;
 import com.force.sdk.connector.ForceConnectorConfig;
 import com.force.sdk.connector.ForceServiceConnector;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import com.sforce.async.AsyncApiException;
 import com.sforce.async.RestConnection;
 import com.sforce.soap.metadata.MetadataConnection;
@@ -19,6 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import javax.servlet.ServletException;
 import java.io.*;
 import java.net.MalformedURLException;
@@ -33,7 +37,6 @@ public class CLIForce {
     /**
      * This field is lazy initialized by getLogger, shouldnt use directly.
      */
-    private static CLIForce cliForce = new CLIForce();
     private static Logger logger;
     public static final String FORCEPROMPT = "force> ";
     public static final String EXITCMD = "exit";
@@ -43,6 +46,7 @@ public class CLIForce {
     public static final String USER = "user";
     private ConcurrentMap<String, Command> commands = new ConcurrentSkipListMap<String, Command>();
     private ConcurrentMap<String, Plugin> plugins = new ConcurrentSkipListMap<String, Plugin>();
+    private ConcurrentMap<String, Injector> pluginInjectors = new ConcurrentHashMap<String, Injector>();
     private ConcurrentMap<ForceEnv, EnvConnections> connections = new ConcurrentHashMap<ForceEnv, EnvConnections>();
     private ConcurrentMap<String, ForceEnv> envs = new ConcurrentHashMap<String, ForceEnv>();
     /*key=envName,value=forceUrl*/
@@ -59,6 +63,11 @@ public class CLIForce {
     private Completor completor = new CliforceCompletor();
     private volatile boolean debug = false;
     private CommandWriter writer;
+    @Named("internalPlugins")
+    private String[] internalPlugins;
+    @Inject
+    private DefaultPlugin def;
+
 
     private ExecutorService startupExecutor = Executors.newCachedThreadPool(new ThreadFactory() {
         @Override
@@ -78,6 +87,9 @@ public class CLIForce {
 
 
     public static void main(String[] args) {
+
+        Injector injector = Guice.createInjector(new MainModule());
+        CLIForce cliForce = injector.getInstance(CLIForce.class);
 
 
         try {
@@ -107,10 +119,6 @@ public class CLIForce {
         }
     }
 
-
-    public static CLIForce getInstance() {
-        return cliForce;
-    }
 
     /**
      * Return a map of installed plugins' maven artifactId->version
@@ -143,7 +151,8 @@ public class CLIForce {
     }
 
     void installPlugin(String artifact, String version, Plugin p, boolean internal) {
-        List<Command> pcommands = p.getCommands();
+        PluginModule module = new PluginModule(p);
+        Injector injector = Guice.createInjector(module);
         plugins.put(artifact, p);
         if (!internal) {
             installedPlugins.setProperty(artifact, version);
@@ -153,7 +162,8 @@ public class CLIForce {
             }
         }
 
-        for (Command command : pcommands) {
+        for (Class<? extends Command> cmdClass : p.getCommands()) {
+            Command command = injector.getInstance(cmdClass);
             if (!internal) {
                 if (initLatch.getCount() == 0) {
                     writer.printf("\tadds command %s:%s (%s)\n", artifact, command.name(), command.getClass().getName());
@@ -166,15 +176,18 @@ public class CLIForce {
 
     void removePlugin(String artifactId) {
         Plugin p = plugins.remove(artifactId);
+        Injector injector = pluginInjectors.get(artifactId);
         if (p == null) {
             writer.println("....not found");
         } else {
-            for (Command command : p.getCommands()) {
+            for (Class<? extends Command> cmdClass : p.getCommands()) {
+                Command command = injector.getInstance(cmdClass);
                 commands.remove(artifactId + ":" + command.name());
                 writer.printf("\tremoved command: %s\n", command.name());
             }
 
             installedPlugins.remove(artifactId);
+            pluginInjectors.remove(artifactId);
             saveInstalledPlugins(writer);
             writer.println("Done");
         }
@@ -203,10 +216,6 @@ public class CLIForce {
         }
         return logger;
     }
-
-    private CLIForce() {
-    }
-
 
     public boolean isDebug() {
         return debug;
@@ -357,10 +366,11 @@ public class CLIForce {
 
     public void init(InputStream in, PrintWriter out) throws IOException, ConnectionException, ServletException {
         SLF4JBridgeHandler.install();
+        PluginModule pluginModule = new PluginModule(def);
+        Injector injector = Guice.createInjector(pluginModule);
 
-
-        Plugin def = new DefaultPlugin();
-        for (Command command : def.getCommands()) {
+        for (Class<? extends Command> cmdClass : def.getCommands()) {
+            Command command = injector.getInstance(cmdClass);
             commands.put(command.name(), command);
         }
 
@@ -407,8 +417,7 @@ public class CLIForce {
             public void setup() {
                 try {
                     DefaultPlugin.PluginCommand p = (DefaultPlugin.PluginCommand) commands.get("plugin");
-                    String[] defalutPlugins = {"connection", "app", "db", "template"};//TODO externalize
-                    for (String defalutPlugin : defalutPlugins) {
+                    for (String defalutPlugin : internalPlugins) {
                         DefaultPlugin.PluginArgs args = new DefaultPlugin.PluginArgs();
                         args.setArtifact(defalutPlugin);
                         args.version = "LATEST";

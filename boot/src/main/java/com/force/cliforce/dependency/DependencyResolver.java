@@ -27,8 +27,8 @@ import java.net.URLClassLoader;
 import java.util.*;
 
 /**
- * DependencyResolver singleton that uses maven-aether to resolve the dependency graph for a given dependency.
- * NOT THREADSAFE, (could be if we moved the session back to being a local var) but there shouldnt be a reason it needs to be.
+ * DependencyResolver  that uses maven-aether to resolve the dependency graph for a given dependency.
+ *
  * <p/>
  * This class refuses to put log4j or commons logging onto a classpath, instead substituting log4j-over-slf4j and clogging-over-slf4j
  * so that the debug --on command will cause all log output to be visible.
@@ -36,43 +36,75 @@ import java.util.*;
 public class DependencyResolver {
 
 
-    private static DependencyResolver instance = new DependencyResolver();
+    public static final String JCL_OVER_SLF4J = "jcl-over-slf4j";
+    public static final String LOG4J_OVER_SLF4J = "log4j-over-slf4j";
+    public static final String LOG_4_J = "log4j";
+    public static final String COMMONS_LOGGING = "commons-logging";
+    public static final String COMMONS_LOGGING_API = "commons-logging-api";
+    private volatile boolean initialized = false;
+    private final Object lock = new Object();
+    private String cliforceGroup;
+    private String cliforceArtifact;
+    private String cliforceVersion;
+    private RepositorySystem repositorySystem;
+    private MavenRepositorySystemSession session = new MavenRepositorySystemSession();
+    private String latestMetaVersion = "RELEASE";
+    private List<RemoteRepository> remoteRepositories;
+    private URL log4jOverSlf4j;
+    private URL cloggingOverSlf4j;
+    private LocalRepository localRepository = new LocalRepository(System.getProperty("user.home") + "/.m2/repository/");
 
-    Properties cliforceProperties;
-    Properties repositories;
-    RepositorySystem repositorySystem;
-    MavenRepositorySystemSession session = new MavenRepositorySystemSession();
-    String latestMetaVersion = "RELEASE";
-    List<RemoteRepository> remoteRepositories;
-    URL log4jOverSlf4j;
-    URL cloggingOverSlf4j;
 
-    {
-        try {
-            DefaultServiceLocator locator = new DefaultServiceLocator();
-            locator.setServices(WagonProvider.class, new ManualWagonProvider());
-            locator.addService(RepositoryConnectorFactory.class, WagonRepositoryConnectorFactory.class);
-            repositorySystem = locator.getService(RepositorySystem.class);
-            String local = System.getProperty("user.home") + "/.m2/repository/";
-            LocalRepository localRepo = new LocalRepository(local);
-            session.setLocalRepositoryManager(repositorySystem.newLocalRepositoryManager(localRepo));
-            repositories = new Properties();
-            repositories.load(getClass().getClassLoader().getResourceAsStream("repositories.properties"));
-            remoteRepositories = new ArrayList<RemoteRepository>(repositories.size());
-            for (String name : repositories.stringPropertyNames()) {
-                remoteRepositories.add(new RemoteRepository(name, "default", repositories.getProperty(name)));
-            }
-            cliforceProperties = new Properties();
-            cliforceProperties.load(getClass().getClassLoader().getResourceAsStream("cliforce.properties"));
-            //If cliforce itself is a snapshot, use "LATEST" instead of "RELEASE" to find dependencies with no version
-            if (cliforceProperties.getProperty("version").contains("SNAPSHOT")) {
+    public void setRepositories(Properties repositories){
+         remoteRepositories = new ArrayList<RemoteRepository>(repositories.size());
+        for (String name : repositories.stringPropertyNames()) {
+            remoteRepositories.add(new RemoteRepository(name, "default", repositories.getProperty(name)));
+        }
+    }
+
+    public void setRepositories(Map<String, String> repositories) {
+        remoteRepositories = new ArrayList<RemoteRepository>(repositories.size());
+        for (String name : repositories.keySet()) {
+            remoteRepositories.add(new RemoteRepository(name, "default", repositories.get(name)));
+        }
+    }
+
+    public void setCLIForceMavenCoordinates(String coords) {
+        String[] gav = coords.split(":");
+        if (gav.length != 3) {
+            throw new IllegalArgumentException("Expected coordinates in groupId:artifactId:version format");
+        } else {
+            cliforceGroup = gav[0];
+            cliforceArtifact = gav[1];
+            cliforceVersion = gav[2];
+            if (cliforceVersion.contains("SNAPSHOT")) {
                 latestMetaVersion = "LATEST";
             }
+        }
+    }
 
-        } catch (Exception e) {
-            System.err.println("Exception configuring maven, cant continue");
-            e.printStackTrace(System.err);
-            throw new RuntimeException(e);
+    public void setLocalRepository(String path) {
+        localRepository = new LocalRepository(path);
+    }
+
+    private void initialize() {
+        if (!initialized) {
+            synchronized (lock) {
+                if (!initialized) {
+                    try {
+                        DefaultServiceLocator locator = new DefaultServiceLocator();
+                        locator.setServices(WagonProvider.class, new ManualWagonProvider());
+                        locator.addService(RepositoryConnectorFactory.class, WagonRepositoryConnectorFactory.class);
+                        repositorySystem = locator.getService(RepositorySystem.class);
+                        session.setLocalRepositoryManager(repositorySystem.newLocalRepositoryManager(localRepository));
+                        initialized = true;
+                    } catch (Exception e) {
+                        System.err.println("Exception configuring maven, cant continue");
+                        e.printStackTrace(System.err);
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
         }
     }
 
@@ -94,14 +126,10 @@ public class DependencyResolver {
 
     }
 
-    public static DependencyResolver getInstance() {
-        return instance;
-    }
-
 
     private URLClassLoader createClassLoaderInternal(String groupId, String artifactId, String version, ClassLoader parent) {
         try {
-
+            initialize();
             DefaultArtifact defaultArtifact = new DefaultArtifact(groupId + ":" + artifactId + ":" + version);
             Dependency dependency =
                     new Dependency(defaultArtifact, "runtime");
@@ -149,12 +177,14 @@ public class DependencyResolver {
     }
 
     private void setupLoggingDependencies(String groupId, String artifactId, Collection<URL> classpath) {
-        if (groupId.equals(cliforceProperties.getProperty("groupId")) && artifactId.equals(cliforceProperties.getProperty("artifactId"))) {
+        if (groupId.equals(cliforceGroup) && artifactId.equals(cliforceArtifact)) {
             for (URL url : classpath) {
-                if (url.toString().contains("jcl-over-slf4j")) {
+
+
+                if (url.toString().contains(JCL_OVER_SLF4J)) {
                     cloggingOverSlf4j = url;
                 }
-                if (url.toString().contains("log4j-over-slf4j")) {
+                if (url.toString().contains(LOG4J_OVER_SLF4J)) {
                     log4jOverSlf4j = url;
                 }
             }
@@ -173,14 +203,14 @@ public class DependencyResolver {
      * @return
      */
     private boolean ok(Dependency dependency) {
-        if (dependency.getArtifact().getGroupId().equals("log4j") && dependency.getArtifact().getArtifactId().equals("log4j")) {
+        if (dependency.getArtifact().getGroupId().equals(LOG_4_J) && dependency.getArtifact().getArtifactId().equals(LOG_4_J)) {
             return false;
         }
-        if (dependency.getArtifact().getGroupId().equals("commons-logging") && dependency.getArtifact().getArtifactId().equals("commons-logging")) {
+        if (dependency.getArtifact().getGroupId().equals(COMMONS_LOGGING) && dependency.getArtifact().getArtifactId().equals(COMMONS_LOGGING)) {
             return false;
         }
 
-        if (dependency.getArtifact().getGroupId().equals("commons-logging") && dependency.getArtifact().getArtifactId().equals("commons-logging-api")) {
+        if (dependency.getArtifact().getGroupId().equals(COMMONS_LOGGING) && dependency.getArtifact().getArtifactId().equals(COMMONS_LOGGING_API)) {
             return false;
         }
         return true;

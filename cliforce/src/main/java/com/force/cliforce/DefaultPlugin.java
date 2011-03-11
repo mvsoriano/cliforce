@@ -8,6 +8,7 @@ import com.force.cliforce.dependency.DependencyResolver;
 import com.force.cliforce.dependency.OutputAdapter;
 import jline.SimpleCompletor;
 
+import javax.inject.Inject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,8 +26,30 @@ public class DefaultPlugin implements Plugin {
 
 
     @Override
+    public List<Class<? extends Command>> getCommands() {
+        List<Class<? extends Command>> commands = Arrays.asList(
+                ShellCommand.class,
+                BannerCommand.class,
+                HistoryCommand.class,
+                DebugCommand.class,
+                HelpCommand.class,
+                PluginCommand.class,
+                RequirePluginCommand.class,
+                UnplugCommand.class,
+                VersionCommand.class,
+                EnvCommand.class,
+                SyspropsCommand.class,
+                ClasspathCommand.class,
+                LoginCommand.class,
+                ExitCommand.class
+                );
+
+        return commands;
+    }
+
+    /*@Override
     public List<Command> getCommands() {
-        return Arrays.asList(
+        List<Command> commands = Arrays.asList(
                 new ShellCommand(),
                 new BannerCommand(),
                 new HistoryCommand(),
@@ -56,6 +79,25 @@ public class DefaultPlugin implements Plugin {
                         //No-op, will exit
                     }
                 });
+
+        return commands;
+    }*/
+
+    public static class ExitCommand implements Command {
+        @Override
+        public String name() {
+            return "exit";
+        }
+
+        @Override
+        public String describe() {
+            return "Exit this shell";
+        }
+
+        @Override
+        public void execute(CommandContext ctx) throws Exception {
+            //No-op, will exit
+        }
     }
 
     public static class LoginArgs {
@@ -64,6 +106,10 @@ public class DefaultPlugin implements Plugin {
     }
 
     public static class LoginCommand extends JCommand<LoginArgs> {
+
+        @Inject
+        private CLIForce cliForce;
+
         @Override
         public void executeWithArgs(CommandContext ctx, LoginArgs args) {
             String go = "Y";
@@ -79,7 +125,7 @@ public class DefaultPlugin implements Plugin {
             ctx.getCommandWriter().printf("Logging into %s...\n", args.target);
             String user = ctx.getCommandReader().readLine("Username:");
             String password = ctx.getCommandReader().readLine("Password:", '*');
-            if (CLIForce.getInstance().setLogin(user, password, args.target)) {
+            if (cliForce.setLogin(user, password, args.target)) {
                 ctx.getCommandWriter().println("Login successful.");
                 return true;
             } else {
@@ -102,6 +148,8 @@ public class DefaultPlugin implements Plugin {
 
     public static class HelpCommand implements Command {
 
+        @Inject
+        private CLIForce cliForce;
 
         @Override
         public String name() {
@@ -115,7 +163,7 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public void execute(CommandContext ctx) throws Exception {
-            Map<String, String> descs = CLIForce.getInstance().getCommandDescriptions();
+            Map<String, String> descs = cliForce.getCommandDescriptions();
             descs = new TreeMap<String, String>(descs);
             if (ctx.getCommandArguments().length == 0) {
                 int longCmd = 0;
@@ -174,6 +222,11 @@ public class DefaultPlugin implements Plugin {
 
         public static final String PLUGIN_GROUP = "com.force.cliforce.plugin";
 
+        @Inject
+        DependencyResolver resolver;
+
+        @Inject
+        CLIForce cliForce;
 
         @Override
         public String name() {
@@ -195,13 +248,13 @@ public class DefaultPlugin implements Plugin {
             CommandWriter output = ctx.getCommandWriter();
             if (arg.artifact() == null) {
                 output.println("Listing plugins...");
-                for (Map.Entry<String, String> e : CLIForce.getInstance().getInstalledPlugins().entrySet()) {
+                for (Map.Entry<String, String> e : cliForce.getInstalledPlugins().entrySet()) {
                     output.printf("Plugin: %s (%s)\n", e.getKey(), e.getValue());
                 }
                 output.println("Done.");
             } else {
 
-                if (CLIForce.getInstance().getActivePlugins().contains(arg.artifact())) {
+                if (cliForce.getActivePlugins().contains(arg.artifact())) {
                     output.printf("Plugin %s is already installed. Please execute 'unplug %s' before running this command", arg.artifact(), arg.artifact());
                     return;
                 }
@@ -220,9 +273,9 @@ public class DefaultPlugin implements Plugin {
                 };
                 ClassLoader pcl = null;
                 if (arg.version != null) {
-                    pcl = DependencyResolver.getInstance().createClassLoaderFor(PLUGIN_GROUP, arg.artifact(), arg.version, curr, oa);
+                    pcl = resolver.createClassLoaderFor(PLUGIN_GROUP, arg.artifact(), arg.version, curr, oa);
                 } else {
-                    pcl = DependencyResolver.getInstance().createClassLoaderFor(PLUGIN_GROUP, arg.artifact(), curr, oa);
+                    pcl = resolver.createClassLoaderFor(PLUGIN_GROUP, arg.artifact(), curr, oa);
                 }
                 try {
                     Thread.currentThread().setContextClassLoader(pcl);
@@ -234,7 +287,7 @@ public class DefaultPlugin implements Plugin {
                     }
                     Plugin p = iterator.next();
 
-                    CLIForce.getInstance().installPlugin(arg.artifact(), arg.version, p, arg.internal);
+                    cliForce.installPlugin(arg.artifact(), arg.version, p, arg.internal);
 
                     while (iterator.hasNext()) {
                         Plugin ignore = iterator.next();
@@ -252,6 +305,8 @@ public class DefaultPlugin implements Plugin {
 
     public static class RequirePluginCommand extends JCommand<PluginArgs> {
 
+        @Inject
+        private CLIForce cliForce;
 
         @Override
         public String name() {
@@ -271,7 +326,7 @@ public class DefaultPlugin implements Plugin {
         @Override
         public void executeWithArgs(final CommandContext ctx, PluginArgs arg) {
             CommandWriter output = ctx.getCommandWriter();
-            String version = CLIForce.getInstance().getInstalledPluginVersion(arg.artifact());
+            String version = cliForce.getInstalledPluginVersion(arg.artifact());
             if (version == null) {
                 ctx.getCommandWriter().printf("Required Plugin %s version %s is not installed, exiting\n", arg.artifact(), arg.version);
                 throw new ExitException("Required Plugin Not Installed");
@@ -288,6 +343,8 @@ public class DefaultPlugin implements Plugin {
 
     public static class UnplugCommand implements Command {
 
+        @Inject
+        private CLIForce cliForce;
 
         @Override
         public String name() {
@@ -303,7 +360,7 @@ public class DefaultPlugin implements Plugin {
         public void execute(CommandContext ctx) throws Exception {
             for (String arg : ctx.getCommandArguments()) {
                 ctx.getCommandWriter().printf("Removing plugin: %s\n", arg);
-                CLIForce.getInstance().removePlugin(arg);
+                cliForce.removePlugin(arg);
             }
         }
     }
@@ -311,6 +368,8 @@ public class DefaultPlugin implements Plugin {
 
     public static class HistoryCommand implements Command {
 
+        @Inject
+        private CLIForce cliForce;
 
         @Override
         public String name() {
@@ -324,7 +383,7 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public void execute(CommandContext ctx) throws Exception {
-            List<String> historyList = CLIForce.getInstance().getHistoryList();
+            List<String> historyList = cliForce.getHistoryList();
             for (String s : historyList) {
                 ctx.getCommandWriter().println(s);
             }
@@ -333,6 +392,10 @@ public class DefaultPlugin implements Plugin {
     }
 
     public static class ShellCommand implements Command {
+
+        @Inject
+        private CLIForce cliForce;
+
         @Override
         public String name() {
             return "sh";
@@ -359,7 +422,7 @@ public class DefaultPlugin implements Plugin {
             } else {
                 args = ctx.getCommandArguments();
             }
-            if (CLIForce.getInstance().isDebug()) {
+            if (cliForce.isDebug()) {
                 ctx.getCommandWriter().printf("sh: Executing: %s\n", Arrays.toString(args));
             }
             Process start = new ProcessBuilder(args).start();
@@ -482,6 +545,9 @@ public class DefaultPlugin implements Plugin {
 
     public static class ClasspathCommand extends JCommand<ClasspathArg> {
 
+        @Inject
+        private CLIForce cliForce;
+
         @Override
         public String name() {
             return "classpath";
@@ -503,9 +569,9 @@ public class DefaultPlugin implements Plugin {
                         return o1.toString().compareTo(o2.toString());
                     }
                 });
-                classpathForCommand.addAll(CLIForce.getInstance().getClasspathForPlugin(args.plugin()));
+                classpathForCommand.addAll(cliForce.getClasspathForPlugin(args.plugin()));
             } else {
-                classpathForCommand = CLIForce.getInstance().getClasspathForPlugin(args.plugin());
+                classpathForCommand = cliForce.getClasspathForPlugin(args.plugin());
             }
 
             for (URL url : classpathForCommand) {
@@ -517,7 +583,7 @@ public class DefaultPlugin implements Plugin {
         protected List<String> getCompletionsForSwitch(String switchForCompletion, String partialValue, ParameterDescription parameterDescription, CommandContext context) {
             if (switchForCompletion.equals(MAIN_PARAM)) {
                 List<String> candidates = new ArrayList<String>();
-                List<String> activePlugins = CLIForce.getInstance().getActivePlugins();
+                List<String> activePlugins = cliForce.getActivePlugins();
                 new SimpleCompletor(activePlugins.toArray(new String[0])).complete(partialValue, partialValue.length(), candidates);
                 if (candidates.size() > 1) {
                     candidates.add("<or none for the cliforce classpath>");

@@ -1,6 +1,7 @@
 package com.force.cliforce.command
 
 import com.beust.jcommander.Parameter
+import javax.inject.Inject
 import com.force.cliforce._
 
 
@@ -33,13 +34,18 @@ class DebugArgs {
 }
 
 class DebugCommand() extends JCommand[DebugArgs] {
+
+  @Inject
+  var cliforce:CLIForce=null;
+
+
   def describe = usage("turns debug output on/off")
 
   def name = "debug"
 
   def executeWithArgs(ctx: CommandContext, args: DebugArgs) = {
     if (args.on ^ args.off) {
-      CLIForce.getInstance.setDebug(args.on)
+      cliforce.setDebug(args.on)
     }
   }
 }
