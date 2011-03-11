@@ -4,7 +4,6 @@ import ch.qos.logback.classic.Level;
 import com.force.sdk.connector.ForceConnectorConfig;
 import com.force.sdk.connector.ForceServiceConnector;
 import com.google.inject.Guice;
-import com.google.inject.Injector;
 import com.google.inject.name.Named;
 import com.sforce.async.AsyncApiException;
 import com.sforce.async.RestConnection;
@@ -27,7 +26,6 @@ import javax.servlet.ServletException;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -45,27 +43,22 @@ public class CLIForce {
     public static final String PASSWORD = "password";
     public static final String USER = "user";
     public static final String INTERNAL_PLUGINS = "internalPlugins";
-    private ConcurrentMap<String, Command> commands = new ConcurrentSkipListMap<String, Command>();
-    private ConcurrentMap<String, Plugin> plugins = new ConcurrentSkipListMap<String, Plugin>();
-    private ConcurrentMap<String, Injector> pluginInjectors = new ConcurrentHashMap<String, Injector>();
     private ConcurrentMap<ForceEnv, EnvConnections> connections = new ConcurrentHashMap<ForceEnv, EnvConnections>();
     private ConcurrentMap<String, ForceEnv> envs = new ConcurrentHashMap<String, ForceEnv>();
     /*key=envName,value=forceUrl*/
     private Properties envProperties = new Properties();
-    /*key=pluginArtifactId,value=pluginVersion*/
-    private Properties installedPlugins = new Properties();
     private Properties loginProperties = new Properties();
     private volatile VMForceClient vmForceClient;
     private volatile RestTemplateConnector restTemplateConnector;
-    private ConsoleReader reader;
     private volatile ForceEnv currentEnv;
     private volatile String currentEnvName;
+    private volatile boolean debug = false;
+    private ConsoleReader reader;
     private CommandReader commandReader;
     private Completor completor = new CliforceCompletor();
-    private volatile boolean debug = false;
     private CommandWriter writer;
     @Inject
-    private Injector mainInjector;
+    private PluginManager pluginManager;
     @Inject
     @Named(INTERNAL_PLUGINS)
     private String[] internalPlugins;
@@ -92,9 +85,7 @@ public class CLIForce {
 
     public static void main(String[] args) {
 
-        Injector injector = Guice.createInjector(new MainModule());
-        CLIForce cliForce = injector.getInstance(CLIForce.class);
-
+        CLIForce cliForce = Guice.createInjector(new MainModule()).getInstance(CLIForce.class);
 
         try {
             cliForce.init(System.in, new PrintWriter(
@@ -130,18 +121,11 @@ public class CLIForce {
      * @return
      */
     public Map<String, String> getInstalledPlugins() {
-        Map<String, String> plugins = new HashMap<String, String>();
-        for (String s : installedPlugins.stringPropertyNames()) {
-            plugins.put(s, installedPlugins.getProperty(s));
-        }
-        return plugins;
+        return pluginManager.getInstalledPlugins();
     }
 
     public List<String> getActivePlugins() {
-        List<String> pi = new ArrayList<String>();
-        pi.addAll(plugins.keySet());
-        Collections.sort(pi);
-        return pi;
+        return pluginManager.getActivePlugins();
     }
 
     /**
@@ -151,58 +135,33 @@ public class CLIForce {
      * @return
      */
     public String getInstalledPluginVersion(String plugin) {
-        return installedPlugins.getProperty(plugin);
+        return pluginManager.getInstalledPluginVersion(plugin);
     }
 
-    void installPlugin(String artifact, String version, Plugin p, boolean internal) {
-        PluginModule module = new PluginModule(p);
-        Injector injector = mainInjector.createChildInjector(module);
-        plugins.put(artifact, p);
-        if (!internal) {
-            installedPlugins.setProperty(artifact, version);
-            saveInstalledPlugins(writer);
-            if (initLatch.getCount() == 0) {
-                writer.printf("Adding Plugin: %s (%s)\n", artifact, p.getClass().getName());
-            }
-        }
-
-        for (Class<? extends Command> cmdClass : p.getCommands()) {
-            Command command = injector.getInstance(cmdClass);
-            if (!internal) {
-                if (initLatch.getCount() == 0) {
-                    writer.printf("\tadds command %s:%s (%s)\n", artifact, command.name(), command.getClass().getName());
-                }
-            }
-            commands.put(artifact + ":" + command.name(), command);
-        }
-
+    /*package*/ void installPlugin(String artifact, String version, Plugin p, boolean internal) throws IOException {
+        pluginManager.installPlugin(artifact, version, p, internal);
     }
 
-    void removePlugin(String artifactId) {
-        Plugin p = plugins.remove(artifactId);
-        Injector injector = pluginInjectors.get(artifactId);
-        if (p == null) {
+    private void injectDefaultPluginAndAddCommands() {
+        pluginManager.injectDefaultPluginAndAddCommands(def);
+    }
+
+
+    /*package*/ void removePlugin(String artifactId) throws IOException {
+        List<Command> pluginCommands = pluginManager.getPluginCommands(artifactId);
+        if (pluginCommands.size() == 0) {
             writer.println("....not found");
         } else {
-            for (Class<? extends Command> cmdClass : p.getCommands()) {
-                Command command = injector.getInstance(cmdClass);
-                commands.remove(artifactId + ":" + command.name());
+            for (Command command : pluginCommands) {
                 writer.printf("\tremoved command: %s\n", command.name());
             }
-
-            installedPlugins.remove(artifactId);
-            pluginInjectors.remove(artifactId);
-            saveInstalledPlugins(writer);
+            pluginManager.removePlugin(artifactId);
             writer.println("Done");
         }
     }
 
     public Map<String, String> getCommandDescriptions() {
-        Map<String, String> descriptions = new HashMap<String, String>();
-        for (Map.Entry<String, Command> entry : commands.entrySet()) {
-            descriptions.put(entry.getKey(), entry.getValue().describe());
-        }
-        return descriptions;
+        return pluginManager.getCommandDescriptions();
     }
 
     public List<String> getHistoryList() {
@@ -370,14 +329,7 @@ public class CLIForce {
 
     public void init(InputStream in, PrintWriter out) throws IOException, ConnectionException, ServletException {
         SLF4JBridgeHandler.install();
-        PluginModule pluginModule = new PluginModule(def);
-        Injector injector = mainInjector.createChildInjector(pluginModule);
-
-        for (Class<? extends Command> cmdClass : def.getCommands()) {
-            Command command = injector.getInstance(cmdClass);
-            commands.put(command.name(), command);
-        }
-
+        injectDefaultPluginAndAddCommands();
 
         reader = new ConsoleReader(in, out);
         reader.addCompletor(completor);
@@ -410,7 +362,7 @@ public class CLIForce {
 
         if (!loadLogin()) {
             try {
-                commands.get("login").execute(new Context(null, null, null, new String[0], commandReader, writer));
+                pluginManager.getCommand("login").execute(new Context(null, null, null, new String[0], commandReader, writer));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -420,7 +372,7 @@ public class CLIForce {
             @Override
             public void setup() {
                 try {
-                    DefaultPlugin.PluginCommand p = (DefaultPlugin.PluginCommand) commands.get("plugin");
+                    DefaultPlugin.PluginCommand p = (DefaultPlugin.PluginCommand) pluginManager.getCommand("plugin");
                     for (String defalutPlugin : internalPlugins) {
                         DefaultPlugin.PluginArgs args = new DefaultPlugin.PluginArgs();
                         args.setArtifact(defalutPlugin);
@@ -429,8 +381,8 @@ public class CLIForce {
                         p.executeWithArgs(getContext(new String[0]), args);
                     }
                     loadInstalledPlugins();
-                } catch (FileNotFoundException e) {
-                    getLogger().error("FileNotFoundException while loading previously installed plugins", e);
+                } catch (IOException e) {
+                    getLogger().error("IOException while loading previously installed plugins", e);
                 }
             }
         });
@@ -483,36 +435,19 @@ public class CLIForce {
         }
     }
 
-    private void loadInstalledPlugins() throws FileNotFoundException {
-        DefaultPlugin.PluginCommand p = (DefaultPlugin.PluginCommand) commands.get("plugin");
-        try {
-            if (Util.readProperties("plugins", installedPlugins)) {
-                for (String artifact : installedPlugins.stringPropertyNames()) {
-                    String version = installedPlugins.getProperty(artifact);
-                    DefaultPlugin.PluginArgs args = new DefaultPlugin.PluginArgs();
-                    args.setArtifact(artifact);
-                    args.version = version;
-                    p.executeWithArgs(getContext(new String[0]), args);
-                }
-            } else {
-                getLogger().debug(".force_plugins does not exist and was unable to create");
-                return;
-            }
-        } catch (IOException e) {
-            getLogger().debug("Caught IOException while loading previously installed plugins", e);
+
+    private void loadInstalledPlugins() throws IOException {
+        pluginManager.loadInstalledPlugins();
+        DefaultPlugin.PluginCommand p = (DefaultPlugin.PluginCommand) pluginManager.getCommand("plugin");
+        for (String artifact : pluginManager.getInstalledPlugins().keySet()) {
+            String version = pluginManager.getInstalledPluginVersion(artifact);
+            DefaultPlugin.PluginArgs args = new DefaultPlugin.PluginArgs();
+            args.setArtifact(artifact);
+            args.version = version;
+            p.executeWithArgs(getContext(new String[0]), args);
         }
     }
 
-    void saveInstalledPlugins(CommandWriter out) {
-        try {
-            if (!Util.writeProperties("plugins", installedPlugins)) {
-                out.println("Unable to create .force_plugins file, can't save installed plugins. You will have to re-plugin next time you run cliforce");
-            }
-        } catch (IOException e) {
-            out.println("error persisting installation of plugin. You will have to re-plugin next time you run cliforce");
-        }
-
-    }
 
     /**
      * Main run loop.
@@ -521,7 +456,7 @@ public class CLIForce {
      */
     public void run() throws InterruptedException {
         try {
-            commands.get("banner").execute(getContext(new String[0]));
+            pluginManager.getCommand("banner").execute(getContext(new String[0]));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -543,7 +478,7 @@ public class CLIForce {
             //by running> time cliforce exit
             initLatch.await();
         }
-        Command cmd = commands.get(cmdKey);
+        Command cmd = pluginManager.getCommand(cmdKey);
         String[] args = cmds.length > 1 ? Arrays.copyOfRange(cmds, 1, cmds.length) : new String[0];
         if (!cmdKey.equals("") && !cmdKey.equals(EXITCMD)) {
             if (cmd != null) {
@@ -582,18 +517,10 @@ public class CLIForce {
     }
 
     public List<URL> getClasspathForPlugin(String plugin) {
-        if (plugin == null) {
-            return Arrays.asList(((URLClassLoader) CLIForce.class.getClassLoader()).getURLs());
-        }
-        Plugin p = plugins.get(plugin);
-        if (p == null) {
-            return null;
-        } else {
-            return Arrays.asList(((URLClassLoader) p.getClass().getClassLoader()).getURLs());
-        }
+        return pluginManager.getClasspathForPlugin(plugin);
     }
 
-    private CommandContext getContext(String[] args) {
+    CommandContext getContext(String[] args) {
         EnvConnections envConnections = getEnvConnections(currentEnv);
         if (envConnections != null) {
             return new Context(currentEnv, envConnections.forceServiceConnector, vmForceClient, args, commandReader, writer);
@@ -816,13 +743,13 @@ public class CLIForce {
         @Override
         public int complete(String buffer, int cursor, List candidates) {
             String[] args = Util.parseCommand(buffer);
-            int cmd = new SimpleCompletor(commands.keySet().toArray(new String[0])).complete(args[0], cursor, candidates);
+            int cmd = new SimpleCompletor(pluginManager.getCommandNames().toArray(new String[0])).complete(args[0], cursor, candidates);
             if (candidates.size() == 0 && buffer != null && buffer.length() > 0) {
                 getLogger().debug("cliforce completor returning 0, from first if branch");
                 return 0;
             } else if (candidates.size() == 1 && (buffer.endsWith(" ") || args.length > 1)) {
                 String candidate = (String) candidates.remove(0);
-                Command command = commands.get(args[0]);
+                Command command = pluginManager.getCommand(args[0]);
                 if (command != null) {
                     if (command instanceof JCommand) {
                         return ((JCommand<?>) command).complete(buffer, args, cursor, (List<String>) candidates, getContext(args));

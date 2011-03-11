@@ -42,7 +42,7 @@ public class DefaultPlugin implements Plugin {
                 ClasspathCommand.class,
                 LoginCommand.class,
                 ExitCommand.class
-                );
+        );
 
         return commands;
     }
@@ -294,6 +294,9 @@ public class DefaultPlugin implements Plugin {
                         output.printf("only one plugin per artifact is supported, %s will not be registered\n", ignore.getClass().getName());
                     }
                     loader.reload();
+                } catch (IOException e) {
+                    output.println("Unable to load plugin");
+                    output.printStackTrace(e);
                 } finally {
                     Thread.currentThread().setContextClassLoader(curr);
                 }

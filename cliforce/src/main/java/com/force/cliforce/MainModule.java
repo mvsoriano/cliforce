@@ -15,9 +15,11 @@ public class MainModule extends AbstractModule {
         bind(DefaultPlugin.class).in(Singleton.class);
         bind(CLIForce.class).in(Singleton.class);
         bind(String[].class).annotatedWith(Names.named(CLIForce.INTERNAL_PLUGINS)).toInstance(new String[]{"connection", "app", "db", "template"});
+        bind(PluginManager.class).in(Singleton.class);
     }
 
-    @Provides @Singleton
+    @Provides
+    @Singleton
     DependencyResolver provideDependencyResolver() {
         try {
             return Boot.getBootResolver();
