@@ -21,7 +21,7 @@ class BannerCommand extends Command {
 
   def describe = "print the banner"
 
-  def name = "banner"
+  def name = CLIForce.BANNER_CMD
 }
 
 

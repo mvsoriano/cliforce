@@ -47,41 +47,6 @@ public class DefaultPlugin implements Plugin {
         return commands;
     }
 
-    /*@Override
-    public List<Command> getCommands() {
-        List<Command> commands = Arrays.asList(
-                new ShellCommand(),
-                new BannerCommand(),
-                new HistoryCommand(),
-                new DebugCommand(),
-                new HelpCommand(),
-                new PluginCommand(),
-                new RequirePluginCommand(),
-                new UnplugCommand(),
-                new VersionCommand(),
-                new EnvCommand(),
-                new SyspropsCommand(),
-                new ClasspathCommand(),
-                new LoginCommand(),
-                new Command() {
-                    @Override
-                    public String name() {
-                        return "exit";
-                    }
-
-                    @Override
-                    public String describe() {
-                        return "Exit this shell";
-                    }
-
-                    @Override
-                    public void execute(CommandContext ctx) throws Exception {
-                        //No-op, will exit
-                    }
-                });
-
-        return commands;
-    }*/
 
     public static class ExitCommand implements Command {
         @Override
@@ -136,7 +101,7 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public String name() {
-            return "login";
+            return CLIForce.LOGIN_CMD;
         }
 
         @Override
@@ -230,7 +195,7 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public String name() {
-            return "plugin";
+            return CLIForce.PLUGIN_CMD;
         }
 
         @Override
