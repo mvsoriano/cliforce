@@ -47,9 +47,9 @@ public class CLIForce {
     private CommandWriter writer;
 
     @Inject
-    private MainConnectionManager connectionManager;
+    private ConnectionManager connectionManager;
     @Inject
-    private MainPluginManager pluginManager;
+    private PluginManager pluginManager;
     @Inject
     @Named(INTERNAL_PLUGINS)
     private String[] internalPlugins;
