@@ -2,7 +2,8 @@ package com.force.cliforce;
 
 
 import com.force.cliforce.dependency.DependencyResolver;
-import com.google.inject.AbstractModule;
+import com.google.inject.Exposed;
+import com.google.inject.PrivateModule;
 import com.google.inject.Provides;
 import com.google.inject.name.Names;
 
@@ -12,11 +13,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
-public class MainModule extends AbstractModule {
+public class MainModule extends PrivateModule {
     @Override
     protected void configure() {
         bind(DefaultPlugin.class).in(Singleton.class);
         bind(CLIForce.class).in(Singleton.class);
+        expose(CLIForce.class);
         bind(String[].class).annotatedWith(Names.named(CLIForce.INTERNAL_PLUGINS)).toInstance(new String[]{"connection", "app", "db", "template"});
         bind(PluginManager.class).in(Singleton.class);
         bind(ConnectionManager.class).in(Singleton.class);
@@ -32,6 +34,7 @@ public class MainModule extends AbstractModule {
 
     @Provides
     @Singleton
+    @Exposed
     DependencyResolver provideDependencyResolver() {
         try {
             return Boot.getBootResolver();
