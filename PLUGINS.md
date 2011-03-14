@@ -17,7 +17,7 @@ The two important Java interfaces involved in creating a plugin are com.force.cl
 
         public interface Plugin {
 
-            List<Command> getCommands();
+            List<Class<? extends Command>> getCommands();
 
         }
 
@@ -40,6 +40,39 @@ and com.force.cliforce.Command.
 Plugin instances are discovered and instantiated using Java's built-in service discovery mechanism, java.util.ServiceLocator.
 
 Your plugin artifact should contain a text file called META-INF/services/com.force.cliforce.Plugin with a single line of text containing the fully qualified class name of your Plugin implementation.
+
+#Generics help for Plugins that have a single command.
+
+Due to the way java generics work, plugins that only have a single command require some ugly casting to statisfy the type checker. Here is an example of the 2 casts
+necessary to implement a plugin with a single command. First cast the list to a raw type then to to the return type of getCommands.
+
+    @Override
+    public List<Class<? extends Command>> getCommands() {
+        return (List<Class<? extends Command>>) (List) Collections.singletonList(HelloWorldCommand.class);
+
+    }
+
+
+#Accessing the CLIForce or DependencyResolver instance
+
+If your command needs access to the current CLIForce or DependencyResolver instance, simply declare a field of the proper type, annotated with a
+javax.inject.Inject annotation. (JSR-330, Dependency Injection for Java)
+
+For example
+
+    public class MyCommand implements Command
+    @Inject
+    private CLIForce cliforce;
+    @Inject
+    private DependencyResolver resolver;
+
+
+# Prefer extending JCommand instead of implementing Command directly.
+
+In general, if your commands take arguments you should prefer implementing them by extending the JCommand class.
+This base class uses JCommander (http://jcommander.org) to parse command arguments on your behalf, and also provides
+context-aware tab completion out of the box.
+
 
 #Installing a plugin
 

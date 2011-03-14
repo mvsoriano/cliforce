@@ -22,7 +22,7 @@ public interface PluginManager {
 
     void injectDefaultPluginAndAddCommands(Plugin p);
 
-    void injectPluginAndAddCommands(String artifact, Plugin p, boolean internal);
+    void injectPluginAndAddCommands(String artifact, Plugin p);
 
     void removePlugin(String artifactId) throws IOException;
 

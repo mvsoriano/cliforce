@@ -82,7 +82,7 @@ public class MainPluginManager implements PluginManager {
             installedPlugins.setProperty(artifact, version);
             saveInstalledPlugins();
         }
-        injectPluginAndAddCommands(artifact, p, internal);
+        injectPluginAndAddCommands(artifact, p);
     }
 
     @Override
@@ -96,14 +96,16 @@ public class MainPluginManager implements PluginManager {
     }
 
     @Override
-    public void injectPluginAndAddCommands(String artifact, Plugin p, boolean internal) {
+    public void injectPluginAndAddCommands(String artifact, Plugin p) {
         PluginModule module = new PluginModule(p);
         Injector injector = mainInjector.createChildInjector(module);
+        pluginInjectors.put(artifact, injector);
         for (Class<? extends Command> cmdClass : p.getCommands()) {
             Command command = injector.getInstance(cmdClass);
             commands.put(artifact + ":" + command.name(), command);
         }
     }
+
 
     @Override
     public void removePlugin(String artifactId) throws IOException {

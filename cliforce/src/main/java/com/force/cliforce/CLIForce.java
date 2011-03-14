@@ -277,6 +277,15 @@ public class CLIForce {
 
     /*package*/ void installPlugin(String artifact, String version, Plugin p, boolean internal) throws IOException {
         pluginManager.installPlugin(artifact, version, p, internal);
+        if (!internal && initLatch.getCount() == 0) {
+            List<Command> pluginCommands = pluginManager.getPluginCommands(artifact);
+            writer.printf("Plugin: %s installed\n", artifact);
+            writer.println("Adds the following commands");
+            for (Command pluginCommand : pluginCommands) {
+                writer.println(pluginCommand.name());
+            }
+
+        }
     }
 
     private void injectDefaultPluginAndAddCommands() {
