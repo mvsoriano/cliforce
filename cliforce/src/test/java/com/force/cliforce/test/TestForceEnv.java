@@ -178,5 +178,11 @@ public class TestForceEnv {
 		assertEquals("claus123", env.getPassword());
 
 	}
+	
+	@Test
+	public void testInvalidUrlNoUserPasswordLabel() {
+		ForceEnv env = new ForceEnv("force://vmf02.t.salesforce.com;jeff@test.com;123456 ", "unit test");
+		assertEquals(false, env.isValid());
+	}
 
 }
