@@ -47,9 +47,9 @@ public class CLIForce {
     private CommandWriter writer;
 
     @Inject
-    private ConnectionManager connectionManager;
+    private MainConnectionManager connectionManager;
     @Inject
-    private PluginManager pluginManager;
+    private MainPluginManager pluginManager;
     @Inject
     @Named(INTERNAL_PLUGINS)
     private String[] internalPlugins;
@@ -132,7 +132,7 @@ public class CLIForce {
         reader.setBellEnabled(false);
         commandReader = new Reader();
 
-        if (!connectionManager.loadLogin()) {
+        if (!connectionManager.loadLoginProperties()) {
             try {
                 pluginManager.getCommand(LOGIN_CMD).execute(new Context(null, null, null, new String[0], commandReader, writer));
             } catch (Exception e) {

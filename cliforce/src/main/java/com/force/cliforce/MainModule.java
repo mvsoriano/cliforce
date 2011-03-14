@@ -20,8 +20,8 @@ public class MainModule extends PrivateModule {
         bind(CLIForce.class).in(Singleton.class);
         expose(CLIForce.class);
         bind(String[].class).annotatedWith(Names.named(CLIForce.INTERNAL_PLUGINS)).toInstance(new String[]{"connection", "app", "db", "template"});
-        bind(PluginManager.class).in(Singleton.class);
-        bind(ConnectionManager.class).in(Singleton.class);
+        bind(PluginManager.class).to(MainPluginManager.class).in(Singleton.class);
+        bind(ConnectionManager.class).to(MainConnectionManager.class).in(Singleton.class);
         bind(ExecutorService.class).annotatedWith(Names.named(CLIForce.STARTUP_EXECUTOR)).toInstance(Executors.newCachedThreadPool(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
