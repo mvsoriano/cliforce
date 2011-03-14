@@ -13,15 +13,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
-public class MainModule extends PrivateModule {
+public class MainModule extends PrivateModule implements CLIForceModule {
     @Override
     protected void configure() {
         bind(DefaultPlugin.class).in(Singleton.class);
         bind(CLIForce.class).in(Singleton.class);
         expose(CLIForce.class);
-        bind(String[].class).annotatedWith(Names.named(CLIForce.INTERNAL_PLUGINS)).toInstance(new String[]{"connection", "app", "db", "template"});
-        bind(PluginManager.class).to(MainPluginManager.class).in(Singleton.class);
-        bind(ConnectionManager.class).to(MainConnectionManager.class).in(Singleton.class);
+        bind(String[].class).annotatedWith(Names.named(CLIForce.INTERNAL_PLUGINS)).toInstance(provideInternalPlugins());
+        bindPluginManager();
+        bindConnectionManager();
         bind(ExecutorService.class).annotatedWith(Names.named(CLIForce.STARTUP_EXECUTOR)).toInstance(Executors.newCachedThreadPool(new ThreadFactory() {
             @Override
             public Thread newThread(Runnable r) {
@@ -41,5 +41,21 @@ public class MainModule extends PrivateModule {
         } catch (IOException e) {
             throw new RuntimeException("IOException while trying to load the Boot resolver, in CLIForce MainModule");
         }
+    }
+
+
+    @Override
+    public void bindPluginManager() {
+        bind(PluginManager.class).to(MainPluginManager.class).in(Singleton.class);
+    }
+
+    @Override
+    public void bindConnectionManager() {
+        bind(ConnectionManager.class).to(MainConnectionManager.class).in(Singleton.class);
+    }
+
+    @Override
+    public String[] provideInternalPlugins() {
+        return new String[]{"connection", "app", "db", "template"};
     }
 }
