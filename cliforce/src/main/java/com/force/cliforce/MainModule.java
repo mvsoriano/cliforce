@@ -13,7 +13,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
-public class MainModule extends PrivateModule implements CLIForceModule {
+public class MainModule extends PrivateModule {
     @Override
     protected void configure() {
         bind(DefaultPlugin.class).in(Singleton.class);
@@ -44,17 +44,23 @@ public class MainModule extends PrivateModule implements CLIForceModule {
     }
 
 
-    @Override
+    /**
+     * Hook for subclasses to customize the plugin manager, mostly for testing
+     */
     public void bindPluginManager() {
         bind(PluginManager.class).to(MainPluginManager.class).in(Singleton.class);
     }
 
-    @Override
+    /**
+     * Hook for subclasses to customize the connection manager, mostly for testing
+     */
     public void bindConnectionManager() {
         bind(ConnectionManager.class).to(MainConnectionManager.class).in(Singleton.class);
     }
 
-    @Override
+    /**
+     * Hook for subclasses to customize the internal plugins, mostly for testing
+     */
     public String[] provideInternalPlugins() {
         return new String[]{"connection", "app", "db", "template"};
     }
