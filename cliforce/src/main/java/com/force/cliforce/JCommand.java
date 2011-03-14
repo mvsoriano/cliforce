@@ -21,7 +21,7 @@ import java.util.*;
 public abstract class JCommand<T> implements Command {
 
     public static final String MAIN_PARAM = "<main param>";
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private Logger logger;
 
     /**
      * Instance of an object annotated with JCommander annotations. You need to override this method if
@@ -56,7 +56,7 @@ public abstract class JCommand<T> implements Command {
             executeWithArgs(ctx, args);
         } catch (ParameterException e) {
             ctx.getCommandWriter().printf("Exception while executing command: %s -> %s\n", name(), e.getMessage());
-            logger.debug("Exception while executing command", e);
+            getLogger().debug("Exception while executing command", e);
         }
     }
 
@@ -135,18 +135,18 @@ public abstract class JCommand<T> implements Command {
 
         //parse the args with jcommander
         if (commandArgs.length > 0 && !commandArgs[0].equals("")) {
-            logger.debug("JCommand parsing for autocomplete");
+            getLogger().debug("JCommand parsing for autocomplete");
             try {
                 j.parseWithoutValidation(commandArgs);
             } catch (ParameterException ex) {
-                logger.debug("JCommander parameter exception during parse");
+                getLogger().debug("JCommander parameter exception during parse");
                 //last param may be partial and cause this
                 if (commandArgs.length > 1) {
                     j = new JCommander(getArgs());
                     try {
                         j.parseWithoutValidation(Arrays.copyOfRange(commandArgs, 0, commandArgs.length - 1));
                     } catch (ParameterException e) {
-                        logger.debug("JCommander parameter exception during parse2");
+                        getLogger().debug("JCommander parameter exception during parse2");
                     }
                 }
             }
@@ -384,6 +384,16 @@ public abstract class JCommand<T> implements Command {
         }
 
         return true;
+    }
+
+    /*
+    Startup time optimization, dont initialize slf4j till its needed
+     */
+    private Logger getLogger() {
+        if (logger == null) {
+            logger = LoggerFactory.getLogger(this.getClass());
+        }
+        return logger;
     }
 
 }
