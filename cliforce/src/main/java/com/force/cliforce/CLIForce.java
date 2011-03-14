@@ -41,6 +41,7 @@ public class CLIForce {
 
 
     private volatile boolean debug = false;
+    private volatile boolean loginSucceded = false;
     private ConsoleReader reader;
     private CommandReader commandReader;
     private Completor completor = new CliforceCompletor();
@@ -65,6 +66,7 @@ public class CLIForce {
     we dont construct it here since we want the latch size to match the number of setupTasks.
     */
     private CountDownLatch initLatch;
+    private CountDownLatch loginLatch = new CountDownLatch(1);
 
 
     public static void main(String[] args) {
@@ -132,13 +134,15 @@ public class CLIForce {
         reader.setBellEnabled(false);
         commandReader = new Reader();
 
-        if (!connectionManager.loadLoginProperties()) {
-            try {
-                pluginManager.getCommand(LOGIN_CMD).execute(new Context(null, null, null, new String[0], commandReader, writer));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+
+        addSetupTask(new SetupTask() {
+            @Override
+            public void setup() {
+                loginSucceded = connectionManager.loadLoginProperties();
+                loginLatch.countDown();
             }
-        }
+        });
+
 
         addSetupTask(new SetupTask() {
             @Override
@@ -195,6 +199,10 @@ public class CLIForce {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        loginLatch.await();
+        if (!loginSucceded) {
+            doLogin();
+        }
         String[] cmds = commandReader.readAndParseLine(FORCE_PROMPT);
         String cmdKey = cmds[0];
         while (!cmdKey.equals(EXIT_CMD)) {
@@ -205,9 +213,21 @@ public class CLIForce {
         }
     }
 
+    private void doLogin() {
+        try {
+            pluginManager.getCommand(LOGIN_CMD).execute(new Context(null, null, null, new String[0], commandReader, writer));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void executeWithArgs(String[] cmds) throws InterruptedException {
         String cmdKey = cmds[0];
         if (!cmdKey.equals(EXIT_CMD)) {
+            loginLatch.await();
+            if (!loginSucceded) {
+                doLogin();
+            }
             //we dont wait on the latch if somone runs cliforce exit.
             //this is useful to measure "startup time to get to the prompt"
             //by running> time cliforce exit

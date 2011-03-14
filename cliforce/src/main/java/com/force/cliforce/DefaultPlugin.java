@@ -87,7 +87,11 @@ public class DefaultPlugin implements Plugin {
         }
 
         private boolean login(CommandContext ctx, LoginArgs args) {
-            ctx.getCommandWriter().printf("Logging into %s...\n", args.target);
+            ctx.getCommandWriter().println("Please log in");
+            ctx.getCommandWriter().printf("Target login server [%s]:", args.target);
+            String target = ctx.getCommandReader().readLine("");
+            if ("".equals(target)) target = args.target;
+            ctx.getCommandWriter().printf("Login server: %s\n", target);
             String user = ctx.getCommandReader().readLine("Username:");
             String password = ctx.getCommandReader().readLine("Password:", '*');
             if (cliForce.setLogin(user, password, args.target)) {
@@ -293,6 +297,7 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public void executeWithArgs(final CommandContext ctx, PluginArgs arg) {
+
             String version = cliForce.getInstalledPluginVersion(arg.artifact());
             if (version == null) {
                 ctx.getCommandWriter().printf("Required Plugin %s version %s is not installed, exiting\n", arg.artifact(), arg.version);
