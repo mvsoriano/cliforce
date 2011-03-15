@@ -64,14 +64,6 @@ public class DBClean implements Command {
         zout.close();
         zout.flush();
 
-//			log(destructiveChanges.toXML());
-
-//			BufferedOutputStream bo = new BufferedOutputStream(
-//					new FileOutputStream("tmp.zip"));
-//			bo.write(bout.toByteArray());
-//			log("Wrote " + bout.toByteArray().length + " bytes to file tmp.zip");
-//			bo.close();
-
         DeployOptions options = new DeployOptions();
         options.setSinglePackage(true);
         AsyncResult ar = ctx.getMetadataConnection().deploy(bout.toByteArray(), options);

@@ -167,49 +167,6 @@
       </plugin>
 
 
-      <!--<plugin>
-          <groupId>com.akathist.maven.plugins.launch4j</groupId>
-          <artifactId>launch4j-maven-plugin</artifactId>
-          <executions>
-              <execution>
-                  <id>l4j-cli</id>
-                  <phase>package</phase>
-                  <goals>
-                      <goal>launch4j</goal>
-                  </goals>
-                  <configuration>
-                      <headerType>console</headerType>
-                      <outfile>target/cliforce.exe</outfile>
-                      <jar>target/cliforce-${project.version}-boot.jar</jar>
-                      <errTitle>CLIForce</errTitle>
-                      <classPath>
-                          <mainClass>com.force.cliforce.Boot</mainClass>
-                          <addDependencies>false</addDependencies>
-                      </classPath>
-                      <jre>
-                          <minVersion>1.6.0</minVersion>
-                      </jre>
-                      <versionInfo>
-                          <fileVersion>1.1.1.1</fileVersion>
-                          <txtFileVersion>cliforce</txtFileVersion>
-                          <fileDescription>cliforce description</fileDescription>
-                          <copyright>cliforce copyright</copyright>
-                          <productVersion>1.1.1.1</productVersion>
-                          <txtProductVersion>CLIFORCE ${project.version}</txtProductVersion>
-                          <productName>Cliforce</productName>
-                          <internalName>Cliforce</internalName>
-                          <originalFilename>cliforce.exe</originalFilename>
-                      </versionInfo>
-                      <messages>
-                          <startupErr>sttext</startupErr>
-                          <bundledJreErr>bjretext</bundledJreErr>
-                          <jreVersionErr>jvtext</jreVersionErr>
-                          <launcherErr>lerrtext</launcherErr>
-                      </messages>
-                  </configuration>
-              </execution>
-          </executions>
-      </plugin>-->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-eclipse-plugin</artifactId>
