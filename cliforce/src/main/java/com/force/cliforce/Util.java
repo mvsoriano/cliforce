@@ -22,7 +22,7 @@ public class Util {
     }
 
     /**
-     * Read a .force_${name} properties file from the current users home directory,
+     * Read a .force/cliforce_${name} properties file from the current users home directory,
      *
      * @param name       the name to append to the string .force_ to get the properties file name
      * @param properties properties instance into which to read the file
@@ -45,7 +45,7 @@ public class Util {
     }
 
     /**
-     * Write a .force_${name} properties file to the current users home directory.
+     * Write a .force/cliforce_${name} properties file to the current users home directory.
      *
      * @param name name the name to append to the string .force_ to get the properties file name
      * @return true if the file was successfully written, false if not.

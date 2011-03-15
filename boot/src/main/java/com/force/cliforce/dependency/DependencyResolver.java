@@ -28,7 +28,7 @@ import java.util.*;
 
 /**
  * DependencyResolver  that uses maven-aether to resolve the dependency graph for a given dependency.
- *
+ * <p/>
  * <p/>
  * This class refuses to put log4j or commons logging onto a classpath, instead substituting log4j-over-slf4j and clogging-over-slf4j
  * so that the debug --on command will cause all log output to be visible.
@@ -41,6 +41,14 @@ public class DependencyResolver {
     public static final String LOG_4_J = "log4j";
     public static final String COMMONS_LOGGING = "commons-logging";
     public static final String COMMONS_LOGGING_API = "commons-logging-api";
+    public static final String RUNTIME = "runtime";
+    public static final String SNAPSHOT = "SNAPSHOT";
+    public static final String LATEST = "LATEST";
+    public static final String RELEASE = "RELEASE";
+    public static final String DEFAULT_LAYOUT = "default";
+    public static final String FILE_HINT = "file";
+    public static final String HTTP_HINT = "http";
+
     private volatile boolean initialized = false;
     private final Object lock = new Object();
     private String cliforceGroup;
@@ -48,24 +56,24 @@ public class DependencyResolver {
     private String cliforceVersion;
     private RepositorySystem repositorySystem;
     private MavenRepositorySystemSession session = new MavenRepositorySystemSession();
-    private String latestMetaVersion = "RELEASE";
+    private String latestMetaVersion = RELEASE;
     private List<RemoteRepository> remoteRepositories;
     private URL log4jOverSlf4j;
     private URL cloggingOverSlf4j;
     private LocalRepository localRepository = new LocalRepository(System.getProperty("user.home") + "/.m2/repository/");
 
 
-    public void setRepositories(Properties repositories){
-         remoteRepositories = new ArrayList<RemoteRepository>(repositories.size());
+    public void setRepositories(Properties repositories) {
+        remoteRepositories = new ArrayList<RemoteRepository>(repositories.size());
         for (String name : repositories.stringPropertyNames()) {
-            remoteRepositories.add(new RemoteRepository(name, "default", repositories.getProperty(name)));
+            remoteRepositories.add(new RemoteRepository(name, DEFAULT_LAYOUT, repositories.getProperty(name)));
         }
     }
 
     public void setRepositories(Map<String, String> repositories) {
         remoteRepositories = new ArrayList<RemoteRepository>(repositories.size());
         for (String name : repositories.keySet()) {
-            remoteRepositories.add(new RemoteRepository(name, "default", repositories.get(name)));
+            remoteRepositories.add(new RemoteRepository(name, DEFAULT_LAYOUT, repositories.get(name)));
         }
     }
 
@@ -77,8 +85,8 @@ public class DependencyResolver {
             cliforceGroup = gav[0];
             cliforceArtifact = gav[1];
             cliforceVersion = gav[2];
-            if (cliforceVersion.contains("SNAPSHOT")) {
-                latestMetaVersion = "LATEST";
+            if (cliforceVersion.contains(SNAPSHOT)) {
+                latestMetaVersion = LATEST;
             }
         }
     }
@@ -110,11 +118,12 @@ public class DependencyResolver {
 
     public static class ManualWagonProvider implements WagonProvider {
 
+
         public Wagon lookup(String roleHint)
                 throws Exception {
-            if ("file".equals(roleHint)) {
+            if (FILE_HINT.equals(roleHint)) {
                 return new FileWagon();
-            } else if ("http".equals(roleHint)) {
+            } else if (HTTP_HINT.equals(roleHint)) {
                 return new LightweightHttpWagon();
             }
             return null;
@@ -132,7 +141,7 @@ public class DependencyResolver {
             initialize();
             DefaultArtifact defaultArtifact = new DefaultArtifact(groupId + ":" + artifactId + ":" + version);
             Dependency dependency =
-                    new Dependency(defaultArtifact, "runtime");
+                    new Dependency(defaultArtifact, RUNTIME);
             CollectRequest collectRequest = new CollectRequest();
             collectRequest.setRoot(dependency);
             for (RemoteRepository remoteRepository : remoteRepositories) {
@@ -248,7 +257,7 @@ public class DependencyResolver {
         try {
             return createClassLoaderInternal(groupId, artifactId, version, parent);
         } catch (DependencyResolutionException dre) {
-            out.println(dre, "Exception resolving dependencies after trying both offline and online mode");
+            out.println(dre, "Exception resolving dependencies");
             throw dre;
         }
 

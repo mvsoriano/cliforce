@@ -43,13 +43,11 @@ Your plugin artifact should contain a text file called META-INF/services/com.for
 
 #Generics help for Plugins that have a single command.
 
-Due to the way java generics work, plugins that only have a single command require some ugly casting to statisfy the type checker. Here is an example of the 2 casts
-necessary to implement a plugin with a single command. First cast the list to a raw type then to to the return type of getCommands.
+Due to the way java generics work, plugins that only have a single can be created like this
 
     @Override
     public List<Class<? extends Command>> getCommands() {
-        return (List<Class<? extends Command>>) (List) Collections.singletonList(HelloWorldCommand.class);
-
+         return Arrays.<Class<? extends Command>>asList(HelloWorldCommand.class);
     }
 
 
@@ -90,7 +88,7 @@ Using the sample plugin provide, run the following commands.
         | |____| |____ _| |_| | | (_) | | | (_|  __/
          \_____|______|_____|_|  \___/|_|  \___\___|
 
-        force> plugin -a cliplugin -v 1.0
+        force> plugin cliplugin
         Adding Plugin: cliplugin (HelloWorldPlugin)
           -> adds command cliplugin:hello (HelloWorldPlugin$HelloWorldCommand)
         force> cliplugin:hello

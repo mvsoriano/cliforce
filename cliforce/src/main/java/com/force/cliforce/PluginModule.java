@@ -5,6 +5,9 @@ import com.google.inject.AbstractModule;
 
 import javax.inject.Singleton;
 
+/**
+ * guice module used to insantiate and inject plugin commands
+ */
 public class PluginModule extends AbstractModule {
 
     private Plugin plugin;
