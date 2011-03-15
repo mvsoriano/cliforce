@@ -165,7 +165,7 @@ public class CLIForce {
         File hist = new File(System.getProperty("user.home") + "/.force/cliforce_history");
         if (!hist.getParentFile().exists()) {
             if (!hist.getParentFile().mkdir()) {
-                o.println("cant create .force directory");
+                o.println("can't create .force directory");
             }
         }
         if (!hist.exists()) {
