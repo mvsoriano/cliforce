@@ -1,6 +1,5 @@
 package com.force.cliforce;
 
-import java.io.File;
 import java.util.*;
 
 public class ForceEnv {
@@ -16,10 +15,6 @@ public class ForceEnv {
     // This should always end up being "force"
     private String protocol;
 
-    public ForceEnv() {
-        this(null);
-    }
-
     public ForceEnv(String url, String source) {
         this.url = url;
         this.configSource = source;
@@ -30,39 +25,6 @@ public class ForceEnv {
         this.url = String.format("force://%s;user=%s;password=%s", host, user, password);
         this.valid = parseAndValidate();
     }
-
-    public ForceEnv(String namedConfig) {
-        String envVar = "FORCE_URL";
-        String sysProp = "force.url";
-        String envFile = System.getProperty("user.home") + "/.force_url";
-
-        if (namedConfig != null) {
-            envVar = "FORCE_" + namedConfig.toUpperCase() + "_URL";
-            sysProp = "force." + namedConfig + ".url";
-            envFile = System.getProperty("user.home") + "/.force_" + namedConfig + "_url";
-        }
-        try {
-            configSource = "env: " + envVar;
-            url = System.getenv(envVar);
-            if (url == null) {
-                configSource = "sysproperty: " + sysProp;
-                url = System.getProperty(sysProp);
-                if (url == null) {
-                    configSource = "file: " + envFile;
-                    // Courtesy of http://stackoverflow.com/questions/3402735/what-is-simplest-way-to-read-a-file-into-string-in-java
-                    url = new Scanner(new File(envFile)).useDelimiter("\\Z").next().trim();
-                }
-            }
-
-            parseAndValidate();
-
-
-        } catch (Exception e) {
-            valid = false;
-            message = "Exception: " + e.getMessage();
-        }
-    }
-
 
     public boolean parseAndValidate() {
         //expects force://<host>;user=<user>;password=<password>
