@@ -5,7 +5,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import static org.testng.Assert.*;
 
-public class TestForceUrl {
+public class ForceUrlTest {
 	
 	// order of values in each String[] is: force url, sfdc endpoint, user, password
 	@DataProvider(name="validForceUrls")
