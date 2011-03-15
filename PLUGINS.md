@@ -88,7 +88,7 @@ Using the sample plugin provide, run the following commands.
         | |____| |____ _| |_| | | (_) | | | (_|  __/
          \_____|______|_____|_|  \___/|_|  \___\___|
 
-        force> plugin -a cliplugin -v 1.0
+        force> plugin cliplugin
         Adding Plugin: cliplugin (HelloWorldPlugin)
           -> adds command cliplugin:hello (HelloWorldPlugin$HelloWorldCommand)
         force> cliplugin:hello
