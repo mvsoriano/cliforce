@@ -13,8 +13,6 @@ import com.vmforce.client.VMForceClient;
 import jline.Completor;
 import jline.ConsoleReader;
 import jline.History;
-import jline.SimpleCompletor;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
@@ -38,15 +36,17 @@ public class CLIForce {
     public static final String BANNER_CMD = "banner";
     public static final String LOGIN_CMD = "login";
     public static final String PLUGIN_CMD = "plugin";
-
+    public static LazyLogger log = new LazyLogger(CLIForce.class);
 
     private volatile boolean debug = false;
     private volatile boolean loginSucceded = false;
+
     private ConsoleReader reader;
     private CommandReader commandReader;
-    private Completor completor = new CliforceCompletor();
     private CommandWriter writer;
 
+    @Inject
+    private Completor completor;
     @Inject
     private ConnectionManager connectionManager;
     @Inject
@@ -59,6 +59,7 @@ public class CLIForce {
     @Inject
     @Named(STARTUP_EXECUTOR)
     private ExecutorService startupExecutor;
+
     private List<SetupTask> setupTasks = new ArrayList<SetupTask>(16);
     /*
     used to coordinate background loading of plugins at startup
@@ -83,19 +84,19 @@ public class CLIForce {
                 cliForce.executeWithArgs(args);
             }
         } catch (ConnectionException e) {
-            getLogger().error("Connection Exception while initializing cliforce, exiting", e);
+            log.get().error("Connection Exception while initializing cliforce, exiting", e);
             System.exit(1);
         } catch (IOException e) {
-            getLogger().error("IOException Exception while initializing cliforce, exiting", e);
+            log.get().error("IOException Exception while initializing cliforce, exiting", e);
             System.exit(1);
         } catch (ServletException e) {
-            getLogger().error("ServletException Exception while initializing cliforce, exiting", e);
+            log.get().error("ServletException Exception while initializing cliforce, exiting", e);
             System.exit(1);
         } catch (InterruptedException e) {
-            getLogger().error("Main Thread Interrupted while waiting for plugin initialization", e);
+            log.get().error("Main Thread Interrupted while waiting for plugin initialization", e);
             System.exit(1);
         } catch (ExitException e) {
-            getLogger().error("ExitException->Exiting");
+            log.get().error("ExitException->Exiting");
             System.exit(1);
         }
     }
@@ -109,27 +110,7 @@ public class CLIForce {
         reader.addCompletor(completor);
         writer = new Writer(out);
 
-
-        File hist = new File(System.getProperty("user.home") + "/.force/history");
-        if (!hist.getParentFile().exists()) {
-            if (!hist.getParentFile().mkdir()) {
-                out.println("cant create .force directory");
-            }
-        }
-        if (!hist.exists()) {
-            try {
-                if (hist.createNewFile()) {
-                    reader.setHistory(new History(hist));
-                } else {
-                    out.println("can't create history file");
-                }
-            } catch (IOException e) {
-                out.println("can't create history file");
-            }
-
-        } else {
-            reader.setHistory(new History(hist));
-        }
+        setupHistory(reader, out);
 
         reader.setBellEnabled(false);
         commandReader = new Reader();
@@ -138,8 +119,11 @@ public class CLIForce {
         addSetupTask(new SetupTask() {
             @Override
             public void setup() {
-                loginSucceded = connectionManager.loadLoginProperties();
-                loginLatch.countDown();
+                try {
+                    loginSucceded = connectionManager.loadLoginProperties();
+                } finally {
+                    loginLatch.countDown();
+                }
             }
         });
 
@@ -158,7 +142,7 @@ public class CLIForce {
                     }
                     loadInstalledPlugins();
                 } catch (IOException e) {
-                    getLogger().error("IOException while loading previously installed plugins", e);
+                    log.get().error("IOException while loading previously installed plugins", e);
                 }
             }
         });
@@ -169,12 +153,35 @@ public class CLIForce {
                 try {
                     connectionManager.loadUserConnections();
                 } catch (IOException e) {
-                    getLogger().error("IOException while loading force urls", e);
+                    log.get().error("IOException while loading force urls", e);
                 }
             }
         });
         executeSetupTasks();
 
+    }
+
+    private void setupHistory(ConsoleReader r, PrintWriter o) throws IOException {
+        File hist = new File(System.getProperty("user.home") + "/.force/cliforce_history");
+        if (!hist.getParentFile().exists()) {
+            if (!hist.getParentFile().mkdir()) {
+                o.println("cant create .force directory");
+            }
+        }
+        if (!hist.exists()) {
+            try {
+                if (hist.createNewFile()) {
+                    reader.setHistory(new History(hist));
+                } else {
+                    o.println("can't create history file");
+                }
+            } catch (IOException e) {
+                o.println("can't create history file");
+            }
+
+        } else {
+            r.setHistory(new History(hist));
+        }
     }
 
     private void addSetupTask(SetupTask task) {
@@ -338,6 +345,18 @@ public class CLIForce {
         return (List<String>) reader.getHistory().getHistoryList();
     }
 
+    private void loadInstalledPlugins() throws IOException {
+        pluginManager.loadInstalledPlugins();
+        DefaultPlugin.PluginCommand p = (DefaultPlugin.PluginCommand) pluginManager.getCommand("plugin");
+        for (String artifact : pluginManager.getInstalledPlugins().keySet()) {
+            String version = pluginManager.getInstalledPluginVersion(artifact);
+            DefaultPlugin.PluginArgs args = new DefaultPlugin.PluginArgs();
+            args.setArtifact(artifact);
+            args.version = version;
+            p.executeWithArgs(getContext(new String[0]), args);
+        }
+    }
+
 
     public boolean isDebug() {
         return debug;
@@ -360,7 +379,7 @@ public class CLIForce {
         try {
             connectionManager.resetVMForceClient(user, password, target);
         } catch (Exception e) {
-            getLogger().debug("Unable to log in", e);
+            log.get().debug("Unable to log in", e);
             return false;
         }
 
@@ -368,7 +387,7 @@ public class CLIForce {
             connectionManager.setLoginProperties(user, password, target);
             return true;
         } catch (IOException e) {
-            getLogger().error("Exception persisting new login settings", e);
+            log.get().error("Exception persisting new login settings", e);
             return false;
         }
     }
@@ -407,19 +426,6 @@ public class CLIForce {
     }
 
 
-    private void loadInstalledPlugins() throws IOException {
-        pluginManager.loadInstalledPlugins();
-        DefaultPlugin.PluginCommand p = (DefaultPlugin.PluginCommand) pluginManager.getCommand("plugin");
-        for (String artifact : pluginManager.getInstalledPlugins().keySet()) {
-            String version = pluginManager.getInstalledPluginVersion(artifact);
-            DefaultPlugin.PluginArgs args = new DefaultPlugin.PluginArgs();
-            args.setArtifact(artifact);
-            args.version = version;
-            p.executeWithArgs(getContext(new String[0]), args);
-        }
-    }
-
-
     CommandContext getContext(String[] args) {
         ForceEnv currentEnv = connectionManager.getCurrentEnv();
         VMForceClient vmForceClient = connectionManager.getVmForceClient();
@@ -429,7 +435,7 @@ public class CLIForce {
             return new Context(currentEnv, connector, vmForceClient, args, commandReader, writer);
         } else {
             if (initLatch.getCount() == 0) {
-                getLogger().warn("Couldn't get a valid connection for the current force url. Executing the command without force service connector or VMforce client");
+                log.get().warn("Couldn't get a valid connection for the current force url. Executing the command without force service connector or VMforce client");
             }
             return new Context(currentEnv, null, null, args, commandReader, writer);
         }
@@ -439,7 +445,7 @@ public class CLIForce {
     /**
      * cliforce internal impl of CommandContext
      */
-    private static class Context implements CommandContext {
+    static class Context implements CommandContext {
 
         ForceServiceConnector connector;
         String[] args;
@@ -473,7 +479,7 @@ public class CLIForce {
             try {
                 return connector.getMetadataConnection();
             } catch (ConnectionException e) {
-                getLogger().error("Connection exception while getting metadata connection", e);
+                log.get().error("Connection exception while getting metadata connection", e);
                 throw new RuntimeException(e);
             }
         }
@@ -483,7 +489,7 @@ public class CLIForce {
             try {
                 return connector.getConnection();
             } catch (ConnectionException e) {
-                getLogger().error("ConnectionException while getting metadata connection", e);
+                log.get().error("ConnectionException while getting metadata connection", e);
                 throw new RuntimeException(e);
             }
         }
@@ -493,10 +499,10 @@ public class CLIForce {
             try {
                 return connector.getRestConnection();
             } catch (AsyncApiException e) {
-                getLogger().error("AsyncApiException exception while getting rest connection", e);
+                log.get().error("AsyncApiException exception while getting rest connection", e);
                 throw new RuntimeException(e);
             } catch (ConnectionException e) {
-                getLogger().error("ConnectionException exception while getting rest connection", e);
+                log.get().error("ConnectionException exception while getting rest connection", e);
                 throw new RuntimeException(e);
             }
         }
@@ -584,10 +590,6 @@ public class CLIForce {
         }
     }
 
-    private static Logger getLogger() {
-        return LoggerFactory.getLogger(CLIForce.class);
-    }
-
 
     /**
      * base class for tasks that should be run asynchronously on startup.
@@ -605,38 +607,6 @@ public class CLIForce {
                 setup();
             } finally {
                 initLatch.countDown();
-            }
-        }
-    }
-
-    private class CliforceCompletor implements Completor {
-        @Override
-        public int complete(String buffer, int cursor, List candidates) {
-            String[] args = Util.parseCommand(buffer);
-            int cmd = new SimpleCompletor(pluginManager.getCommandNames().toArray(new String[0])).complete(args[0], cursor, candidates);
-            if (candidates.size() == 0 && buffer != null && buffer.length() > 0) {
-                getLogger().debug("cliforce completor returning 0, from first if branch");
-                return 0;
-            } else if (candidates.size() == 1 && (buffer.endsWith(" ") || args.length > 1)) {
-                String candidate = (String) candidates.remove(0);
-                Command command = pluginManager.getCommand(args[0]);
-                if (command != null) {
-                    if (command instanceof JCommand) {
-                        return ((JCommand<?>) command).complete(buffer, args, cursor, (List<String>) candidates, getContext(args));
-                    } else {
-                        getLogger().debug("cliforce completor executing standard completion");
-                        candidates.add(" ");
-                        candidates.add(command.describe());
-                        return cursor;
-                    }
-                } else {
-                    getLogger().debug("cliforce completor returning {} from command null branch", cmd);
-                    return cmd;
-                }
-
-            } else {
-                getLogger().debug("cliforce completor returning {}  from last else branch", cmd);
-                return cmd;
             }
         }
     }

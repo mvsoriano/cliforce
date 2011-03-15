@@ -7,8 +7,6 @@ import com.sforce.ws.ConnectionException;
 import com.vmforce.client.VMForceClient;
 import com.vmforce.client.connector.RestTemplateConnector;
 import org.apache.commons.httpclient.HttpHost;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -22,7 +20,7 @@ import java.util.concurrent.ConcurrentMap;
 
 public class MainConnectionManager implements ConnectionManager {
 
-
+    private static LazyLogger log = new LazyLogger(MainConnectionManager.class);
     private ConcurrentMap<ForceEnv, EnvConnections> connections = new ConcurrentHashMap<ForceEnv, EnvConnections>();
     private ConcurrentMap<String, ForceEnv> envs = new ConcurrentHashMap<String, ForceEnv>();
     /*key=envName,value=forceUrl*/
@@ -163,7 +161,7 @@ public class MainConnectionManager implements ConnectionManager {
         try {
             Util.writeProperties("urls", envProperties);
         } catch (IOException e) {
-            getLogger().error("Exception persisting new environment settings", e);
+            log.get().error("Exception persisting new environment settings", e);
         }
     }
 
@@ -223,10 +221,10 @@ public class MainConnectionManager implements ConnectionManager {
                 EnvConnections prev = connections.putIfAbsent(env, current);
                 return prev == null ? current.forceServiceConnector : prev.forceServiceConnector;
             } catch (ConnectionException e) {
-                getLogger().error("ConnectionException while creating ForceConfig, returning null", e);
+                log.get().error("ConnectionException while creating ForceConfig, returning null", e);
                 return null;
             } catch (MalformedURLException e) {
-                getLogger().error("MalformedURLException while creating ForceConfig, returning null", e);
+                log.get().error("MalformedURLException while creating ForceConfig, returning null", e);
                 return null;
             }
         } else {
@@ -244,8 +242,5 @@ public class MainConnectionManager implements ConnectionManager {
         }
     }
 
-    private static Logger getLogger() {
-        return LoggerFactory.getLogger(MainConnectionManager.class);
-    }
 
 }
