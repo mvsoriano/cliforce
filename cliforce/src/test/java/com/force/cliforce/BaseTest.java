@@ -1,4 +1,4 @@
-package com.force.cliforce.test.command;
+package com.force.cliforce;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -16,31 +16,30 @@ import com.google.inject.Guice;
 import com.google.inject.Module;
 import com.sforce.ws.ConnectionException;
 
-public abstract class BaseCommandTest {
+public abstract class BaseTest {
     
     private CLIForce cliForce;
+    private ByteArrayOutputStream baos;
     
     @BeforeClass
-    public void classSetup() throws InterruptedException {
+    public void classSetup() throws InterruptedException, IOException, ConnectionException, ServletException {
         Module guiceModule = new TestModule();
         cliForce = Guice.createInjector(guiceModule).getInstance(CLIForce.class);
-        cliForce.setCurrentEnvironment("test");
-    }
+        baos = new ByteArrayOutputStream();
+        InputStream in = new ByteArrayInputStream(new byte[] {});
+        cliForce.init(in, new PrintWriter(baos, true));
+        setupCLIForce(cliForce);
+    }  
+   
+    public abstract void setupCLIForce(CLIForce c) throws IOException;
     
     public String runCommand(String cmd) throws IOException, ConnectionException, ServletException, InterruptedException {
-//        InputStream in = new ByteArrayInputStream(cmd.getBytes("UTF-8"));
-        InputStream in = new ByteArrayInputStream(new byte[] {});
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        PrintWriter writer = new PrintWriter(out, true);
-        cliForce.init(in, writer);
+        baos.reset();
         cliForce.executeWithArgs(new String[] {cmd});
-        String outputStr = new String(out.toByteArray());
-        in.close();
-        out.close();
-        writer.close();
+        String outputStr = new String(baos.toByteArray());
         return outputStr;
     }
-    
+ 
     public CLIForce getCLIForce() {
         return cliForce;
     }

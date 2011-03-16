@@ -60,7 +60,7 @@ public abstract class JCommand<T> implements Command {
 
     public Map<String, String> getCommandOptions() {
         JCommander j = new JCommander(getArgs());
-        String mainParam = j.getMainParameterDescription();
+        String mainParam = j.getMainParameter().getDescription();
         Map<String, String> opts = new TreeMap<String, String>();
         for (ParameterDescription parameterDescription : j.getParameters()) {
             opts.put(parameterDescription.getNames(), parameterDescription.getDescription() + (parameterDescription.getParameter().required() ? "(required)" : ""));
