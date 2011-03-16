@@ -24,12 +24,15 @@ public class MainConnectionManager implements ConnectionManager {
     private ConcurrentMap<ForceEnv, EnvConnections> connections = new ConcurrentHashMap<ForceEnv, EnvConnections>();
     private ConcurrentMap<String, ForceEnv> envs = new ConcurrentHashMap<String, ForceEnv>();
     /*key=envName,value=forceUrl*/
-    private Properties envProperties = new Properties();
-    private Properties loginProperties = new Properties();
+    protected Properties envProperties = new Properties();
+    protected Properties loginProperties = new Properties();
     private volatile VMForceClient vmForceClient;
     private volatile RestTemplateConnector restTemplateConnector;
     private volatile ForceEnv currentEnv;
     private volatile String currentEnvName;
+    private String user;
+    private String password;
+    private String target;
 
 
     @Override
@@ -42,17 +45,24 @@ public class MainConnectionManager implements ConnectionManager {
         return currentEnv;
     }
 
-    @Override
-    public void setLoginProperties(String user, String password, String target) throws IOException {
 
-        loginProperties.setProperty(USER, user);
-        loginProperties.setProperty(PASSWORD, password);
-        loginProperties.setProperty(TARGET, target);
-        Util.writeProperties("login", loginProperties);
+    @Override
+    public void setLogin(String user, String password, String target) {
+        this.user = user;
+        this.password = password;
+        this.target = target;
     }
 
     @Override
-    public void resetVMForceClient(String user, String password, String target) {
+    public boolean saveLogin() throws IOException {
+        loginProperties.setProperty(USER, user);
+        loginProperties.setProperty(PASSWORD, password);
+        loginProperties.setProperty(TARGET, target);
+        return Util.writeProperties("login", loginProperties);
+    }
+
+    @Override
+    public void doLogin() {
         VMForceClient forceClient = new VMForceClient();
         RestTemplateConnector restConnector = new RestTemplateConnector();
         restConnector.setTarget(new HttpHost(target));
@@ -70,7 +80,7 @@ public class MainConnectionManager implements ConnectionManager {
     }
 
     @Override
-    public boolean loadLoginProperties() {
+    public boolean loadLogin() {
         try {
             if (!Util.readProperties("login", loginProperties)) {
                 return false;
@@ -79,7 +89,6 @@ public class MainConnectionManager implements ConnectionManager {
                     return false;
                 }
             }
-            resetVMForceClient(loginProperties.getProperty(USER), loginProperties.getProperty(PASSWORD), loginProperties.getProperty(TARGET));
             return true;
         } catch (IOException e) {
             return false;

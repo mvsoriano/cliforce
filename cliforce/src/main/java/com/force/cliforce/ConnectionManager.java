@@ -17,11 +17,13 @@ public interface ConnectionManager {
 
     ForceEnv getCurrentEnv();
 
-    boolean loadLoginProperties();
+    boolean loadLogin();
 
-    void setLoginProperties(String user, String password, String target) throws IOException;
+    boolean saveLogin() throws IOException;
 
-    void resetVMForceClient(String user, String password, String target);
+    void setLogin(String user, String password, String target);
+
+    void doLogin();
 
     Map<String, ForceEnv> getAvailableEnvironments();
 
