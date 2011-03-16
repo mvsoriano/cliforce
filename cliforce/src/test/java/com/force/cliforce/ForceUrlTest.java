@@ -1,4 +1,4 @@
-package com.force.cliforce.test;
+package com.force.cliforce;
 
 import com.force.cliforce.ForceEnv;
 import org.testng.annotations.DataProvider;

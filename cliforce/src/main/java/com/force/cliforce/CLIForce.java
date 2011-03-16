@@ -107,7 +107,7 @@ public class CLIForce {
         StatusPrinter.setPrintStream(new PrintStream(new OutputStream() {
             @Override
             public void write(int b) throws IOException {
-            //logback 0.9.28 barfs some stuff at startup. This supresses it.
+                //logback 0.9.28 barfs some stuff at startup. This supresses it.
             }
         }));
     }
@@ -131,7 +131,7 @@ public class CLIForce {
             @Override
             public void setup() {
                 try {
-                    loginSucceded = connectionManager.loadLoginProperties();
+                    loginSucceded = connectionManager.loadLogin();
                 } finally {
                     loginLatch.countDown();
                 }
@@ -388,14 +388,15 @@ public class CLIForce {
 
     public synchronized boolean setLogin(String user, String password, String target) {
         try {
-            connectionManager.resetVMForceClient(user, password, target);
+            connectionManager.setLogin(user, password, target);
+            connectionManager.doLogin();
         } catch (Exception e) {
             log.get().debug("Unable to log in", e);
             return false;
         }
 
         try {
-            connectionManager.setLoginProperties(user, password, target);
+            connectionManager.saveLogin();
             return true;
         } catch (IOException e) {
             log.get().error("Exception persisting new login settings", e);
