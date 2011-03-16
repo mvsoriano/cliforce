@@ -1,6 +1,7 @@
 package com.force.cliforce;
 
 import ch.qos.logback.classic.Level;
+import ch.qos.logback.core.util.StatusPrinter;
 import com.force.sdk.connector.ForceServiceConnector;
 import com.google.inject.Guice;
 import com.google.inject.name.Named;
@@ -71,7 +72,7 @@ public class CLIForce {
 
 
     public static void main(String[] args) {
-
+        setupLogback();
         CLIForce cliForce = Guice.createInjector(new MainModule()).getInstance(CLIForce.class);
 
         try {
@@ -99,6 +100,16 @@ public class CLIForce {
             log.get().error("ExitException->Exiting");
             System.exit(1);
         }
+    }
+
+    private static void setupLogback() {
+        System.setProperty("logback.configurationFile", System.getProperty("logback.configurationFile", "logback.xml"));
+        StatusPrinter.setPrintStream(new PrintStream(new OutputStream() {
+            @Override
+            public void write(int b) throws IOException {
+            //logback 0.9.28 barfs some stuff at startup. This supresses it.
+            }
+        }));
     }
 
 
