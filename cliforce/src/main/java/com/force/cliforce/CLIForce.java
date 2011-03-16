@@ -228,7 +228,7 @@ public class CLIForce {
         }
     }
 
-    private void executeWithArgs(String[] cmds) throws InterruptedException {
+    public void executeWithArgs(String[] cmds) throws InterruptedException {
         String cmdKey = cmds[0];
         if (!cmdKey.equals(EXIT_CMD)) {
             loginLatch.await();
