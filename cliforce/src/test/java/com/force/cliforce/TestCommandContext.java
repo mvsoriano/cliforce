@@ -23,10 +23,10 @@ public class TestCommandContext implements CommandContext {
     private MetadataConnection metadataConnection;
     private PartnerConnection partnerConnection;
     private RestConnection restConnection;
-    private String[] commandArguments;
+    private String[] commandArguments = new String[0];
     private CommandReader commandReader;
     private VMForceClient vmForceClient;
-    private CommandWriter commandWriter;
+    private TestCommandWriter commandWriter = new TestCommandWriter();
     private ForceEnv forceEnv;
 
 
@@ -61,7 +61,7 @@ public class TestCommandContext implements CommandContext {
     }
 
     @Override
-    public CommandWriter getCommandWriter() {
+    public TestCommandWriter getCommandWriter() {
         return commandWriter;
     }
 
@@ -106,7 +106,7 @@ public class TestCommandContext implements CommandContext {
         return copy;
     }
 
-    public TestCommandContext withCommandWriter(CommandWriter commandWriter) {
+    public TestCommandContext withCommandWriter(TestCommandWriter commandWriter) {
         TestCommandContext copy = copy();
         copy.commandWriter = commandWriter;
         return copy;
