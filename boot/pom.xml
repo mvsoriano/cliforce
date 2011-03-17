@@ -92,6 +92,12 @@
       <version>3.0-rc3</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.beust</groupId>
+      <artifactId>jcommander</artifactId>
+      <version>1.17</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
