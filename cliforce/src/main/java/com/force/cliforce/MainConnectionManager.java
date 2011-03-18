@@ -85,6 +85,9 @@ public class MainConnectionManager implements ConnectionManager {
         if (!(loginProperties.containsKey(USER) && loginProperties.containsKey(PASSWORD) && loginProperties.containsKey(TARGET))) {
             throw new IOException("login properties did not contain user, password, and target");
         }
+        user = loginProperties.getProperty(USER);
+        password = loginProperties.getProperty(PASSWORD);
+        target = loginProperties.getProperty(TARGET);
     }
 
 
