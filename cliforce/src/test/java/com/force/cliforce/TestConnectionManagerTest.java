@@ -5,6 +5,8 @@ import org.testng.Assert;
 import org.testng.annotations.Guice;
 import org.testng.annotations.Test;
 
+import java.io.IOException;
+
 
 @Guice(modules = TestModule.class)
 public class TestConnectionManagerTest {
@@ -15,7 +17,11 @@ public class TestConnectionManagerTest {
 
     @Test
     public void loadTestLoginProperties() {
-        Assert.assertTrue(testConnectionManager.loadLogin());
+        try {
+            testConnectionManager.loadLogin();
+        } catch (IOException e) {
+            Assert.fail("IOException while loading test login properties");
+        }
     }
 
 }

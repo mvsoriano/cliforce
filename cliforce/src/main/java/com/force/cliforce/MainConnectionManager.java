@@ -54,11 +54,11 @@ public class MainConnectionManager implements ConnectionManager {
     }
 
     @Override
-    public boolean saveLogin() throws IOException {
+    public void saveLogin() throws IOException {
         loginProperties.setProperty(USER, user);
         loginProperties.setProperty(PASSWORD, password);
         loginProperties.setProperty(TARGET, target);
-        return Util.writeProperties("login", loginProperties);
+        Util.writeProperties("login", loginProperties);
     }
 
     @Override
@@ -80,20 +80,13 @@ public class MainConnectionManager implements ConnectionManager {
     }
 
     @Override
-    public boolean loadLogin() {
-        try {
-            if (!Util.readProperties("login", loginProperties)) {
-                return false;
-            } else {
-                if (!(loginProperties.containsKey(USER) && loginProperties.containsKey(PASSWORD) && loginProperties.containsKey(TARGET))) {
-                    return false;
-                }
-            }
-            return true;
-        } catch (IOException e) {
-            return false;
+    public void loadLogin() throws IOException {
+        Util.readProperties("login", loginProperties);
+        if (!(loginProperties.containsKey(USER) && loginProperties.containsKey(PASSWORD) && loginProperties.containsKey(TARGET))) {
+            throw new IOException("login properties did not contain user, password, and target");
         }
     }
+
 
     @Override
     public Map<String, ForceEnv> getAvailableEnvironments() {

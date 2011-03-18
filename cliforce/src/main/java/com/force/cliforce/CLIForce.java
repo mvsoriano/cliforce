@@ -131,7 +131,11 @@ public class CLIForce {
             @Override
             public void setup() {
                 try {
-                    loginSucceded = connectionManager.loadLogin();
+                    connectionManager.loadLogin();
+                    connectionManager.doLogin();
+                    loginSucceded = true;
+                } catch (Exception e) {
+                    log.get().debug("Exception caught while logging in", e);
                 } finally {
                     loginLatch.countDown();
                 }
@@ -390,18 +394,19 @@ public class CLIForce {
         try {
             connectionManager.setLogin(user, password, target);
             connectionManager.doLogin();
+            loginSucceded = true;
         } catch (Exception e) {
             log.get().debug("Unable to log in", e);
+            loginSucceded = false;
             return false;
         }
 
         try {
             connectionManager.saveLogin();
-            return true;
         } catch (IOException e) {
-            log.get().error("Exception persisting new login settings", e);
-            return false;
+            log.get().error("Exception persisting new login settings, the login will not persist over restarts.", e);
         }
+        return true;
     }
 
 

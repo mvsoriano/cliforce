@@ -147,15 +147,11 @@ public class MainPluginManager implements PluginManager {
 
     @Override
     public void loadInstalledPlugins() throws IOException {
-        if (!Util.readProperties("plugins", installedPlugins)) {
-            throw new IOException(".force_plugins does not exist and was unable to create");
-        }
+        Util.readProperties("plugins", installedPlugins);
     }
 
     private void saveInstalledPlugins() throws IOException {
-        if (!Util.writeProperties("plugins", installedPlugins)) {
-            throw new IOException("Unable to create .force_plugins file, can't save installed plugins. You will have to re-plugin next time you run cliforce");
-        }
+        Util.writeProperties("plugins", installedPlugins);
     }
 
 }
