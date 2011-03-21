@@ -6,7 +6,7 @@ import com.force.cliforce.command.BannerCommand;
 import com.force.cliforce.command.DebugCommand;
 import com.force.cliforce.dependency.DependencyResolver;
 import com.force.cliforce.dependency.OutputAdapter;
-import jline.SimpleCompletor;
+import jline.console.completer.StringsCompleter;
 
 import javax.inject.Inject;
 import java.io.BufferedReader;
@@ -263,7 +263,7 @@ public class DefaultPlugin implements Plugin {
                         output.printf("only one plugin per artifact is supported, %s will not be registered\n", ignore.getClass().getName());
                     }
                     loader.reload();
-                } catch (IOException e) {
+                } catch (Exception e) {
                     output.println("Unable to load plugin");
                     output.printStackTrace(e);
                 } finally {
@@ -552,11 +552,11 @@ public class DefaultPlugin implements Plugin {
         }
 
         @Override
-        protected List<String> getCompletionsForSwitch(String switchForCompletion, String partialValue, ParameterDescription parameterDescription, CommandContext context) {
+        protected List<CharSequence> getCompletionsForSwitch(String switchForCompletion, String partialValue, ParameterDescription parameterDescription, CommandContext context) {
             if (switchForCompletion.equals(MAIN_PARAM)) {
-                List<String> candidates = new ArrayList<String>();
+                List<CharSequence> candidates = new ArrayList<CharSequence>();
                 List<String> activePlugins = cliForce.getActivePlugins();
-                new SimpleCompletor(activePlugins.toArray(new String[0])).complete(partialValue, partialValue.length(), candidates);
+                new StringsCompleter(activePlugins.toArray(new String[0])).complete(partialValue, partialValue.length(), candidates);
                 if (candidates.size() > 1) {
                     candidates.add("<or none for the cliforce classpath>");
                 }

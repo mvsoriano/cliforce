@@ -4,8 +4,8 @@ package com.force.cliforce;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterDescription;
 import com.beust.jcommander.ParameterException;
-import jline.FileNameCompletor;
-import jline.SimpleCompletor;
+import jline.console.completer.FileNameCompleter;
+import jline.console.completer.StringsCompleter;
 
 import java.io.File;
 import java.lang.reflect.ParameterizedType;
@@ -99,10 +99,10 @@ public abstract class JCommand<T> implements Command {
      * <p/>
      * This implementation handles completion of values for @Parameters of type java.io.File, and for no-op value completions
      */
-    protected List<String> getCompletionsForSwitch(String switchForCompletion, String partialValue, ParameterDescription parameterDescription, CommandContext context) {
+    protected List<CharSequence> getCompletionsForSwitch(String switchForCompletion, String partialValue, ParameterDescription parameterDescription, CommandContext context) {
         if (parameterDescription.getField().getType().equals(File.class)) {
-            List<String> candidates = new ArrayList<String>();
-            int ret = new FileNameCompletor().complete(partialValue, partialValue.length(), candidates);
+            List<CharSequence> candidates = new ArrayList<CharSequence>();
+            int ret = new FileNameCompleter().complete(partialValue, partialValue.length(), candidates);
             if (candidates.size() == 1 && partialValue.contains("/")) {
                 String dir = partialValue.substring(0, partialValue.lastIndexOf("/")) + "/";
                 for (int i = 0; i < candidates.size(); i++) {
@@ -125,7 +125,7 @@ public abstract class JCommand<T> implements Command {
      * <p/>
      * todo build an FSM diagram of the states we can be in.
      */
-    public int complete(String origBuff, String[] parsed, int cursor, List<String> candidates, CommandContext ctx) {
+    public int complete(String origBuff, String[] parsed, int cursor, List<CharSequence> candidates, CommandContext ctx) {
         String[] commandArgs = Arrays.copyOfRange(parsed, 1, parsed.length);
         String lastArg = getLastArgumentForCompletion(commandArgs);
         String bufWithoutLast = origBuff.substring(0, origBuff.lastIndexOf(lastArg));
@@ -187,7 +187,7 @@ public abstract class JCommand<T> implements Command {
             bufWithoutLast = bufWithoutLast + lastArg;
             lastArg = "";
         }
-        List<String> subCandidates = new ArrayList<String>();
+        List<CharSequence> subCandidates = new ArrayList<CharSequence>();
 
         /*START ATTEMPT VALUE COMPLETION*/
         //if the last arg is a possibly uncompleted value or the last arg is a switch with a space after it
@@ -210,7 +210,7 @@ public abstract class JCommand<T> implements Command {
 
         if (switchForCompletion != null && descs.containsKey(switchForCompletion)) {
             ParameterDescription desc = descs.get(switchForCompletion);
-            List<String> valCandidates = getCompletionsForSwitch(switchForCompletion, partial, desc, ctx);
+            List<CharSequence> valCandidates = getCompletionsForSwitch(switchForCompletion, partial, desc, ctx);
             if (valCandidates.size() > 1) {
                 candidates.addAll(valCandidates);
                 String unambig = getUnambiguousCompletions(candidates);
@@ -224,7 +224,7 @@ public abstract class JCommand<T> implements Command {
         /*END ATTEMPT VALUE COMPLETION*/
 
         /*No value completion happened attempt switch completion*/
-        SimpleCompletor completor = new SimpleCompletor(switches.toArray(new String[0]));
+        StringsCompleter completor = new StringsCompleter(switches.toArray(new String[0]));
         int res = completor.complete(lastArg, cursor, subCandidates);
 
         //if the last arg is a value, then try to complete the next switch
@@ -232,7 +232,7 @@ public abstract class JCommand<T> implements Command {
             completor.complete("", cursor, subCandidates);
         }
 
-        if (subCandidates.size() == 1 && !isMainParam(subCandidates.get(0))) {
+        if (subCandidates.size() == 1 && !isMainParam(subCandidates.get(0).toString())) {
             StringBuilder b = new StringBuilder(bufWithoutLast);
             if (lastArgIsValue) {
                 b.append(lastArg).append(" ");
@@ -244,10 +244,10 @@ public abstract class JCommand<T> implements Command {
         } else {
             //either there are multiple candidates or the only candidate is the main-param
             //in which case we cause the descriptions of the candidates to be rendered, and nothing to be completed
-            if (subCandidates.size() == 1 && isMainParam(subCandidates.get(0))) {
+            if (subCandidates.size() == 1 && isMainParam(subCandidates.get(0).toString())) {
                 //attempt value completion for main parameter
                 ParameterDescription parameterDescription = descs.get(MAIN_PARAM);
-                List<String> valCandidates = getCompletionsForSwitch(MAIN_PARAM, lastArg, parameterDescription, ctx);
+                List<CharSequence> valCandidates = getCompletionsForSwitch(MAIN_PARAM, lastArg, parameterDescription, ctx);
                 if (valCandidates.size() == 0) {
                     //the leading space is important, as it generates an unambiguous completion of 1 space
                     candidates.add(" main param: " + parameterDescription.getDescription());
@@ -257,16 +257,16 @@ public abstract class JCommand<T> implements Command {
                     candidates.addAll(valCandidates);
                 }
             } else {
-                for (String subCandidate : subCandidates) {
+                for (CharSequence subCandidate : subCandidates) {
                     if (lastArgIsValue) {
-                        candidates.add(" " + getDescriptiveCandidate(subCandidate, descs, largestSwitch));
+                        candidates.add(" " + getDescriptiveCandidate(subCandidate.toString(), descs, largestSwitch));
                     } else {
-                        candidates.add(getDescriptiveCandidate(subCandidate, descs, largestSwitch));
+                        candidates.add(getDescriptiveCandidate(subCandidate.toString(), descs, largestSwitch));
                     }
-                    Collections.sort(candidates, new Comparator<String>() {
+                    Collections.sort(candidates, new Comparator<CharSequence>() {
                         @Override
-                        public int compare(String o1, String o2) {
-                            return stripLeadingDashes(o1).compareTo(stripLeadingDashes(o2));
+                        public int compare(CharSequence o1, CharSequence o2) {
+                            return stripLeadingDashes(o1.toString()).compareTo(stripLeadingDashes(o2.toString()));
                         }
                     });
                 }

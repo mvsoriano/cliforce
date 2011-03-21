@@ -11,9 +11,10 @@ import com.sforce.soap.metadata.MetadataConnection;
 import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.ws.ConnectionException;
 import com.vmforce.client.VMForceClient;
-import jline.Completor;
-import jline.ConsoleReader;
-import jline.History;
+import jline.console.ConsoleReader;
+import jline.console.completer.Completer;
+import jline.console.history.FileHistory;
+import jline.console.history.History;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
@@ -21,10 +22,7 @@ import javax.inject.Inject;
 import javax.servlet.ServletException;
 import java.io.*;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
@@ -47,7 +45,7 @@ public class CLIForce {
     private CommandWriter writer;
 
     @Inject
-    private Completor completor;
+    private Completer completor;
     @Inject
     private ConnectionManager connectionManager;
     @Inject
@@ -118,7 +116,7 @@ public class CLIForce {
         injectDefaultPluginAndAddCommands();
 
         reader = new ConsoleReader(in, out);
-        reader.addCompletor(completor);
+        reader.addCompleter(completor);
         writer = new Writer(out);
 
         setupHistory(reader, out);
@@ -186,7 +184,7 @@ public class CLIForce {
         if (!hist.exists()) {
             try {
                 if (hist.createNewFile()) {
-                    reader.setHistory(new History(hist));
+                    reader.setHistory(new FileHistory(hist));
                 } else {
                     o.println("can't create history file");
                 }
@@ -195,7 +193,7 @@ public class CLIForce {
             }
 
         } else {
-            r.setHistory(new History(hist));
+            r.setHistory(new FileHistory(hist));
         }
     }
 
@@ -357,7 +355,13 @@ public class CLIForce {
     }
 
     public List<String> getHistoryList() {
-        return (List<String>) reader.getHistory().getHistoryList();
+        List<String> strings = new ArrayList<String>();
+        ListIterator<History.Entry> entries = reader.getHistory().entries();
+        while (entries.hasNext()) {
+            History.Entry next = entries.next();
+            strings.add(next.value().toString());
+        }
+        return strings;
     }
 
     private void loadInstalledPlugins() throws IOException {

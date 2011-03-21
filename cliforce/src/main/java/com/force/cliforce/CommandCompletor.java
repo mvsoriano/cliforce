@@ -1,15 +1,15 @@
 package com.force.cliforce;
 
 
-import jline.Completor;
-import jline.SimpleCompletor;
+import jline.console.completer.Completer;
+import jline.console.completer.StringsCompleter;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.util.List;
 
 
-class CommandCompletor implements Completor {
+class CommandCompletor implements Completer {
 
     LazyLogger log = new LazyLogger(this);
 
@@ -22,9 +22,9 @@ class CommandCompletor implements Completor {
 
 
     @Override
-    public int complete(String buffer, int cursor, List candidates) {
+    public int complete(String buffer, int cursor, List<CharSequence> candidates) {
         String[] args = Util.parseCommand(buffer);
-        int cmd = new SimpleCompletor(pluginManager.getCommandNames().toArray(new String[0])).complete(args[0], cursor, candidates);
+        int cmd = new StringsCompleter(pluginManager.getCommandNames().toArray(new String[0])).complete(args[0], cursor, candidates);
         if (candidates.size() == 0 && buffer != null && buffer.length() > 0) {
             log.get().debug("cliforce completor returning 0, from first if branch");
             return 0;
@@ -33,7 +33,7 @@ class CommandCompletor implements Completor {
             Command command = pluginManager.getCommand(args[0]);
             if (command != null) {
                 if (command instanceof JCommand) {
-                    return ((JCommand<?>) command).complete(buffer, args, cursor, (List<String>) candidates, cliForce.get().getContext(args));
+                    return ((JCommand<?>) command).complete(buffer, args, cursor, candidates, cliForce.get().getContext(args));
                 } else {
                     log.get().debug("cliforce completor executing standard completion");
                     candidates.add(" ");

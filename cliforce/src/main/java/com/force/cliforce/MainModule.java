@@ -6,7 +6,7 @@ import com.google.inject.Exposed;
 import com.google.inject.PrivateModule;
 import com.google.inject.Provides;
 import com.google.inject.name.Names;
-import jline.Completor;
+import jline.console.completer.Completer;
 
 import javax.inject.Singleton;
 import java.io.IOException;
@@ -67,7 +67,7 @@ public class MainModule extends PrivateModule {
      * Hook for subclasses to customize the connection manager, mostly for testing
      */
     public void bindCompletor() {
-        bind(Completor.class).to(CommandCompletor.class).in(Singleton.class);
+        bind(Completer.class).to(CommandCompletor.class).in(Singleton.class);
     }
 
 

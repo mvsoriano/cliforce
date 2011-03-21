@@ -10,7 +10,7 @@ import collection.mutable.HashMap
 import com.force.cliforce.{ForceEnv, JCommand, CommandContext, Command}
 import com.beust.jcommander.{ParameterDescription, Parameter}
 import java.lang.String
-import jline.SimpleCompletor
+import jline.console.completer.StringsCompleter
 
 object AppNameCache {
   lazy val cache = new HashMap[ForceEnv, List[String]];
@@ -32,8 +32,8 @@ abstract class AppCommand extends JCommand[AppArg] {
   override def getCompletionsForSwitch(switchForCompletion: String, partialValue: String, parameterDescription: ParameterDescription, ctx: CommandContext) = {
     if (switchForCompletion eq JCommand.MAIN_PARAM) {
       val apps = AppNameCache.getApps(ctx)
-      val candidates = new ArrayList[String]
-      val cursor = new SimpleCompletor(apps.toArray[String]).complete(partialValue, partialValue.length, candidates)
+      val candidates = new ArrayList[CharSequence]
+      val cursor = new StringsCompleter(apps).complete(partialValue, partialValue.length, candidates)
       candidates
     } else {
       super.getCompletionsForSwitch(switchForCompletion, partialValue, parameterDescription, ctx)
