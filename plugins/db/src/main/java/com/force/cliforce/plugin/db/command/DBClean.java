@@ -28,7 +28,8 @@ public class DBClean implements Command {
 
 
     public void execute(CommandContext ctx) throws IOException, ConnectionException {
-
+        Util.requireMetadataConnection(ctx);
+        Util.requirePartnerConnection(ctx);
         ctx.getCommandWriter().println("Connected to org " + ctx.getPartnerConnection().getUserInfo().getOrganizationId());
 
         DescribeGlobalResult objs = ctx.getPartnerConnection().describeGlobal();

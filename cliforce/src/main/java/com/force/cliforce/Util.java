@@ -1,6 +1,7 @@
 package com.force.cliforce;
 
 
+import com.force.cliforce.dependency.DependencyResolver;
 import org.apache.commons.exec.CommandLine;
 
 import java.io.File;
@@ -84,6 +85,76 @@ public class Util {
         all[0] = exe;
         System.arraycopy(args, 0, all, 1, args.length);
         return all;
+    }
+
+    public static void requireVMForceClient(CommandContext context) throws ResourceException {
+        String msg = "Unable to execute the command, since the VMForceClient is null";
+        if (context.getVmForceClient() == null) {
+            if (context.getCommandWriter() != null) {
+                context.getCommandWriter().println(msg);
+            }
+            throw new ResourceException(msg);
+        }
+    }
+
+    public static void requireForceEnv(CommandContext context) throws ResourceException {
+        String msg = "Unable to execute the command, since the ForceEnv is null";
+        if (context.getForceEnv() == null) {
+            if (context.getCommandWriter() != null) {
+                context.getCommandWriter().println(msg);
+            }
+            throw new ResourceException(msg);
+        }
+    }
+
+    public static void requireMetadataConnection(CommandContext context) throws ResourceException {
+        String msg = "Unable to execute the command, since the metadata connection is null";
+        if (context.getMetadataConnection() == null) {
+            if (context.getCommandWriter() != null) {
+                context.getCommandWriter().println(msg);
+            }
+            throw new ResourceException(msg);
+        }
+    }
+
+    public static void requirePartnerConnection(CommandContext context) throws ResourceException {
+        String msg = "Unable to execute the command, since the partner connection is null";
+        if (context.getPartnerConnection() == null) {
+            if (context.getCommandWriter() != null) {
+                context.getCommandWriter().println(msg);
+            }
+            throw new ResourceException(msg);
+        }
+    }
+
+    public static void requireRestConnection(CommandContext context) throws ResourceException {
+        String msg = "Unable to execute the command, since the rest connection is null";
+        if (context.getRestConnection() == null) {
+            if (context.getCommandWriter() != null) {
+                context.getCommandWriter().println(msg);
+            }
+            throw new ResourceException(msg);
+        }
+    }
+
+    public static void requireCliforce(CLIForce cliForce, CommandContext context) throws ResourceException {
+        String msg = "Unable to execute the command, since the injected cliforce instance is null";
+        if (cliForce == null) {
+            if (context.getCommandWriter() != null) {
+                context.getCommandWriter().println(msg);
+            }
+            throw new ResourceException(msg);
+        }
+    }
+
+    public static void requireResolver(DependencyResolver resolver, CommandContext context) throws ResourceException {
+        String msg = "Unable to execute the command, since the injected dependency resolver instance is null";
+        if (resolver == null) {
+            if (context.getCommandWriter() != null) {
+                context.getCommandWriter().println(msg);
+            }
+            throw new ResourceException(msg);
+        }
     }
 
 

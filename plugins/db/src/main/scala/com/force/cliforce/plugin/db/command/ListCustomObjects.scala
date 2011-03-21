@@ -8,6 +8,8 @@ class ListCustomObjects extends Command {
 
 
   def execute(ctx: CommandContext) = {
+    Util.requireMetadataConnection(ctx)
+    Util.requirePartnerConnection(ctx)
     val q = new ListMetadataQuery
     q.setType("CustomObject")
 

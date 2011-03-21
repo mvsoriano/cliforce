@@ -272,17 +272,7 @@ public class CLIForce {
         } catch (ExitException e) {
             writer.println("Exit Exception thrown, exiting");
             throw e;
-        } catch (NullPointerException e) {
-            //todo think about a mechanism for commands to do precondition checks on the context
-            //or otherwise indicate they need a force env
-            if (connectionManager.getCurrentEnv() == null) {
-                writer.println("The command failed to execute");
-                writer.println("You must add a connection using the connection:add command before executing this command");
-                writer.println("run 'help connection:add' for more info");
-            } else {
-                writer.printf("Exception while executing command %s\n", cmdKey);
-                writer.printStackTrace(e);
-            }
+        } catch (ResourceException e){
         } catch (Exception e) {
             writer.printf("Exception while executing command %s\n", cmdKey);
             writer.printStackTrace(e);

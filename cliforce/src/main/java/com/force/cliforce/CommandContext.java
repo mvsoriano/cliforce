@@ -11,12 +11,32 @@ import com.vmforce.client.VMForceClient;
  */
 public interface CommandContext {
 
+    /**
+     * can be null
+     *
+     * @return
+     */
     MetadataConnection getMetadataConnection();
 
+    /**
+     * can be null
+     *
+     * @return
+     */
     PartnerConnection getPartnerConnection();
 
+    /**
+     * can be null
+     *
+     * @return
+     */
     RestConnection getRestConnection();
 
+    /**
+     * can be null
+     *
+     * @return
+     */
     ForceEnv getForceEnv();
 
     /**
@@ -32,6 +52,11 @@ public interface CommandContext {
 
     CommandReader getCommandReader();
 
+    /**
+     * can be null
+     *
+     * @return
+     */
     VMForceClient getVmForceClient();
 
     CommandWriter getCommandWriter();
