@@ -1,0 +1,14 @@
+<suites>
+  <suite name="cliforce-plugin-connection-tests" verbose="1">
+  
+    <listeners>
+      <listener class-name="com.force.cliforce.listener.CliforceTestContextSuiteListener"/>
+    </listeners>
+  
+    <test name="cliforce-plugin-connection-test">
+      <packages>
+        <package name="com.force.cliforce.plugin.connection"/>
+      </packages>
+    </test>
+  </suite>
+</suites>

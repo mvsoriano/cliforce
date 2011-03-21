@@ -116,6 +116,12 @@
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.force.qa</groupId>
+      <artifactId>qa-utils</artifactId>
+      <version>${force.qa.version}</version>
+<!--       <scope>test</scope>-->
+    </dependency>
   </dependencies>
 
   <build>
@@ -124,7 +130,27 @@
         <directory>src/main/resources</directory>
         <filtering>true</filtering>
       </resource>
+      <resource>
+        <directory>src/test/resources</directory>
+        <includes>
+          <include>test.vmf01.properties</include>
+        </includes>
+      </resource>  
     </resources>
+    
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
   </build>
 
 </project>

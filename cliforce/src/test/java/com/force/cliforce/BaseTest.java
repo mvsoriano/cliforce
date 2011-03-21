@@ -4,14 +4,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 
 import javax.servlet.ServletException;
 
 import org.testng.annotations.BeforeClass;
 
-import com.force.cliforce.CLIForce;
 import com.google.inject.Guice;
 import com.google.inject.Module;
 import com.sforce.ws.ConnectionException;
