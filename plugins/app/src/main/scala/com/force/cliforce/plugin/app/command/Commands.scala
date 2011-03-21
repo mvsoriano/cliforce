@@ -10,7 +10,8 @@ import collection.mutable.HashMap
 import com.force.cliforce.{ForceEnv, JCommand, CommandContext, Command}
 import com.beust.jcommander.{ParameterDescription, Parameter}
 import java.lang.String
-import jline.SimpleCompletor
+import jline.console.completer.StringsCompleter
+import com.force.cliforce.Util._
 
 object AppNameCache {
   lazy val cache = new HashMap[ForceEnv, List[String]];
@@ -32,8 +33,8 @@ abstract class AppCommand extends JCommand[AppArg] {
   override def getCompletionsForSwitch(switchForCompletion: String, partialValue: String, parameterDescription: ParameterDescription, ctx: CommandContext) = {
     if (switchForCompletion eq JCommand.MAIN_PARAM) {
       val apps = AppNameCache.getApps(ctx)
-      val candidates = new ArrayList[String]
-      val cursor = new SimpleCompletor(apps.toArray[String]).complete(partialValue, partialValue.length, candidates)
+      val candidates = new ArrayList[CharSequence]
+      val cursor = new StringsCompleter(apps).complete(partialValue, partialValue.length, candidates)
       candidates
     } else {
       super.getCompletionsForSwitch(switchForCompletion, partialValue, parameterDescription, ctx)
@@ -50,6 +51,7 @@ class AppArg {
 
 class AppsCommand extends Command {
   def execute(ctx: CommandContext) = {
+    requireVMForceClient(ctx)
     asScalaIterable(ctx.getVmForceClient.getApplications).foreach{
       app: ApplicationInfo => {
         val health = ctx.getVmForceClient.getApplicationHealth(app)
@@ -76,6 +78,7 @@ class DeleteAppCommand extends AppCommand {
 
 
   def executeWithArgs(ctx: CommandContext, arg: AppArg) = {
+    requireVMForceClient(ctx)
     ctx.getCommandWriter.println("Deleting %s".format(arg.app))
     ctx.getVmForceClient.deleteApplication(arg.app)
     AppNameCache.populate(ctx)
@@ -116,6 +119,7 @@ class PushArgs {
 class PushCommand extends JCommand[PushArgs] {
 
   def executeWithArgs(ctx: CommandContext, args: PushArgs) = {
+    requireVMForceClient(ctx)
     ctx.getCommandWriter.printf("Pushing Application: %s\n", args.name)
     var appInfo = ctx.getVmForceClient.getApplication(args.name)
     if (appInfo == null) {
@@ -158,6 +162,7 @@ class StartCommand extends AppCommand {
 
 
   def executeWithArgs(ctx: CommandContext, arg: AppArg) = {
+    requireVMForceClient(ctx)
     ctx.getCommandWriter.println("Starting %s".format(arg.app))
     ctx.getVmForceClient.startApplication(arg.app)
     ctx.getCommandWriter.println("done")
@@ -172,6 +177,7 @@ class StopCommand extends AppCommand {
 
 
   def executeWithArgs(ctx: CommandContext, arg: AppArg) = {
+    requireVMForceClient(ctx)
     ctx.getCommandWriter.println("Stopping %s".format(arg.app))
     ctx.getVmForceClient.stopApplication(arg.app)
     ctx.getCommandWriter.println("done")
@@ -187,6 +193,7 @@ class RestartCommand extends AppCommand {
 
 
   def executeWithArgs(ctx: CommandContext, arg: AppArg) = {
+    requireVMForceClient(ctx)
     ctx.getCommandWriter.println("Restarting %s".format(arg.app))
     ctx.getVmForceClient.restartApplication(arg.app)
     ctx.getCommandWriter.println("done")
@@ -217,6 +224,7 @@ class TailFileCommand extends JCommand[TailArg] {
   def describe = usage("tail a file within a given application's instance. Note that the application must be running.")
 
   def executeWithArgs(ctx: CommandContext, args: TailArg) = {
+    requireVMForceClient(ctx)
     val tailer = ctx.getVmForceClient.getTailFile(args.app, args.instance, args.path);
     @volatile var go = true;
     var dot = false;

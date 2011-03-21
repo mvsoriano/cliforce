@@ -17,9 +17,9 @@ public interface ConnectionManager {
 
     ForceEnv getCurrentEnv();
 
-    boolean loadLogin();
+    void loadLogin() throws IOException;
 
-    boolean saveLogin() throws IOException;
+    void saveLogin() throws IOException;
 
     void setLogin(String user, String password, String target);
 

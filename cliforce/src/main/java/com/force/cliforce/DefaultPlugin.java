@@ -6,7 +6,7 @@ import com.force.cliforce.command.BannerCommand;
 import com.force.cliforce.command.DebugCommand;
 import com.force.cliforce.dependency.DependencyResolver;
 import com.force.cliforce.dependency.OutputAdapter;
-import jline.SimpleCompletor;
+import jline.console.completer.StringsCompleter;
 
 import javax.inject.Inject;
 import java.io.BufferedReader;
@@ -16,6 +16,8 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.*;
 
+import static com.force.cliforce.Util.requireCliforce;
+import static com.force.cliforce.Util.requireResolver;
 import static java.lang.String.format;
 
 /**
@@ -87,6 +89,7 @@ public class DefaultPlugin implements Plugin {
         }
 
         private boolean login(CommandContext ctx, LoginArgs args) {
+            requireCliforce(cliForce, ctx);
             ctx.getCommandWriter().println("Please log in");
             ctx.getCommandWriter().printf("Target login server [%s]:", args.target);
             String target = ctx.getCommandReader().readLine("");
@@ -132,6 +135,7 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public void execute(CommandContext ctx) throws Exception {
+            requireCliforce(cliForce, ctx);
             Map<String, String> descs = cliForce.getCommandDescriptions();
             descs = new TreeMap<String, String>(descs);
             if (ctx.getCommandArguments().length == 0) {
@@ -214,6 +218,8 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public void executeWithArgs(final CommandContext ctx, PluginArgs arg) {
+            requireCliforce(cliForce, ctx);
+            requireResolver(resolver, ctx);
             CommandWriter output = ctx.getCommandWriter();
             if (arg.artifact() == null) {
                 output.println("Listing plugins...");
@@ -263,7 +269,7 @@ public class DefaultPlugin implements Plugin {
                         output.printf("only one plugin per artifact is supported, %s will not be registered\n", ignore.getClass().getName());
                     }
                     loader.reload();
-                } catch (IOException e) {
+                } catch (Exception e) {
                     output.println("Unable to load plugin");
                     output.printStackTrace(e);
                 } finally {
@@ -297,7 +303,7 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public void executeWithArgs(final CommandContext ctx, PluginArgs arg) {
-
+            requireCliforce(cliForce, ctx);
             String version = cliForce.getInstalledPluginVersion(arg.artifact());
             if (version == null) {
                 ctx.getCommandWriter().printf("Required Plugin %s version %s is not installed, exiting\n", arg.artifact(), arg.version);
@@ -330,6 +336,7 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public void execute(CommandContext ctx) throws Exception {
+            requireCliforce(cliForce, ctx);
             for (String arg : ctx.getCommandArguments()) {
                 ctx.getCommandWriter().printf("Removing plugin: %s\n", arg);
                 cliForce.removePlugin(arg);
@@ -355,6 +362,7 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public void execute(CommandContext ctx) throws Exception {
+            requireCliforce(cliForce, ctx);
             List<String> historyList = cliForce.getHistoryList();
             for (String s : historyList) {
                 ctx.getCommandWriter().println(s);
@@ -380,6 +388,7 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public void execute(CommandContext ctx) throws Exception {
+            requireCliforce(cliForce,ctx);
             StringBuilder b = new StringBuilder();
             for (String s : ctx.getCommandArguments()) {
                 b.append(s).append(" ");
@@ -533,6 +542,7 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public void executeWithArgs(CommandContext ctx, ClasspathArg args) {
+            requireCliforce(cliForce,ctx);
             Collection<URL> classpathForCommand;
             if (args.sort) {
                 classpathForCommand = new TreeSet<URL>(new Comparator<URL>() {
@@ -552,11 +562,11 @@ public class DefaultPlugin implements Plugin {
         }
 
         @Override
-        protected List<String> getCompletionsForSwitch(String switchForCompletion, String partialValue, ParameterDescription parameterDescription, CommandContext context) {
+        protected List<CharSequence> getCompletionsForSwitch(String switchForCompletion, String partialValue, ParameterDescription parameterDescription, CommandContext context) {
             if (switchForCompletion.equals(MAIN_PARAM)) {
-                List<String> candidates = new ArrayList<String>();
+                List<CharSequence> candidates = new ArrayList<CharSequence>();
                 List<String> activePlugins = cliForce.getActivePlugins();
-                new SimpleCompletor(activePlugins.toArray(new String[0])).complete(partialValue, partialValue.length(), candidates);
+                new StringsCompleter(activePlugins.toArray(new String[0])).complete(partialValue, partialValue.length(), candidates);
                 if (candidates.size() > 1) {
                     candidates.add("<or none for the cliforce classpath>");
                 }

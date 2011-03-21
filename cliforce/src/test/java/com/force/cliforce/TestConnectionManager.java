@@ -7,18 +7,13 @@ public class TestConnectionManager extends MainConnectionManager {
 
 
     @Override
-    public boolean loadLogin() {
+    public void loadLogin() throws IOException {
         loginProperties.clear();
-        try {
-            loginProperties.load(getClass().getClassLoader().getResourceAsStream("test.login"));
-            return loginProperties.size() == 3;
-        } catch (IOException e) {
-            return false;
-        }
+        loginProperties.load(getClass().getClassLoader().getResourceAsStream("test.login"));
     }
 
     @Override
-    public boolean saveLogin() throws IOException {
-        return true;
+    public void saveLogin() throws IOException {
+
     }
 }

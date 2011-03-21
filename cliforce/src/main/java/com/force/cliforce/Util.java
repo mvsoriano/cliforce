@@ -1,6 +1,7 @@
 package com.force.cliforce;
 
 
+import com.force.cliforce.dependency.DependencyResolver;
 import org.apache.commons.exec.CommandLine;
 
 import java.io.File;
@@ -28,18 +29,17 @@ public class Util {
      * @param properties properties instance into which to read the file
      * @return true if the file was successfully read, false if not.
      */
-    public static boolean readProperties(String name, Properties properties) throws IOException {
+    public static void readProperties(String name, Properties properties) throws IOException {
         File propFile = getForcePropertiesFile(name);
         if (!propFile.getParentFile().exists()) {
-            if (!propFile.getParentFile().mkdir()) return false;
+            throw new IOException("Unable to create ~/.force/ directory");
         }
         if (propFile.exists() || propFile.createNewFile()) {
             FileInputStream fileInputStream = new FileInputStream(propFile);
             properties.load(fileInputStream);
             fileInputStream.close();
-            return true;
         } else {
-            return false;
+            throw new IOException("Unable to create file:" + propFile.getAbsolutePath());
         }
 
     }
@@ -50,18 +50,19 @@ public class Util {
      * @param name name the name to append to the string .force_ to get the properties file name
      * @return true if the file was successfully written, false if not.
      */
-    public static boolean writeProperties(String name, Properties properties) throws IOException {
+    public static void writeProperties(String name, Properties properties) throws IOException {
         File propFile = getForcePropertiesFile(name);
         if (!propFile.getParentFile().exists()) {
-            if (!propFile.getParentFile().mkdir()) return false;
+            if (!propFile.getParentFile().mkdir()) {
+                throw new IOException("Unable to create ~/.force/ directory");
+            }
         }
         if (propFile.exists() || propFile.createNewFile()) {
             FileOutputStream fileOutputStream = new FileOutputStream(propFile);
             properties.store(fileOutputStream, "CLIForce " + name);
             fileOutputStream.close();
-            return true;
         } else {
-            return false;
+            throw new IOException("Unable to create file:" + propFile.getAbsolutePath());
         }
     }
 
@@ -84,6 +85,76 @@ public class Util {
         all[0] = exe;
         System.arraycopy(args, 0, all, 1, args.length);
         return all;
+    }
+
+    public static void requireVMForceClient(CommandContext context) throws ResourceException {
+        String msg = "Unable to execute the command, since the VMForceClient is null";
+        if (context.getVmForceClient() == null) {
+            if (context.getCommandWriter() != null) {
+                context.getCommandWriter().println(msg);
+            }
+            throw new ResourceException(msg);
+        }
+    }
+
+    public static void requireForceEnv(CommandContext context) throws ResourceException {
+        String msg = "Unable to execute the command, since the ForceEnv is null";
+        if (context.getForceEnv() == null) {
+            if (context.getCommandWriter() != null) {
+                context.getCommandWriter().println(msg);
+            }
+            throw new ResourceException(msg);
+        }
+    }
+
+    public static void requireMetadataConnection(CommandContext context) throws ResourceException {
+        String msg = "Unable to execute the command, since the metadata connection is null";
+        if (context.getMetadataConnection() == null) {
+            if (context.getCommandWriter() != null) {
+                context.getCommandWriter().println(msg);
+            }
+            throw new ResourceException(msg);
+        }
+    }
+
+    public static void requirePartnerConnection(CommandContext context) throws ResourceException {
+        String msg = "Unable to execute the command, since the partner connection is null";
+        if (context.getPartnerConnection() == null) {
+            if (context.getCommandWriter() != null) {
+                context.getCommandWriter().println(msg);
+            }
+            throw new ResourceException(msg);
+        }
+    }
+
+    public static void requireRestConnection(CommandContext context) throws ResourceException {
+        String msg = "Unable to execute the command, since the rest connection is null";
+        if (context.getRestConnection() == null) {
+            if (context.getCommandWriter() != null) {
+                context.getCommandWriter().println(msg);
+            }
+            throw new ResourceException(msg);
+        }
+    }
+
+    public static void requireCliforce(CLIForce cliForce, CommandContext context) throws ResourceException {
+        String msg = "Unable to execute the command, since the injected cliforce instance is null";
+        if (cliForce == null) {
+            if (context.getCommandWriter() != null) {
+                context.getCommandWriter().println(msg);
+            }
+            throw new ResourceException(msg);
+        }
+    }
+
+    public static void requireResolver(DependencyResolver resolver, CommandContext context) throws ResourceException {
+        String msg = "Unable to execute the command, since the injected dependency resolver instance is null";
+        if (resolver == null) {
+            if (context.getCommandWriter() != null) {
+                context.getCommandWriter().println(msg);
+            }
+            throw new ResourceException(msg);
+        }
     }
 
 
