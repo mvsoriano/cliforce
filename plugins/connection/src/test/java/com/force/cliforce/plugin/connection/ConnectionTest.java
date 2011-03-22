@@ -9,7 +9,6 @@ import org.testng.annotations.Test;
 import com.force.cliforce.Plugin;
 import com.force.cliforce.TestCommandContext;
 import com.force.cliforce.TestModule;
-import com.force.cliforce.TestPlugin;
 import com.force.cliforce.TestPluginInjector;
 import com.force.cliforce.plugin.connection.command.ListConnectionsCommand;
 
