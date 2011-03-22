@@ -121,12 +121,6 @@
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
     </dependency>
-    <dependency>
-      <groupId>com.force.qa</groupId>
-      <artifactId>qa-utils</artifactId>
-      <version>${force.qa.version}</version>
-<!--       <scope>test</scope>-->
-    </dependency>
   </dependencies>
 
   <build>

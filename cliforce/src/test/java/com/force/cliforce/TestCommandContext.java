@@ -3,11 +3,7 @@ package com.force.cliforce;
 import com.sforce.async.RestConnection;
 import com.sforce.soap.metadata.MetadataConnection;
 import com.sforce.soap.partner.PartnerConnection;
-import com.sforce.ws.ConnectorConfig;
 import com.vmforce.client.VMForceClient;
-import com.vmforce.test.util.SfdcTestingUtil;
-import com.vmforce.test.util.TestContext;
-import com.vmforce.test.util.UserInfo;
 
 
 /**
@@ -32,10 +28,6 @@ public class TestCommandContext implements CommandContext {
     private VMForceClient vmForceClient;
     private TestCommandWriter commandWriter = new TestCommandWriter();
     private ForceEnv forceEnv;
-
-    public TestCommandContext() throws Exception {
-        partnerConnection = SfdcTestingUtil.getPartnerConnection(TestContext.get().getUserInfo());        
-    }
 
     @Override
     public MetadataConnection getMetadataConnection() {
