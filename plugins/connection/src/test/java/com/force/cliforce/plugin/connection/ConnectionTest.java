@@ -24,7 +24,7 @@ public class ConnectionTest {
         ListConnectionsCommand cmd = injector.getInjectedCommand(connPlugin, ListConnectionsCommand.class);
         TestCommandContext ctx = new TestCommandContext();
         cmd.execute(ctx);
-        Assert.assertEquals(ctx.getCommandWriter().getOutput(),"There are no connections configured. Please use connection:add to add one.", 
+        Assert.assertEquals(ctx.getCommandWriter().getOutput(),"There are no connections configured. Please use connection:add to add one.\n", 
         		"unexpected output from command");
     }
 
