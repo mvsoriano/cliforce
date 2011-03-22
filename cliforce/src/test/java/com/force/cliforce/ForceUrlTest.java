@@ -4,6 +4,11 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import static org.testng.Assert.*;
 
+/**
+ * Tests for validation of force urls
+ * @author jeffrey.lai
+ * @since javasdk-21.0.2-BETA
+ */
 public class ForceUrlTest {
 	
 	// order of values in each String[] is: force url, sfdc endpoint, user, password

@@ -1,8 +1,12 @@
-package com.force.cliforce;
+package com.force.cliforce.defaultplugin;
 
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
+import com.force.cliforce.DefaultPlugin;
+import com.force.cliforce.TestCommandContext;
+import com.force.cliforce.DefaultPlugin.SyspropsCommand;
 
 /**
  * Tests commands in the default plugin that dont require any guice injection.
