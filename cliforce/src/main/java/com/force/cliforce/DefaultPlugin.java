@@ -388,7 +388,11 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public void execute(CommandContext ctx) throws Exception {
-            requireCliforce(cliForce,ctx);
+            requireCliforce(cliForce, ctx);
+            if (ctx.getCommandArguments().length == 0) {
+                ctx.getCommandWriter().println("The sh command expects a command which you would like to execute");
+                return;
+            }
             StringBuilder b = new StringBuilder();
             for (String s : ctx.getCommandArguments()) {
                 b.append(s).append(" ");
@@ -542,7 +546,7 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public void executeWithArgs(CommandContext ctx, ClasspathArg args) {
-            requireCliforce(cliForce,ctx);
+            requireCliforce(cliForce, ctx);
             Collection<URL> classpathForCommand;
             if (args.sort) {
                 classpathForCommand = new TreeSet<URL>(new Comparator<URL>() {
