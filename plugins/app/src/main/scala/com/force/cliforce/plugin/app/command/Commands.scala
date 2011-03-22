@@ -14,6 +14,7 @@ import jline.console.completer.StringsCompleter
 import com.force.cliforce.Util._
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.http.HttpStatus
+import collection.Iterable
 
 object AppNameCache {
   lazy val cache = new HashMap[ForceEnv, List[String]];
@@ -69,10 +70,14 @@ class AppArg {
 class AppsCommand extends Command {
   def execute(ctx: CommandContext) = {
     requireVMForceClient(ctx)
-    asScalaIterable(ctx.getVmForceClient.getApplications).foreach {
-      app: ApplicationInfo => {
-        val health = ctx.getVmForceClient.getApplicationHealth(app)
-        ctx.getCommandWriter.println("""
+    val apps: Iterable[ApplicationInfo] = asScalaIterable(ctx.getVmForceClient.getApplications)
+    if (apps.size == 0) {
+      ctx.getCommandWriter.println("No applications have been deployed")
+    } else {
+      apps.foreach {
+        app: ApplicationInfo => {
+          val health = ctx.getVmForceClient.getApplicationHealth(app)
+          ctx.getCommandWriter.println("""
 ===========================
 App:              %s
 Running Instances:%d
@@ -81,7 +86,8 @@ Health:           %s
 State:            %s
 Memory:           %dMB
 ==========================="""
-          .format(app.getName, app.getRunningInstances, app.getInstances, health.name, app.getState, app.getResources.getMemory))
+            .format(app.getName, app.getRunningInstances, app.getInstances, health.name, app.getState, app.getResources.getMemory))
+        }
       }
     }
   }
