@@ -13,7 +13,11 @@ import com.force.cliforce.plugin.connection.command.ListConnectionsCommand;
 import com.force.cliforce.plugin.connection.command.RemoveConnectionCommand;
 import com.google.inject.Guice;
 
-
+/**
+ * Tests for commands in the connection plugin
+ * @author jeffrey.lai
+ * @since javasdk-21.0.2-BETA
+ */
 public class ConnectionTest {
 	Plugin connPlugin = new ConnectionPlugin();
 	TestPluginInjector injector;
@@ -34,10 +38,8 @@ public class ConnectionTest {
     
     @Test
     public void testAddConnection() throws Exception {
-    	AddConnectionCommand addCmd = injector.getInjectedCommand(connPlugin, AddConnectionCommand.class);
+    	TestCommandContext ctx = addConnSetup();
     	ListConnectionsCommand listCmd = injector.getInjectedCommand(connPlugin, ListConnectionsCommand.class);
-    	TestCommandContext ctx = new TestCommandContext().withCommandArguments(new String[] {"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"});
-    	addCmd.execute(ctx);
     	ctx.setCommandArguments(new String[0]);
     	listCmd.execute(ctx);
     	Assert.assertEquals(ctx.getCommandWriter().getOutput(),"\n===========================\n" +
@@ -53,13 +55,19 @@ public class ConnectionTest {
     
     @Test
     public void testRemoveConnection() throws Exception {
-    	AddConnectionCommand addCmd = injector.getInjectedCommand(connPlugin, AddConnectionCommand.class);
+    	TestCommandContext ctx = addConnSetup();
     	RemoveConnectionCommand rmCmd = injector.getInjectedCommand(connPlugin, RemoveConnectionCommand.class);
-    	TestCommandContext ctx = new TestCommandContext().withCommandArguments(new String[] {"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"});
-    	addCmd.execute(ctx);
     	ctx.setCommandArguments(new String[] {"jeff"});
     	rmCmd.execute(ctx);
     	Assert.assertEquals(ctx.getCommandWriter().getOutput(), "Connection: jeff removed\n", "unexpected ouput from command");
+    }
+    
+    private TestCommandContext addConnSetup() throws Exception {
+    	AddConnectionCommand addCmd = injector.getInjectedCommand(connPlugin, AddConnectionCommand.class);
+    	TestCommandContext ctx = new TestCommandContext().withCommandArguments(new String[] {"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"});
+    	addCmd.execute(ctx);
+    	Assert.assertEquals(ctx.getCommandWriter().getOutput(), "", "unexpected output from connection:add command");
+    	return ctx;
     }
 
 }

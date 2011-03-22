@@ -21,4 +21,8 @@ public class TestModule extends MainModule {
         bind(ConnectionManager.class).toInstance(test);
         bind(TestConnectionManager.class).toInstance(test);
     }
+    
+    public void bindCLIForce(){
+        bind(CLIForce.class);
+    }
 }
