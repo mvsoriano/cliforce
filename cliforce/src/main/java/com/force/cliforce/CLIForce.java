@@ -272,7 +272,8 @@ public class CLIForce {
         } catch (ExitException e) {
             writer.println("Exit Exception thrown, exiting");
             throw e;
-        } catch (ResourceException e){
+        } catch (ResourceException e) {
+            writer.println(e.getMessage());
         } catch (Exception e) {
             writer.printf("Exception while executing command %s\n", cmdKey);
             writer.printStackTrace(e);

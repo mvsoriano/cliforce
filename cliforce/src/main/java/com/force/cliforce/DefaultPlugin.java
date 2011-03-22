@@ -89,7 +89,7 @@ public class DefaultPlugin implements Plugin {
         }
 
         private boolean login(CommandContext ctx, LoginArgs args) {
-            requireCliforce(cliForce, ctx);
+            requireCliforce(cliForce);
             ctx.getCommandWriter().println("Please log in");
             ctx.getCommandWriter().printf("Target login server [%s]:", args.target);
             String target = ctx.getCommandReader().readLine("");
@@ -135,7 +135,7 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public void execute(CommandContext ctx) throws Exception {
-            requireCliforce(cliForce, ctx);
+            requireCliforce(cliForce);
             Map<String, String> descs = cliForce.getCommandDescriptions();
             descs = new TreeMap<String, String>(descs);
             if (ctx.getCommandArguments().length == 0) {
@@ -218,8 +218,8 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public void executeWithArgs(final CommandContext ctx, PluginArgs arg) {
-            requireCliforce(cliForce, ctx);
-            requireResolver(resolver, ctx);
+            requireCliforce(cliForce);
+            requireResolver(resolver);
             CommandWriter output = ctx.getCommandWriter();
             if (arg.artifact() == null) {
                 output.println("Listing plugins...");
@@ -303,7 +303,7 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public void executeWithArgs(final CommandContext ctx, PluginArgs arg) {
-            requireCliforce(cliForce, ctx);
+            requireCliforce(cliForce);
             String version = cliForce.getInstalledPluginVersion(arg.artifact());
             if (version == null) {
                 ctx.getCommandWriter().printf("Required Plugin %s version %s is not installed, exiting\n", arg.artifact(), arg.version);
@@ -336,7 +336,7 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public void execute(CommandContext ctx) throws Exception {
-            requireCliforce(cliForce, ctx);
+            requireCliforce(cliForce);
             for (String arg : ctx.getCommandArguments()) {
                 ctx.getCommandWriter().printf("Removing plugin: %s\n", arg);
                 cliForce.removePlugin(arg);
@@ -362,7 +362,7 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public void execute(CommandContext ctx) throws Exception {
-            requireCliforce(cliForce, ctx);
+            requireCliforce(cliForce);
             List<String> historyList = cliForce.getHistoryList();
             for (String s : historyList) {
                 ctx.getCommandWriter().println(s);
@@ -388,7 +388,7 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public void execute(CommandContext ctx) throws Exception {
-            requireCliforce(cliForce, ctx);
+            requireCliforce(cliForce);
             if (ctx.getCommandArguments().length == 0) {
                 ctx.getCommandWriter().println("The sh command expects a command which you would like to execute");
                 return;
@@ -546,7 +546,7 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public void executeWithArgs(CommandContext ctx, ClasspathArg args) {
-            requireCliforce(cliForce, ctx);
+            requireCliforce(cliForce);
             Collection<URL> classpathForCommand;
             if (args.sort) {
                 classpathForCommand = new TreeSet<URL>(new Comparator<URL>() {
