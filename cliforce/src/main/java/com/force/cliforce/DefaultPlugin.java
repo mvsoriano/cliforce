@@ -550,7 +550,8 @@ public class DefaultPlugin implements Plugin {
             Collection<URL> classpathForCommand;
             List<URL> classpathForPlugin = cliForce.getClasspathForPlugin(args.plugin());
             if (classpathForPlugin == null) {
-                ctx.getCommandWriter().printf("No such plugin: %s", args.plugin());
+                ctx.getCommandWriter().printf("No such plugin: %s\n", args.plugin());
+                return;
             }
             if (args.sort) {
                 classpathForCommand = new TreeSet<URL>(new Comparator<URL>() {
