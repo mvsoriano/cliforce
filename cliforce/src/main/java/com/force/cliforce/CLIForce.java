@@ -272,7 +272,11 @@ public class CLIForce {
         } catch (ExitException e) {
             writer.println("Exit Exception thrown, exiting");
             throw e;
-        } catch (ResourceException e){
+        } catch (ResourceException e) {
+            writer.println(e.getMessage());
+            if(!isDebug()){
+                writer.println("execute debug --on and retry to see failure information");
+            }
         } catch (Exception e) {
             writer.printf("Exception while executing command %s\n", cmdKey);
             writer.printStackTrace(e);
@@ -376,7 +380,7 @@ public class CLIForce {
         connectionManager.setDebugOnConnections(debug);
         Level level = Level.DEBUG;
         if (!debug) {
-            level = Level.ERROR;
+            level = Level.OFF;
         }
         writer.printf("Setting logger level to %s\n", level.levelStr);
         ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);

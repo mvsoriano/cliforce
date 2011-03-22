@@ -157,7 +157,8 @@ public class MainConnectionManager implements ConnectionManager {
             if (envProperties.getProperty(DEFAULT_URL_PROP_NAME, "").equals(name)) {
                 envProperties.remove(DEFAULT_URL_PROP_NAME);
             }
-            envs.remove(name);
+            ForceEnv env = envs.remove(name);
+            connections.remove(env);
             writeForceUrls();
         }
     }

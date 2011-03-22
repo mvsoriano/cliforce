@@ -2,6 +2,9 @@ package com.force.cliforce;
 
 
 import com.force.cliforce.dependency.DependencyResolver;
+import com.sforce.async.RestConnection;
+import com.sforce.soap.metadata.MetadataConnection;
+import com.sforce.soap.partner.PartnerConnection;
 import org.apache.commons.exec.CommandLine;
 
 import java.io.File;
@@ -11,6 +14,8 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class Util {
+
+    static LazyLogger log = new LazyLogger(Util.class);
 
     public static String getApiVersion() {
         String url = com.sforce.soap.metadata.Connector.END_POINT;
@@ -108,51 +113,59 @@ public class Util {
     }
 
     public static void requireMetadataConnection(CommandContext context) throws ResourceException {
-        String msg = "Unable to execute the command, since the metadata connection is null";
-        if (context.getMetadataConnection() == null) {
-            if (context.getCommandWriter() != null) {
-                context.getCommandWriter().println(msg);
-            }
-            throw new ResourceException(msg);
+
+        String msg = "Unable to execute the command, since the metadata connection is ";
+        MetadataConnection metadataConnection = null;
+        try {
+            metadataConnection = context.getMetadataConnection();
+        } catch (Exception e) {
+            log.get().debug("Exception getting metadata conenction", e);
+            throw new ResourceException(msg + "invalid", e);
+        }
+
+        if (metadataConnection == null) {
+            throw new ResourceException(msg + "null");
         }
     }
 
     public static void requirePartnerConnection(CommandContext context) throws ResourceException {
-        String msg = "Unable to execute the command, since the partner connection is null";
-        if (context.getPartnerConnection() == null) {
-            if (context.getCommandWriter() != null) {
-                context.getCommandWriter().println(msg);
-            }
+        String msg = "Unable to execute the command, since the partner connection is ";
+        PartnerConnection partnerConnection = null;
+        try {
+            partnerConnection = context.getPartnerConnection();
+        } catch (Exception e) {
+            log.get().debug("Exception getting partner conenction", e);
+            throw new ResourceException(msg + "invalid", e);
+        }
+        if (partnerConnection == null) {
             throw new ResourceException(msg);
         }
     }
 
     public static void requireRestConnection(CommandContext context) throws ResourceException {
-        String msg = "Unable to execute the command, since the rest connection is null";
-        if (context.getRestConnection() == null) {
-            if (context.getCommandWriter() != null) {
-                context.getCommandWriter().println(msg);
-            }
-            throw new ResourceException(msg);
+        String msg = "Unable to execute the command, since the rest connection is ";
+        RestConnection restConnection = null;
+        try {
+            restConnection = context.getRestConnection();
+        } catch (Exception e) {
+            log.get().debug("Exception getting rest conenction", e);
+            throw new ResourceException(msg + "invalid", e);
+        }
+        if (restConnection == null) {
+            throw new ResourceException(msg + "null");
         }
     }
 
-    public static void requireCliforce(CLIForce cliForce, CommandContext context) throws ResourceException {
+    public static void requireCliforce(CLIForce cliForce) throws ResourceException {
         String msg = "Unable to execute the command, since the injected cliforce instance is null";
         if (cliForce == null) {
-            if (context.getCommandWriter() != null) {
-                context.getCommandWriter().println(msg);
-            }
             throw new ResourceException(msg);
         }
     }
 
-    public static void requireResolver(DependencyResolver resolver, CommandContext context) throws ResourceException {
+    public static void requireResolver(DependencyResolver resolver) throws ResourceException {
         String msg = "Unable to execute the command, since the injected dependency resolver instance is null";
         if (resolver == null) {
-            if (context.getCommandWriter() != null) {
-                context.getCommandWriter().println(msg);
-            }
             throw new ResourceException(msg);
         }
     }

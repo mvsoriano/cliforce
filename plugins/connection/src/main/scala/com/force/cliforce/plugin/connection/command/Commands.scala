@@ -41,7 +41,7 @@ class CurrentConnectionCommand extends Command {
   var cliforce: CLIForce = null
 
   def execute(ctx: CommandContext) = {
-    requireCliforce(cliforce, ctx)
+    requireCliforce(cliforce)
     requireForceEnv(ctx)
     ctx.getCommandWriter.printf("Current Connection Name: %s\n", cliforce.getCurrentEnvironment)
     ctx.getCommandWriter.printf("Current User: %s\n", ctx.getForceEnv.getUser);
@@ -59,7 +59,7 @@ class AddConnectionCommand extends Command {
   var cliforce: CLIForce = null
 
   def execute(ctx: CommandContext) = {
-    requireCliforce(cliforce,ctx)
+    requireCliforce(cliforce)
     if (ctx.getCommandArguments.size != 2) {
       ctx.getCommandWriter.println("Error, command expects exactly two arguments")
       ctx.getCommandWriter.println(describe)
@@ -93,7 +93,7 @@ class DefaultConnectionCommand extends Command {
   var cliforce: CLIForce = null
 
   def execute(ctx: CommandContext) = {
-    requireCliforce(cliforce,ctx)
+    requireCliforce(cliforce)
     if (ctx.getCommandArguments.size == 0) {
       ctx.getCommandWriter.printf("The currently selected default connection name is: %s\n", cliforce.getDefaultEnvironment)
     } else if (ctx.getCommandArguments.size != 1) {
@@ -120,7 +120,7 @@ class SetConnectionCommand extends Command {
   var cliforce: CLIForce = null
 
   def execute(ctx: CommandContext) = {
-    requireCliforce(cliforce,ctx)
+    requireCliforce(cliforce)
     if (ctx.getCommandArguments.size != 1) {
       ctx.getCommandWriter.println("Error, command expects exactly one argument")
       ctx.getCommandWriter.println(describe)
@@ -144,7 +144,7 @@ class RenameConnectionCommand extends Command {
   var cliforce: CLIForce = null
 
   def execute(ctx: CommandContext) = {
-    requireCliforce(cliforce,ctx)
+    requireCliforce(cliforce)
     if (ctx.getCommandArguments.size != 2) {
       ctx.getCommandWriter.println("Error, command expects exactly two arguments")
       ctx.getCommandWriter.println(describe)
@@ -169,7 +169,7 @@ class RemoveConnectionCommand extends Command {
   var cliforce: CLIForce = null
 
   def execute(ctx: CommandContext) = {
-    requireCliforce(cliforce,ctx)
+    requireCliforce(cliforce)
     if (ctx.getCommandArguments.size != 1) {
       ctx.getCommandWriter.println("Error, command expects exactly one argument")
       ctx.getCommandWriter.println(describe)
