@@ -12,6 +12,8 @@ import com.beust.jcommander.{ParameterDescription, Parameter}
 import java.lang.String
 import jline.console.completer.StringsCompleter
 import com.force.cliforce.Util._
+import org.springframework.web.client.HttpClientErrorException
+import org.springframework.http.HttpStatus
 
 object AppNameCache {
   lazy val cache = new HashMap[ForceEnv, List[String]];
@@ -23,7 +25,7 @@ object AppNameCache {
   }
 
   def getApps(ctx: CommandContext): List[String] = {
-    cache.get(ctx.getForceEnv).getOrElse{
+    cache.get(ctx.getForceEnv).getOrElse {
       populate(ctx)
     }
   }
@@ -40,6 +42,21 @@ abstract class AppCommand extends JCommand[AppArg] {
       super.getCompletionsForSwitch(switchForCompletion, partialValue, parameterDescription, ctx)
     }
   }
+
+  def notFoundSafe(ctx: CommandContext)(block: => Unit) {
+    try {
+      block
+    } catch {
+      case e: HttpClientErrorException => {
+        if (e.getStatusCode eq HttpStatus.NOT_FOUND) {
+          ctx.getCommandWriter.println("the application was not found")
+        } else {
+          throw e;
+        }
+      }
+    }
+  }
+
 }
 
 class AppArg {
@@ -52,7 +69,7 @@ class AppArg {
 class AppsCommand extends Command {
   def execute(ctx: CommandContext) = {
     requireVMForceClient(ctx)
-    asScalaIterable(ctx.getVmForceClient.getApplications).foreach{
+    asScalaIterable(ctx.getVmForceClient.getApplications).foreach {
       app: ApplicationInfo => {
         val health = ctx.getVmForceClient.getApplicationHealth(app)
         ctx.getCommandWriter.println("""
@@ -80,9 +97,11 @@ class DeleteAppCommand extends AppCommand {
   def executeWithArgs(ctx: CommandContext, arg: AppArg) = {
     requireVMForceClient(ctx)
     ctx.getCommandWriter.println("Deleting %s".format(arg.app))
-    ctx.getVmForceClient.deleteApplication(arg.app)
-    AppNameCache.populate(ctx)
-    ctx.getCommandWriter.println("done")
+    notFoundSafe(ctx) {
+      ctx.getVmForceClient.deleteApplication(arg.app)
+      AppNameCache.populate(ctx)
+      ctx.getCommandWriter.println("done")
+    }
   }
 
   def describe = usage("deletes an application from VMforce")
@@ -143,7 +162,7 @@ class PushCommand extends JCommand[PushArgs] {
     ctx.getCommandWriter.printf("Application Deployed: %s\n", args.name)
     ctx.getCommandWriter.printf("Instances: %s\n", appInfo.getInstances.toString)
     ctx.getCommandWriter.printf("Memory: %sMB\n", appInfo.getResources.getMemory.toString)
-    appInfo.getUris.foreach{
+    appInfo.getUris.foreach {
       ctx.getCommandWriter.printf("URI: http://%s\n", _)
     }
 
@@ -164,9 +183,12 @@ class StartCommand extends AppCommand {
   def executeWithArgs(ctx: CommandContext, arg: AppArg) = {
     requireVMForceClient(ctx)
     ctx.getCommandWriter.println("Starting %s".format(arg.app))
-    ctx.getVmForceClient.startApplication(arg.app)
-    ctx.getCommandWriter.println("done")
+    notFoundSafe(ctx) {
+      ctx.getVmForceClient.startApplication(arg.app)
+      ctx.getCommandWriter.println("done")
+    }
   }
+
 
   def describe = usage("start an application")
 
@@ -179,8 +201,10 @@ class StopCommand extends AppCommand {
   def executeWithArgs(ctx: CommandContext, arg: AppArg) = {
     requireVMForceClient(ctx)
     ctx.getCommandWriter.println("Stopping %s".format(arg.app))
-    ctx.getVmForceClient.stopApplication(arg.app)
-    ctx.getCommandWriter.println("done")
+    notFoundSafe(ctx) {
+      ctx.getVmForceClient.stopApplication(arg.app)
+      ctx.getCommandWriter.println("done")
+    }
   }
 
 
@@ -195,8 +219,10 @@ class RestartCommand extends AppCommand {
   def executeWithArgs(ctx: CommandContext, arg: AppArg) = {
     requireVMForceClient(ctx)
     ctx.getCommandWriter.println("Restarting %s".format(arg.app))
-    ctx.getVmForceClient.restartApplication(arg.app)
-    ctx.getCommandWriter.println("done")
+    notFoundSafe(ctx) {
+      ctx.getVmForceClient.restartApplication(arg.app)
+      ctx.getCommandWriter.println("done")
+    }
   }
 
   def describe = usage("restart an application")
