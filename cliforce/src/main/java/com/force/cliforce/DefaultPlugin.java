@@ -548,6 +548,11 @@ public class DefaultPlugin implements Plugin {
         public void executeWithArgs(CommandContext ctx, ClasspathArg args) {
             requireCliforce(cliForce);
             Collection<URL> classpathForCommand;
+            List<URL> classpathForPlugin = cliForce.getClasspathForPlugin(args.plugin());
+            if (classpathForPlugin == null) {
+                ctx.getCommandWriter().printf("No such plugin: %s\n", args.plugin());
+                return;
+            }
             if (args.sort) {
                 classpathForCommand = new TreeSet<URL>(new Comparator<URL>() {
                     @Override
@@ -555,9 +560,9 @@ public class DefaultPlugin implements Plugin {
                         return o1.toString().compareTo(o2.toString());
                     }
                 });
-                classpathForCommand.addAll(cliForce.getClasspathForPlugin(args.plugin()));
+                classpathForCommand.addAll(classpathForPlugin);
             } else {
-                classpathForCommand = cliForce.getClasspathForPlugin(args.plugin());
+                classpathForCommand = classpathForPlugin;
             }
 
             for (URL url : classpathForCommand) {
