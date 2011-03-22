@@ -12,19 +12,19 @@ import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
 /**
- * base class for Commands that use JCommander to do argument parsing, and JLine completion.
- * <p/>
- * typically, subclasses will implement the describe method by calling usage("Some Description")
- */
+* base class for Commands that use JCommander to do argument parsing, and JLine completion.
+* <p/>
+* typically, subclasses will implement the describe method by calling usage("Some Description")
+*/
 public abstract class JCommand<T> implements Command {
 
     public static final String MAIN_PARAM = "<main param>";
     private LazyLogger log = new LazyLogger(this);
 
     /**
-     * Instance of an object annotated with JCommander annotations. You need to override this method if
-     * your args type does not have a default constructor.
-     */
+* Instance of an object annotated with JCommander annotations. You need to override this method if
+* your args type does not have a default constructor.
+*/
     public T getArgs() {
         Class clazz = this.getClass();
         while (!(clazz.getGenericSuperclass() instanceof ParameterizedType)) {
@@ -93,12 +93,12 @@ public abstract class JCommand<T> implements Command {
 
 
     /**
-     * Return the candidate set of completions for a given switch and partial value.
-     * Subclasses should call super.getCompletionsForSwitch(j,zwitch,partialValue) for switches they
-     * do not implement handling for.
-     * <p/>
-     * This implementation handles completion of values for @Parameters of type java.io.File, and for no-op value completions
-     */
+* Return the candidate set of completions for a given switch and partial value.
+* Subclasses should call super.getCompletionsForSwitch(j,zwitch,partialValue) for switches they
+* do not implement handling for.
+* <p/>
+* This implementation handles completion of values for @Parameters of type java.io.File, and for no-op value completions
+*/
     protected List<CharSequence> getCompletionsForSwitch(String switchForCompletion, String partialValue, ParameterDescription parameterDescription, CommandContext context) {
         if (parameterDescription.getField().getType().equals(File.class)) {
             List<CharSequence> candidates = new ArrayList<CharSequence>();
@@ -118,13 +118,13 @@ public abstract class JCommand<T> implements Command {
 
 
     /**
-     * Fill the candidates list with possible completions.
-     * return the offset of where the cursor should be placed.
-     * When there is only one completion it is easiest to append the completion to the origBuff - partialArg
-     * and return 0.
-     * <p/>
-     * todo build an FSM diagram of the states we can be in.
-     */
+* Fill the candidates list with possible completions.
+* return the offset of where the cursor should be placed.
+* When there is only one completion it is easiest to append the completion to the origBuff - partialArg
+* and return 0.
+* <p/>
+* todo build an FSM diagram of the states we can be in.
+*/
     public int complete(String origBuff, String[] parsed, int cursor, List<CharSequence> candidates, CommandContext ctx) {
         String[] commandArgs = Arrays.copyOfRange(parsed, 1, parsed.length);
         String lastArg = getLastArgumentForCompletion(commandArgs);

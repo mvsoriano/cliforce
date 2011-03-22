@@ -67,5 +67,17 @@
       <version>${force.client.version}</version>
       <scope>provided</scope>
     </dependency>
+    <!-- Test -->
+    <dependency>
+      <groupId>org.testng</groupId>
+      <artifactId>testng</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.force.cliforce</groupId>
+      <artifactId>cliforce</artifactId>
+      <version>${project.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>

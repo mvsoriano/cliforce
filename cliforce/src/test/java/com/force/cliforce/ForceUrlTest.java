@@ -1,6 +1,5 @@
 package com.force.cliforce;
 
-import com.force.cliforce.ForceEnv;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import static org.testng.Assert.*;
