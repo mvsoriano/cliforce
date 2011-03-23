@@ -220,9 +220,7 @@ public class CLIForce {
             throw new RuntimeException(e);
         }
         loginLatch.await();
-        if (!loginSucceded) {
-            doLogin();
-        }
+
 
         String[] cmds = commandReader.readAndParseLine(FORCE_PROMPT);
         String cmdKey = cmds[0];
