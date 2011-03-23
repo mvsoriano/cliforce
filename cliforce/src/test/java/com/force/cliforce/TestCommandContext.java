@@ -92,6 +92,10 @@ public class TestCommandContext implements CommandContext {
         copy.commandArguments = commandArguments;
         return copy;
     }
+    
+    public void setCommandArguments(String[] commandArguments) throws Exception {
+    	this.commandArguments = commandArguments;
+    }
 
     public TestCommandContext withCommandReader(CommandReader commandReader) throws Exception {
         TestCommandContext copy = copy();

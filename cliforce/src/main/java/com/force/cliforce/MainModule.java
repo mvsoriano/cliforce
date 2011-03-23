@@ -21,7 +21,7 @@ public class MainModule extends PrivateModule {
     @Override
     protected void configure() {
         bind(DefaultPlugin.class).in(Singleton.class);
-        bind(CLIForce.class).in(Singleton.class);
+        bindCLIForce();
         expose(CLIForce.class);
         bind(String[].class).annotatedWith(Names.named(CLIForce.INTERNAL_PLUGINS)).toInstance(provideInternalPlugins());
         bindPluginManager();
@@ -48,6 +48,9 @@ public class MainModule extends PrivateModule {
         }
     }
 
+    public void bindCLIForce(){
+        bind(CLIForce.class).in(Singleton.class);
+    }
 
     /**
      * Hook for subclasses to customize the plugin manager, mostly for testing
