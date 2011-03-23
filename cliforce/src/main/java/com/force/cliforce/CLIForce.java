@@ -20,9 +20,12 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import javax.inject.Inject;
 import javax.servlet.ServletException;
+import java.awt.*;
+import java.awt.image.ImageFilter;
 import java.io.*;
 import java.net.URL;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
@@ -68,7 +71,7 @@ public class CLIForce {
 
 
     public static void main(String[] args) {
-        setupLogback();
+        setupLogging();
         CLIForce cliForce = Guice.createInjector(new MainModule()).getInstance(CLIForce.class);
 
         try {
@@ -98,7 +101,7 @@ public class CLIForce {
         }
     }
 
-    private static void setupLogback() {
+    private static void setupLogging() {
         System.setProperty("logback.configurationFile", System.getProperty("logback.configurationFile", "logback.xml"));
         StatusPrinter.setPrintStream(new PrintStream(new OutputStream() {
             @Override
@@ -106,6 +109,18 @@ public class CLIForce {
                 //logback 0.9.28 barfs some stuff at startup. This supresses it.
             }
         }));
+        //we redirect stderr to a file because slf4j can sometimes decide to write to
+        //system.err on startup due to timing issues during init.
+        try {
+
+            File errors = new File(System.getProperty("user.home") + "/.force/cliforce.errors");
+            if(errors.exists() || errors.createNewFile()){
+                System.setErr(new PrintStream(errors));
+            }
+        } catch (IOException e) {
+            //Swallow, if this happens, there is a possibility we will get SLF4J output during startup on the console.
+        }
+
     }
 
 
