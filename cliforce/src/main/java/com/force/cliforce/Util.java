@@ -93,21 +93,15 @@ public class Util {
     }
 
     public static void requireVMForceClient(CommandContext context) throws ResourceException {
-        String msg = "Unable to execute the command, since the VMForceClient is null";
         if (context.getVmForceClient() == null) {
-            if (context.getCommandWriter() != null) {
-                context.getCommandWriter().println(msg);
-            }
+            String msg = "Unable to execute the command, since the VMForceClient is null";
             throw new ResourceException(msg);
         }
     }
 
     public static void requireForceEnv(CommandContext context) throws ResourceException {
-        String msg = "Unable to execute the command, since the ForceEnv is null";
         if (context.getForceEnv() == null) {
-            if (context.getCommandWriter() != null) {
-                context.getCommandWriter().println(msg);
-            }
+            String msg = "Unable to execute the command, since the ForceEnv is null";
             throw new ResourceException(msg);
         }
     }

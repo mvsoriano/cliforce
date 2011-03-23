@@ -38,7 +38,6 @@ public class CLIForce {
     public static LazyLogger log = new LazyLogger(CLIForce.class);
 
     private volatile boolean debug = false;
-    private volatile boolean loginSucceded = false;
 
     private ConsoleReader reader;
     private CommandReader commandReader;
@@ -66,7 +65,6 @@ public class CLIForce {
     we dont construct it here since we want the latch size to match the number of setupTasks.
     */
     private CountDownLatch initLatch;
-    private CountDownLatch loginLatch = new CountDownLatch(1);
 
 
     public static void main(String[] args) {
@@ -131,11 +129,8 @@ public class CLIForce {
                 try {
                     connectionManager.loadLogin();
                     connectionManager.doLogin();
-                    loginSucceded = true;
                 } catch (Exception e) {
                     log.get().debug("Exception caught while logging in", e);
-                } finally {
-                    loginLatch.countDown();
                 }
             }
         });
@@ -219,7 +214,7 @@ public class CLIForce {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        loginLatch.await();
+
 
 
         String[] cmds = commandReader.readAndParseLine(FORCE_PROMPT);
@@ -232,18 +227,11 @@ public class CLIForce {
         }
     }
 
-    private void doLogin() {
-        try {
-            pluginManager.getCommand(LOGIN_CMD).execute(new Context(null, null, null, new String[0], commandReader, writer));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
+
 
     public void executeWithArgs(String[] cmds) throws InterruptedException {
         String cmdKey = cmds[0];
         if (!cmdKey.equals(EXIT_CMD)) {
-            loginLatch.await();
             //we dont wait on the latch if somone runs cliforce exit.
             //this is useful to measure "startup time to get to the prompt"
             //by running> time cliforce exit
@@ -270,6 +258,7 @@ public class CLIForce {
             throw e;
         } catch (ResourceException e) {
             writer.println(e.getMessage());
+            log.get().debug("ResourceException while executing command", e);
             if(!isDebug()){
                 writer.println("execute debug --on and retry to see failure information");
             }
@@ -388,10 +377,8 @@ public class CLIForce {
         try {
             connectionManager.setLogin(user, password, target);
             connectionManager.doLogin();
-            loginSucceded = true;
         } catch (Exception e) {
             log.get().debug("Unable to log in", e);
-            loginSucceded = false;
             return false;
         }
 
@@ -448,7 +435,7 @@ public class CLIForce {
             if (initLatch.getCount() == 0) {
                 log.get().warn("Couldn't get a valid connection for the current force url. Executing the command without force service connector or VMforce client");
             }
-            return new Context(currentEnv, null, null, args, commandReader, writer);
+            return new Context(currentEnv, null, vmForceClient, args, commandReader, writer);
         }
     }
 
