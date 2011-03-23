@@ -223,6 +223,7 @@ public class CLIForce {
         if (!loginSucceded) {
             doLogin();
         }
+
         String[] cmds = commandReader.readAndParseLine(FORCE_PROMPT);
         String cmdKey = cmds[0];
         while (!cmdKey.equals(EXIT_CMD)) {
@@ -245,9 +246,6 @@ public class CLIForce {
         String cmdKey = cmds[0];
         if (!cmdKey.equals(EXIT_CMD)) {
             loginLatch.await();
-            if (!loginSucceded) {
-                doLogin();
-            }
             //we dont wait on the latch if somone runs cliforce exit.
             //this is useful to measure "startup time to get to the prompt"
             //by running> time cliforce exit

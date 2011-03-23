@@ -81,9 +81,9 @@ public class DefaultPlugin implements Plugin {
         public void executeWithArgs(CommandContext ctx, LoginArgs args) {
             String go = "Y";
             while (!login(ctx, args)) {
-                go = ctx.getCommandReader().readLine("Enter Y to try again, anything else to exit.");
+                go = ctx.getCommandReader().readLine("Enter Y to try again, anything else to cancel.");
                 if (!go.toUpperCase().startsWith("Y")) {
-                    System.exit(1);
+                    return;
                 }
             }
         }
@@ -97,7 +97,7 @@ public class DefaultPlugin implements Plugin {
             ctx.getCommandWriter().printf("Login server: %s\n", target);
             String user = ctx.getCommandReader().readLine("Username:");
             String password = ctx.getCommandReader().readLine("Password:", '*');
-            if (cliForce.setLogin(user, password, args.target)) {
+            if (cliForce.setLogin(user, password, target)) {
                 ctx.getCommandWriter().println("Login successful.");
                 return true;
             } else {
