@@ -151,8 +151,11 @@ class RenameConnectionCommand extends Command {
     } else {
       val name = ctx.getCommandArguments.apply(0)
       val newname = ctx.getCommandArguments.apply(1)
-      if (cliforce.getAvailableEnvironments.containsKey(name)) {
+      if (cliforce.getAvailableEnvironments.containsKey(newname)) {
+        ctx.getCommandWriter.printf("There is already a connection named %s, please rename or delete it first\n", newname)
+      } else if (cliforce.getAvailableEnvironments.containsKey(name)) {
         cliforce.renameEnvironment(name, newname)
+        ctx.getCommandWriter.printf("Renamed connection %s to %s\n", name, newname)
       } else {
         ctx.getCommandWriter.printf("There is no such environment: %s avaiable\n", name)
       }
