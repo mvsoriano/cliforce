@@ -44,6 +44,10 @@ abstract class AppCommand extends JCommand[AppArg] {
     }
   }
 
+  def checkApp(app: String, ctx: CommandContext): Boolean = {
+    AppNameCache.populate(ctx).contains(app)
+  }
+
   def notFoundSafe(ctx: CommandContext)(block: => Unit) {
     try {
       block
@@ -196,10 +200,14 @@ class StartCommand extends AppCommand {
 
   def executeWithArgs(ctx: CommandContext, arg: AppArg) = {
     requireVMForceClient(ctx)
-    ctx.getCommandWriter.println("Starting %s".format(arg.app))
-    notFoundSafe(ctx) {
-      ctx.getVmForceClient.startApplication(arg.app)
-      ctx.getCommandWriter.println("done")
+    if (checkApp(arg.app, ctx)) {
+      ctx.getCommandWriter.println("Starting %s".format(arg.app))
+      notFoundSafe(ctx) {
+        ctx.getVmForceClient.startApplication(arg.app)
+        ctx.getCommandWriter.println("done")
+      }
+    } else {
+      ctx.getCommandWriter.printf("No such app %s\n", arg.app)
     }
   }
 
@@ -214,10 +222,14 @@ class StopCommand extends AppCommand {
 
   def executeWithArgs(ctx: CommandContext, arg: AppArg) = {
     requireVMForceClient(ctx)
-    ctx.getCommandWriter.println("Stopping %s".format(arg.app))
-    notFoundSafe(ctx) {
-      ctx.getVmForceClient.stopApplication(arg.app)
-      ctx.getCommandWriter.println("done")
+    if (checkApp(arg.app, ctx)) {
+      ctx.getCommandWriter.println("Stopping %s".format(arg.app))
+      notFoundSafe(ctx) {
+        ctx.getVmForceClient.stopApplication(arg.app)
+        ctx.getCommandWriter.println("done")
+      }
+    } else {
+      ctx.getCommandWriter.printf("No such app %s\n", arg.app)
     }
   }
 
@@ -232,10 +244,14 @@ class RestartCommand extends AppCommand {
 
   def executeWithArgs(ctx: CommandContext, arg: AppArg) = {
     requireVMForceClient(ctx)
-    ctx.getCommandWriter.println("Restarting %s".format(arg.app))
-    notFoundSafe(ctx) {
-      ctx.getVmForceClient.restartApplication(arg.app)
-      ctx.getCommandWriter.println("done")
+    if (checkApp(arg.app, ctx)) {
+      ctx.getCommandWriter.println("Restarting %s".format(arg.app))
+      notFoundSafe(ctx) {
+        ctx.getVmForceClient.restartApplication(arg.app)
+        ctx.getCommandWriter.println("done")
+      }
+    } else {
+      ctx.getCommandWriter.printf("No such app %s\n", arg.app)
     }
   }
 
