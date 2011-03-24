@@ -20,12 +20,9 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import javax.inject.Inject;
 import javax.servlet.ServletException;
-import java.awt.*;
-import java.awt.image.ImageFilter;
 import java.io.*;
 import java.net.URL;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
@@ -114,7 +111,7 @@ public class CLIForce {
         try {
 
             File errors = new File(System.getProperty("user.home") + "/.force/cliforce.errors");
-            if(errors.exists() || errors.createNewFile()){
+            if (errors.exists() || errors.createNewFile()) {
                 System.setErr(new PrintStream(errors));
             }
         } catch (IOException e) {
@@ -231,17 +228,13 @@ public class CLIForce {
         }
 
 
-
-        String[] cmds = commandReader.readAndParseLine(FORCE_PROMPT);
-        String cmdKey = cmds[0];
-        while (!cmdKey.equals(EXIT_CMD)) {
+        while (true) {
+            String[] cmds = commandReader.readAndParseLine(FORCE_PROMPT);
+            if (cmds.length == 0 || EXIT_CMD.equals(cmds[0])) break;//exit
             initLatch.await();
             executeWithArgs(cmds);
-            cmds = commandReader.readAndParseLine(FORCE_PROMPT);
-            cmdKey = cmds[0];
         }
     }
-
 
 
     public void executeWithArgs(String[] cmds) throws InterruptedException {
@@ -274,7 +267,7 @@ public class CLIForce {
         } catch (ResourceException e) {
             writer.println(e.getMessage());
             log.get().debug("ResourceException while executing command", e);
-            if(!isDebug()){
+            if (!isDebug()) {
                 writer.println("execute debug --on and retry to see failure information");
             }
         } catch (Exception e) {
@@ -576,7 +569,14 @@ public class CLIForce {
         @Override
         public String readLine(final String prompt) {
             try {
-                return reader.readLine(prompt);
+                while (true) {
+                    try {
+                        return reader.readLine(prompt);
+                    } catch (IllegalArgumentException e) {
+                        writer.println(e.getMessage());
+                        reader.getCursorBuffer().clear();
+                    }
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -585,9 +585,17 @@ public class CLIForce {
         @Override
         public String[] readAndParseLine(String prompt) {
             try {
-                String line = reader.readLine(prompt);
-                if (line == null) line = EXIT_CMD;
-                return Util.parseCommand(line);
+                while (true) {
+                    try {
+                        String line = reader.readLine(prompt);
+                        if (line == null) line = EXIT_CMD;
+                        return Util.parseCommand(line);
+                    } catch (IllegalArgumentException e) {
+                        writer.println(e.getMessage());
+                        reader.getCursorBuffer().clear();
+                    }
+                }
+
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -596,7 +604,15 @@ public class CLIForce {
         @Override
         public String readLine(String prompt, Character mask) {
             try {
-                return reader.readLine(prompt, mask);
+                while (true) {
+                    try {
+                        return reader.readLine(prompt, mask);
+                    } catch (IllegalArgumentException e) {
+                        writer.println(e.getMessage());
+                        reader.getCursorBuffer().clear();
+                    }
+                }
+
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
