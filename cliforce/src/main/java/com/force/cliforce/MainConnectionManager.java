@@ -160,6 +160,11 @@ public class MainConnectionManager implements ConnectionManager {
             ForceEnv env = envs.remove(name);
             connections.remove(env);
             writeForceUrls();
+            if(name != null && name.equals(currentEnvName)){
+                currentEnv = null;
+                currentEnvName = null;
+            }
+
         }
     }
 
