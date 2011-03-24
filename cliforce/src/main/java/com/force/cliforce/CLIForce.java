@@ -200,7 +200,20 @@ public class CLIForce {
             }
 
         } else {
-            r.setHistory(new FileHistory(hist));
+            final FileHistory history = new FileHistory(hist);
+            Runtime.getRuntime().addShutdownHook(new Thread(
+                    new Runnable(){
+                        @Override
+                        public void run() {
+                            try {
+                                history.flush();
+                            } catch (IOException e) {
+                                writer.println("Unable to save command history.");
+                            }
+                        }
+                    }
+            ));
+            r.setHistory(history);
         }
     }
 
