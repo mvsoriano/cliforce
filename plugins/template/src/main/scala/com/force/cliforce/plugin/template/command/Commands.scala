@@ -2,9 +2,9 @@ package com.force.cliforce.plugin.template.command
 
 import java.io.IOException
 import com.beust.jcommander.Parameter
-import com.force.cliforce.DefaultPlugin.ShellCommand
 import com.force.cliforce._
 import java.util.ArrayList
+import com.force.cliforce.DefaultPlugin.ShellExecutor
 
 class NewProjectArgs {
 
@@ -75,7 +75,7 @@ class NewProjectCommand extends JCommand[NewProjectArgs] {
         args.group = "org.example"
       }
     }
-    val shell = new ShellCommand
+    val shell = new ShellExecutor
     val cmd = Array("mvn", "archetype:generate", "-DinteractiveMode=false",
       "-DarchetypeCatalog=http://repo.t.salesforce.com/archiva/repository/snapshots/archetype-catalog.xml",
       "-DarchetypeGroupId=" + args.getGroupArtifact._1,
@@ -88,7 +88,7 @@ class NewProjectCommand extends JCommand[NewProjectArgs] {
     )
     ctx.getCommandWriter.println("Executing:" + cmd.reduceLeft((acc, str) => acc + " " + str))
     try {
-      shell.execute(new NewProjectContextWrapper(ctx, cmd));
+      shell.execute(cmd, ctx.getCommandWriter);
     } catch {
       case ioe: IOException => {
         ctx.getCommandWriter.println("It appears you either don't have maven installed, or it is not on your path. Both are required to run this command.")

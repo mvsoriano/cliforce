@@ -18,8 +18,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.*;
 
-import static com.force.cliforce.Util.requireCliforce;
-import static com.force.cliforce.Util.requireResolver;
+import static com.force.cliforce.Util.*;
 
 /**
  * The default cliforce plugin, provides the sh, banner, history, debug,
@@ -408,35 +407,57 @@ public class DefaultPlugin implements Plugin {
                 ctx.getCommandWriter().println("The sh command expects a command which you would like to execute");
                 return;
             }
-            StringBuilder b = new StringBuilder();
-            for (String s : ctx.getCommandArguments()) {
-                b.append(s).append(" ");
+
+            try {
+                new ShellExecutor().execute(ctx.getCommandArguments(), ctx.getCommandWriter());
+            } catch (IOException e) {
+                ctx.getCommandWriter().println("The command failed to execute. Please check the path to the executable you provided");
+                log.get().debug("IOEXception", e);
             }
 
-            String[] args;
+        }
+
+
+    }
+
+    public static class ShellExecutor {
+
+        public void execute(String[] args, CommandWriter writer) throws IOException {
+
+
             if (System.getProperty("os.name").toLowerCase().contains("win")) {
-                args = new String[ctx.getCommandArguments().length + 2];
-                args[0] = "cmd";
-                args[1] = "/c";
-                System.arraycopy(ctx.getCommandArguments(), 0, args, 2, ctx.getCommandArguments().length);
-            } else {
-                args = ctx.getCommandArguments();
+                String[] nargs = new String[args.length + 2];
+                nargs[0] = "cmd";
+                nargs[1] = "/c";
+                System.arraycopy(args, 0, nargs, 2, args.length);
+                args = nargs;
             }
 
-            ctx.getCommandWriter().printf("sh: Executing: %s\n", Joiner.on(" ").join(args));
-
+            writer.printf("sh: Executing: %s\n", Joiner.on(" ").join(args));
             Process start = new ProcessBuilder(args).start();
-            Thread t = new Thread(new Reader(start.getInputStream(), ctx.getCommandWriter(), "  "));
-            Thread err = new Thread(new Reader(start.getErrorStream(), ctx.getCommandWriter(), "  "));
+            Thread t = new Thread(new Reader(start.getInputStream(), writer, "  "));
+            Thread err = new Thread(new Reader(start.getErrorStream(), writer, "  "));
             t.setDaemon(true);
             t.start();
             err.setDaemon(true);
             err.start();
-            start.waitFor();
+            try {
+                start.waitFor();
+            } catch (InterruptedException e) {
+
+            }
             t.interrupt();
             err.interrupt();
-            t.join();
-            err.join();
+            try {
+                t.join();
+            } catch (InterruptedException e) {
+
+            }
+            try {
+                err.join();
+            } catch (InterruptedException e) {
+
+            }
         }
 
         private class Reader implements Runnable {
@@ -465,7 +486,6 @@ public class DefaultPlugin implements Plugin {
                 }
             }
         }
-
     }
 
     public static class VersionCommand implements Command {
