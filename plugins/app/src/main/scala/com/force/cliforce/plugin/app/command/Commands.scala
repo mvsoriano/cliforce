@@ -149,6 +149,10 @@ class PushCommand extends JCommand[PushArgs] {
       ctx.getCommandWriter.printf("The path given: %s does not exist\n", args.path.getPath)
       return
     }
+    if (args.name.length < 6) {
+      ctx.getCommandWriter.println("Your application name is invalid, it must be 6 or more characters long")
+      return
+    }
     ctx.getCommandWriter.printf("Pushing Application: %s\n", args.name)
     var appInfo = ctx.getVmForceClient.getApplication(args.name)
     if (appInfo == null) {
