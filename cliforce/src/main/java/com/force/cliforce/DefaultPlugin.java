@@ -374,8 +374,7 @@ public class DefaultPlugin implements Plugin {
 
     public static class ShellCommand implements Command {
 
-        @Inject
-        private CLIForce cliForce;
+
 
         @Override
         public String name() {
@@ -389,7 +388,6 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public void execute(CommandContext ctx) throws Exception {
-            requireCliforce(cliForce);
             if (ctx.getCommandArguments().length == 0) {
                 ctx.getCommandWriter().println("The sh command expects a command which you would like to execute");
                 return;

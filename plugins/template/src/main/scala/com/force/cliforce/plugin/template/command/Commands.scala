@@ -69,8 +69,11 @@ class NewProjectCommand extends JCommand[NewProjectArgs] {
   def executeWithArgs(ctx: CommandContext, args: NewProjectArgs) = {
 
     if (args.group eq null) {
-      Util.requireForceEnv(ctx)
-      args.group = getGroupFromEnv(ctx.getForceEnv, args.artifact)
+      if (ctx.getForceEnv ne null) {
+        args.group = getGroupFromEnv(ctx.getForceEnv, args.artifact)
+      } else {
+        args.group = "org.example"
+      }
     }
     val shell = new ShellCommand
     val cmd = Array("mvn", "archetype:generate", "-DinteractiveMode=false",
