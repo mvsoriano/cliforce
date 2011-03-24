@@ -51,7 +51,7 @@ public class CLIForce {
     private PluginManager pluginManager;
     @Inject
     @Named(INTERNAL_PLUGINS)
-    private String[] internalPlugins;
+    private Set<String> internalPlugins;
     @Inject
     private DefaultPlugin def;
     @Inject
@@ -202,7 +202,7 @@ public class CLIForce {
         } else {
             final FileHistory history = new FileHistory(hist);
             Runtime.getRuntime().addShutdownHook(new Thread(
-                    new Runnable(){
+                    new Runnable() {
                         @Override
                         public void run() {
                             try {
@@ -305,6 +305,11 @@ public class CLIForce {
         return pluginManager.getActivePlugins();
     }
 
+    public Set<String> getInternalPlugins() {
+        return internalPlugins;
+    }
+
+
     /**
      * return the currently installed version of a plugin or null if not installed.
      *
@@ -316,6 +321,7 @@ public class CLIForce {
     }
 
     /*package*/ void installPlugin(String artifact, String version, Plugin p, boolean internal) throws IOException {
+
         pluginManager.installPlugin(artifact, version, p, internal);
         if (!internal && initLatch.getCount() == 0) {
             List<Command> pluginCommands = pluginManager.getPluginCommands(artifact);
@@ -334,6 +340,7 @@ public class CLIForce {
 
 
     /*package*/ void removePlugin(String artifactId) throws IOException {
+
         List<Command> pluginCommands = pluginManager.getPluginCommands(artifactId);
         if (pluginCommands.size() == 0) {
             writer.println("....not found");
@@ -344,6 +351,7 @@ public class CLIForce {
             pluginManager.removePlugin(artifactId);
             writer.println("Done");
         }
+
     }
 
     public List<URL> getClasspathForPlugin(String plugin) {

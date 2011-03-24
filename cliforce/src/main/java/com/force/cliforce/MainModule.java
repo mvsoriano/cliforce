@@ -5,11 +5,16 @@ import com.force.cliforce.dependency.DependencyResolver;
 import com.google.inject.Exposed;
 import com.google.inject.PrivateModule;
 import com.google.inject.Provides;
+import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 import jline.console.completer.Completer;
 
 import javax.inject.Singleton;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -23,7 +28,7 @@ public class MainModule extends PrivateModule {
         bind(DefaultPlugin.class).in(Singleton.class);
         bindCLIForce();
         expose(CLIForce.class);
-        bind(String[].class).annotatedWith(Names.named(CLIForce.INTERNAL_PLUGINS)).toInstance(provideInternalPlugins());
+        bind(new TypeLiteral<Set<String>>(){}).annotatedWith(Names.named(CLIForce.INTERNAL_PLUGINS)).toInstance(provideInternalPlugins());
         bindPluginManager();
         bindConnectionManager();
         bindCompletor();
@@ -77,7 +82,7 @@ public class MainModule extends PrivateModule {
     /**
      * Hook for subclasses to customize the internal plugins, mostly for testing
      */
-    public String[] provideInternalPlugins() {
-        return new String[]{"connection", "app", "db", "template"};
+    public Set<String> provideInternalPlugins() {
+        return Collections.unmodifiableSet(new HashSet<String>(Arrays.asList("connection", "app", "db", "template")));
     }
 }

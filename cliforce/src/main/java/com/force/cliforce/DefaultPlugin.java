@@ -221,6 +221,10 @@ public class DefaultPlugin implements Plugin {
         public void executeWithArgs(final CommandContext ctx, PluginArgs arg) {
             requireCliforce(cliForce);
             requireResolver(resolver);
+            if (cliForce.getInternalPlugins().contains(arg.artifact()) && !arg.internal) {
+                ctx.getCommandWriter().printf("Manually installing internal plugins [%s] is not suported\n", Joiner.on(", ").join(cliForce.getInternalPlugins()));
+                return;
+            }
             CommandWriter output = ctx.getCommandWriter();
             if (arg.artifact() == null) {
                 output.println("Listing plugins...");
@@ -231,7 +235,7 @@ public class DefaultPlugin implements Plugin {
             } else {
 
                 if (cliForce.getActivePlugins().contains(arg.artifact())) {
-                    output.printf("Plugin %s is already installed. Please execute 'unplug %s' before running this command", arg.artifact(), arg.artifact());
+                    output.printf("Plugin %s is already installed. Please execute 'unplug %s' before running this command\n", arg.artifact(), arg.artifact());
                     return;
                 }
 
@@ -347,9 +351,14 @@ public class DefaultPlugin implements Plugin {
         @Override
         public void execute(CommandContext ctx) throws Exception {
             requireCliforce(cliForce);
+
             for (String arg : ctx.getCommandArguments()) {
-                ctx.getCommandWriter().printf("Removing plugin: %s\n", arg);
-                cliForce.removePlugin(arg);
+                if (cliForce.getInternalPlugins().contains(arg)) {
+                    ctx.getCommandWriter().printf("Removing internal plugins [%s] is not suported\n", Joiner.on(", ").join(cliForce.getInternalPlugins()));
+                } else {
+                    ctx.getCommandWriter().printf("Removing plugin: %s\n", arg);
+                    cliForce.removePlugin(arg);
+                }
             }
         }
     }
