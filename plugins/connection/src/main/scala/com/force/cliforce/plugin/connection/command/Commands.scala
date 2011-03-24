@@ -105,7 +105,7 @@ class DefaultConnectionCommand extends Command {
         cliforce.setDefaultEnvironment(name)
         cliforce.setCurrentEnvironment(name)
       } else {
-        ctx.getCommandWriter.printf("There is no such environment: %s available\n", name)
+        ctx.getCommandWriter.printf("There is no such connection: %s available\n", name)
       }
     }
   }
@@ -129,7 +129,7 @@ class SetConnectionCommand extends Command {
       if (cliforce.getAvailableEnvironments.containsKey(name)) {
         cliforce.setCurrentEnvironment(name)
       } else {
-        ctx.getCommandWriter.printf("There is no such environment: %s available\n", name)
+        ctx.getCommandWriter.printf("There is no such connection: %s available\n", name)
       }
     }
   }
@@ -157,7 +157,7 @@ class RenameConnectionCommand extends Command {
         cliforce.renameEnvironment(name, newname)
         ctx.getCommandWriter.printf("Renamed connection %s to %s\n", name, newname)
       } else {
-        ctx.getCommandWriter.printf("There is no such environment: %s avaiable\n", name)
+        ctx.getCommandWriter.printf("There is no such connection: %s avaiable\n", name)
       }
     }
   }
@@ -182,7 +182,7 @@ class RemoveConnectionCommand extends Command {
         cliforce.removeEnvironment(name)
         ctx.getCommandWriter.printf("Connection: %s removed\n", name)
       } else {
-        ctx.getCommandWriter.printf("There is no such environment: %s available\n", name)
+        ctx.getCommandWriter.printf("There is no such connection: %s available\n", name)
       }
     }
   }
