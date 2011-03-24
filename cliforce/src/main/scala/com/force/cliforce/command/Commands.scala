@@ -46,6 +46,8 @@ class DebugCommand() extends JCommand[DebugArgs] {
   def executeWithArgs(ctx: CommandContext, args: DebugArgs) = {
     if (args.on ^ args.off) {
       cliforce.setDebug(args.on)
+    } else{
+      ctx.getCommandWriter.println(describe)
     }
   }
 }
