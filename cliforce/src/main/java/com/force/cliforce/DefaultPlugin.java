@@ -6,6 +6,7 @@ import com.force.cliforce.command.BannerCommand;
 import com.force.cliforce.command.DebugCommand;
 import com.force.cliforce.dependency.DependencyResolver;
 import com.force.cliforce.dependency.OutputAdapter;
+import com.google.common.base.Joiner;
 import jline.console.completer.StringsCompleter;
 
 import javax.inject.Inject;
@@ -407,12 +408,12 @@ public class DefaultPlugin implements Plugin {
             } else {
                 args = ctx.getCommandArguments();
             }
-            if (cliForce.isDebug()) {
-                ctx.getCommandWriter().printf("sh: Executing: %s\n", Arrays.toString(args));
-            }
+
+                ctx.getCommandWriter().printf("sh: Executing: %s\n", Joiner.on(" ").join(args));
+
             Process start = new ProcessBuilder(args).start();
-            Thread t = new Thread(new Reader(start.getInputStream(), ctx.getCommandWriter(), format("sh->%s:stdout#", ctx.getCommandArguments()[0])));
-            Thread err = new Thread(new Reader(start.getErrorStream(), ctx.getCommandWriter(), format("sh->%s:stderr#", ctx.getCommandArguments()[0])));
+            Thread t = new Thread(new Reader(start.getInputStream(), ctx.getCommandWriter(), "  "));
+            Thread err = new Thread(new Reader(start.getErrorStream(), ctx.getCommandWriter(), "  "));
             t.setDaemon(true);
             t.start();
             err.setDaemon(true);
