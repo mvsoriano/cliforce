@@ -4,6 +4,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterDescription;
 import com.force.cliforce.command.BannerCommand;
 import com.force.cliforce.command.DebugCommand;
+import com.force.cliforce.dependency.DependencyResolutionException;
 import com.force.cliforce.dependency.DependencyResolver;
 import com.force.cliforce.dependency.OutputAdapter;
 import com.google.common.base.Joiner;
@@ -19,7 +20,6 @@ import java.util.*;
 
 import static com.force.cliforce.Util.requireCliforce;
 import static com.force.cliforce.Util.requireResolver;
-import static java.lang.String.format;
 
 /**
  * The default cliforce plugin, provides the sh, banner, history, debug,
@@ -239,19 +239,28 @@ public class DefaultPlugin implements Plugin {
                 OutputAdapter oa = new OutputAdapter() {
                     @Override
                     public void println(String msg) {
-                        ctx.getCommandWriter().println(msg);
+                        if (cliForce.isDebug()) {
+                            ctx.getCommandWriter().println(msg);
+                        }
                     }
 
                     @Override
                     public void println(Exception e, String msg) {
-                        ctx.getCommandWriter().printf("%s: %s", msg, e.toString());
+                        if (cliForce.isDebug()) {
+                            ctx.getCommandWriter().printf("%s: %s", msg, e.toString());
+                        }
                     }
                 };
                 ClassLoader pcl = null;
-                if (arg.version != null) {
-                    pcl = resolver.createClassLoaderFor(PLUGIN_GROUP, arg.artifact(), arg.version, curr, oa);
-                } else {
-                    pcl = resolver.createClassLoaderFor(PLUGIN_GROUP, arg.artifact(), curr, oa);
+                try {
+                    if (arg.version != null) {
+                        pcl = resolver.createClassLoaderFor(PLUGIN_GROUP, arg.artifact(), arg.version, curr, oa);
+                    } else {
+                        pcl = resolver.createClassLoaderFor(PLUGIN_GROUP, arg.artifact(), curr, oa);
+                    }
+                } catch (DependencyResolutionException e) {
+                    ctx.getCommandWriter().println("The maven artifact associated with the plugin could not be found.");
+                    return;
                 }
                 try {
                     Thread.currentThread().setContextClassLoader(pcl);
@@ -375,7 +384,6 @@ public class DefaultPlugin implements Plugin {
     public static class ShellCommand implements Command {
 
 
-
         @Override
         public String name() {
             return "sh";
@@ -407,7 +415,7 @@ public class DefaultPlugin implements Plugin {
                 args = ctx.getCommandArguments();
             }
 
-                ctx.getCommandWriter().printf("sh: Executing: %s\n", Joiner.on(" ").join(args));
+            ctx.getCommandWriter().printf("sh: Executing: %s\n", Joiner.on(" ").join(args));
 
             Process start = new ProcessBuilder(args).start();
             Thread t = new Thread(new Reader(start.getInputStream(), ctx.getCommandWriter(), "  "));
