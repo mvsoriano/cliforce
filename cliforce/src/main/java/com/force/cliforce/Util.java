@@ -94,31 +94,31 @@ public class Util {
 
     public static void requireVMForceClient(CommandContext context) throws ResourceException {
         if (context.getVmForceClient() == null) {
-            String msg = "Unable to execute the command, since the VMForceClient is null";
+            String msg = "Unable to execute the command, since the current login is null. Please execute login";
             throw new ResourceException(msg);
         }
     }
 
     public static void requireForceEnv(CommandContext context) throws ResourceException {
         if (context.getForceEnv() == null) {
-            String msg = "Unable to execute the command, since the ForceEnv is null";
+            String msg = "Unable to execute the command, since the current force connection is null.\nPlease add a valid connection using connection:add";
             throw new ResourceException(msg);
         }
     }
 
     public static void requireMetadataConnection(CommandContext context) throws ResourceException {
 
-        String msg = "Unable to execute the command, since the metadata connection is ";
+        String msg = "Unable to execute the command, since the current metadata connection is ";
         MetadataConnection metadataConnection = null;
         try {
             metadataConnection = context.getMetadataConnection();
         } catch (Exception e) {
             log.get().debug("Exception getting metadata conenction", e);
-            throw new ResourceException(msg + "invalid", e);
+            throw new ResourceException(msg + "invalid.\nPlease add a valid connection using connection:add", e);
         }
 
         if (metadataConnection == null) {
-            throw new ResourceException(msg + "null");
+            throw new ResourceException(msg + "null.\nPlease add a valid connection using connection:add");
         }
     }
 
@@ -129,10 +129,10 @@ public class Util {
             partnerConnection = context.getPartnerConnection();
         } catch (Exception e) {
             log.get().debug("Exception getting partner conenction", e);
-            throw new ResourceException(msg + "invalid", e);
+            throw new ResourceException(msg + "invalid.\nPlease add a valid connection using connection:add", e);
         }
         if (partnerConnection == null) {
-            throw new ResourceException(msg);
+            throw new ResourceException(msg + "null\nPlease add a valid connection using connection:add");
         }
     }
 
@@ -143,10 +143,10 @@ public class Util {
             restConnection = context.getRestConnection();
         } catch (Exception e) {
             log.get().debug("Exception getting rest conenction", e);
-            throw new ResourceException(msg + "invalid", e);
+            throw new ResourceException(msg + "invalid.\nPlease add a valid connection using connection:add", e);
         }
         if (restConnection == null) {
-            throw new ResourceException(msg + "null");
+            throw new ResourceException(msg + "null.\nPlease add a valid connection using connection:add");
         }
     }
 
