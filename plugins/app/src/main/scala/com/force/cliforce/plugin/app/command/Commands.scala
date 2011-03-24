@@ -143,8 +143,12 @@ class PushArgs {
 
 class PushCommand extends JCommand[PushArgs] {
 
-  def executeWithArgs(ctx: CommandContext, args: PushArgs) = {
+  def executeWithArgs(ctx: CommandContext, args: PushArgs): Unit = {
     requireVMForceClient(ctx)
+    if (!args.path.exists) {
+      ctx.getCommandWriter.printf("The path given: %s does not exist\n", args.path.getPath)
+      return
+    }
     ctx.getCommandWriter.printf("Pushing Application: %s\n", args.name)
     var appInfo = ctx.getVmForceClient.getApplication(args.name)
     if (appInfo == null) {
