@@ -92,8 +92,7 @@ public class DefaultPlugin implements Plugin {
         private boolean login(CommandContext ctx, LoginArgs args) {
             requireCliforce(cliForce);
             ctx.getCommandWriter().println("Please log in");
-            ctx.getCommandWriter().printf("Target login server [%s]:", args.target);
-            String target = ctx.getCommandReader().readLine("");
+            String target = ctx.getCommandReader().readLine(String.format("Target login server [%s]:", args.target));
             if ("".equals(target)) target = args.target;
             ctx.getCommandWriter().printf("Login server: %s\n", target);
             String user = ctx.getCommandReader().readLine("Username:");
