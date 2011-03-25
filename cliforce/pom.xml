@@ -132,7 +132,8 @@
       <resource>
         <directory>src/test/resources</directory>
         <includes>
-          <include>test.vmf01.properties</include>
+          <include>test.login.fail</include>
+          <include>test.login.success</include>
         </includes>
       </resource>  
     </resources>
