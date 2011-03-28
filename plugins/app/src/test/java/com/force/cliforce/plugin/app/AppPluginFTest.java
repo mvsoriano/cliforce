@@ -13,7 +13,7 @@ import org.testng.annotations.Test;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-public class AppPluginFTests {
+public class AppPluginFTest {
 
 
     @Test
