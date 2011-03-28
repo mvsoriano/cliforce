@@ -26,6 +26,7 @@
     <force.sdk.version>21.0.1-SNAPSHOT</force.sdk.version>
     <force.client.version>1.0.1</force.client.version>
     <built.at>${build.timestamp}</built.at>
+    <guice.version>3.0</guice.version>
   </properties>
   <licenses>
     <license>
