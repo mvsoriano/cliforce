@@ -26,8 +26,7 @@ public class DefaultCommandsUnitTest {
     @Test
     public void testShellCommandWithNoArgs() throws Exception {
         DefaultPlugin.ShellCommand cmd = new DefaultPlugin.ShellCommand();
-        TestCommandContext ctx = new TestCommandContext();
-        ctx.setCommandArguments(new String[0]);
+        TestCommandContext ctx = new TestCommandContext().withCommandArguments(new String[0]);
         cmd.execute(ctx);
         Assert.assertTrue(ctx.getCommandWriter().getOutput().contains("The sh command expects a command which you would like to execute"), "Incorrect output");
         Assert.assertFalse(ctx.getCommandWriter().getOutput().contains("java.lang.ArrayIndexOutOfBoundsException"), "Incorrect output");

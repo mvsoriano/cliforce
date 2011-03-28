@@ -69,59 +69,59 @@ public class TestCommandContext implements CommandContext {
         return forceEnv;
     }
 
-    public TestCommandContext withMetadataConnection(MetadataConnection metadataConnection) throws Exception {
+    public TestCommandContext withMetadataConnection(MetadataConnection metadataConnection) {
         TestCommandContext copy = copy();
         copy.metadataConnection = metadataConnection;
         return copy;
     }
 
-    public TestCommandContext withPartnerConnection(PartnerConnection partnerConnection) throws Exception {
+    public TestCommandContext withPartnerConnection(PartnerConnection partnerConnection) {
         TestCommandContext copy = copy();
         copy.partnerConnection = partnerConnection;
         return copy;
     }
 
-    public TestCommandContext withRestConnection(RestConnection restConnection) throws Exception {
+    public TestCommandContext withRestConnection(RestConnection restConnection) {
         TestCommandContext copy = copy();
         copy.restConnection = restConnection;
         return copy;
     }
 
-    public TestCommandContext withCommandArguments(String[] commandArguments) throws Exception {
+    public TestCommandContext withCommandArguments(String... commandArguments) {
         TestCommandContext copy = copy();
         copy.commandArguments = commandArguments;
         return copy;
     }
-    
-    public void setCommandArguments(String[] commandArguments) throws Exception {
-    	this.commandArguments = commandArguments;
+
+    public void setCommandArguments(String[] commandArguments) {
+        this.commandArguments = commandArguments;
     }
 
-    public TestCommandContext withCommandReader(CommandReader commandReader) throws Exception {
+    public TestCommandContext withCommandReader(CommandReader commandReader) {
         TestCommandContext copy = copy();
         copy.commandReader = commandReader;
         return copy;
     }
 
-    public TestCommandContext withVmForceClient(VMForceClient vmForceClient) throws Exception {
+    public TestCommandContext withVmForceClient(VMForceClient vmForceClient) {
         TestCommandContext copy = copy();
         copy.vmForceClient = vmForceClient;
         return copy;
     }
 
-    public TestCommandContext withCommandWriter(TestCommandWriter commandWriter) throws Exception {
+    public TestCommandContext withCommandWriter(TestCommandWriter commandWriter) {
         TestCommandContext copy = copy();
         copy.commandWriter = commandWriter;
         return copy;
     }
 
-    public TestCommandContext withForceEnv(ForceEnv env) throws Exception {
+    public TestCommandContext withForceEnv(ForceEnv env) {
         TestCommandContext copy = copy();
         copy.forceEnv = env;
         return copy;
     }
 
-    private TestCommandContext copy() throws Exception {
+    private TestCommandContext copy() {
         TestCommandContext tcc = new TestCommandContext();
         tcc.metadataConnection = metadataConnection;
         tcc.restConnection = restConnection;
