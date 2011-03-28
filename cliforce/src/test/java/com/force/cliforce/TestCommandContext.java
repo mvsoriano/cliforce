@@ -133,4 +133,8 @@ public class TestCommandContext implements CommandContext {
         tcc.forceEnv = forceEnv;
         return tcc;
     }
+
+    public String out() {
+        return commandWriter.getOutput();
+    }
 }

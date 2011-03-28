@@ -1,17 +1,15 @@
 package com.force.cliforce.plugin.app;
 
 
-import com.force.cliforce.CLIForce;
 import com.force.cliforce.Command;
+import com.force.cliforce.TestCommandContext;
+import com.force.cliforce.TestConnectionManager;
 import com.force.cliforce.TestModule;
-import com.force.cliforce.TestPluginInstaller;
+import com.force.cliforce.plugin.app.command.DeleteAppCommand;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
 
 public class AppPluginFTest {
 
@@ -19,14 +17,14 @@ public class AppPluginFTest {
     @Test
     public void deletionOfNonExistentApp() throws Exception {
         Injector testInjector = getTestInjector();
-        CLIForce cliForce = testInjector.getInstance(CLIForce.class);
-        TestPluginInstaller installer = testInjector.getInstance(TestPluginInstaller.class);
-        StringWriter stringWriter = new StringWriter();
-        cliForce.init(System.in, new PrintWriter(stringWriter));
-        installer.installPlugin("app", "LATEST", new AppPlugin());
-        cliForce.executeWithArgs("app:delete", "nonexistentapp");
-        Assert.assertTrue(stringWriter.getBuffer().toString().contains("the application was not found"), stringWriter.getBuffer().toString());
-        Assert.assertFalse(stringWriter.getBuffer().toString().contains("done"), stringWriter.getBuffer().toString());
+        TestConnectionManager testConnectionManager = testInjector.getInstance(TestConnectionManager.class);
+        testConnectionManager.loadLogin();
+        testConnectionManager.doLogin();
+        DeleteAppCommand cmd = testInjector.getInstance(DeleteAppCommand.class);
+        TestCommandContext ctx = new TestCommandContext().withCommandArguments("nonexistent").withVmForceClient(testConnectionManager.getVmForceClient());
+        cmd.execute(ctx);
+        Assert.assertTrue(ctx.out().contains("the application was not found"), ctx.out());
+        Assert.assertFalse(ctx.out().contains("done"), ctx.out());
     }
 
 
