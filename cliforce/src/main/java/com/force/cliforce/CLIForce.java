@@ -250,7 +250,7 @@ public class CLIForce {
     }
 
 
-    public void executeWithArgs(String[] cmds) throws InterruptedException {
+    public void executeWithArgs(String... cmds) throws InterruptedException {
         String cmdKey = cmds[0];
         if (!cmdKey.equals(EXIT_CMD)) {
             //we dont wait on the latch if somone runs cliforce exit.

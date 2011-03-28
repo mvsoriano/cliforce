@@ -1,3 +1,3 @@
-user=foo@bar.com
-password=pass12345
+user=${force.userName}
+password=${force.password}
 target=api.alpha.vmforce.com

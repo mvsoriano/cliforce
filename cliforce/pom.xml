@@ -45,7 +45,7 @@
       <artifactId>vmforce-client</artifactId>
       <version>${force.client.version}</version>
     </dependency>
-   <!-- <dependency>
+    <!-- <dependency>
       <groupId>jline</groupId>
       <artifactId>jline</artifactId>
       <version>${jline.version}</version>
@@ -129,15 +129,14 @@
         <directory>src/main/resources</directory>
         <filtering>true</filtering>
       </resource>
-      <resource>
-        <directory>src/test/resources</directory>
-        <includes>
-          <include>test.login.fail</include>
-          <include>test.login.success</include>
-        </includes>
-      </resource>  
     </resources>
-    
+
+    <testResources>
+      <testResource>
+        <directory>src/test/resources</directory>
+        <filtering>true</filtering>
+      </testResource>
+    </testResources>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

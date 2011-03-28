@@ -6,6 +6,7 @@ import com.force.cliforce.DefaultPlugin;
 import com.force.cliforce.TestCommandContext;
 import com.force.cliforce.TestModule;
 import com.google.inject.Guice;
+import com.google.inject.Injector;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -29,9 +30,13 @@ public class DefaultCommandsFTest {
         Assert.assertFalse(ctx.getCommandWriter().getOutput().contains("DependencyResolutionException"));
     }
 
-
     private <T extends Command> T getInjectedCommand(Class<T> cmd) {
-        return Guice.createInjector(new TestModule()).getInstance(cmd);
+        return getTestInjector().getInstance(cmd);
     }
+
+    private Injector getTestInjector() {
+        return Guice.createInjector(new TestModule());
+    }
+
 
 }
