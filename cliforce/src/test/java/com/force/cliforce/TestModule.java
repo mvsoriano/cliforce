@@ -29,9 +29,6 @@ public class TestModule extends MainModule {
         bind(String.class).annotatedWith(Names.named("test-credentials")).toInstance("test.login");
     }
 
-    public void bindCLIForce() {
-        bind(CLIForce.class);
-    }
 
     @Override
     public Set<String> provideInternalPlugins() {
