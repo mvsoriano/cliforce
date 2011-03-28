@@ -17,8 +17,8 @@ public class DefaultCommandsFTest {
         DefaultPlugin.ClasspathCommand cmd = getInjectedCommand(DefaultPlugin.ClasspathCommand.class);
         TestCommandContext ctx = new TestCommandContext().withCommandArguments("nonexistent");
         cmd.execute(ctx);
-        Assert.assertTrue(ctx.getCommandWriter().getOutput().contains("No such plugin: nonexistent"));
-        Assert.assertFalse(ctx.getCommandWriter().getOutput().contains("NullPointerException"));
+        Assert.assertTrue(ctx.getCommandWriter().getOutput().contains("No such plugin: nonexistent"), "unexpected output");
+        Assert.assertFalse(ctx.getCommandWriter().getOutput().contains("NullPointerException"), "unexpected output");
     }
 
     @Test
@@ -26,8 +26,8 @@ public class DefaultCommandsFTest {
         DefaultPlugin.PluginCommand cmd = getInjectedCommand(DefaultPlugin.PluginCommand.class);
         TestCommandContext ctx = new TestCommandContext().withCommandArguments("nonexistent");
         cmd.execute(ctx);
-        Assert.assertTrue(ctx.getCommandWriter().getOutput().contains("The maven artifact associated with the plugin could not be found."));
-        Assert.assertFalse(ctx.getCommandWriter().getOutput().contains("DependencyResolutionException"));
+        Assert.assertTrue(ctx.getCommandWriter().getOutput().contains("The maven artifact associated with the plugin could not be found."), "unexpected output");
+        Assert.assertFalse(ctx.getCommandWriter().getOutput().contains("DependencyResolutionException"), "unexpected output");
     }
 
     private <T extends Command> T getInjectedCommand(Class<T> cmd) {
