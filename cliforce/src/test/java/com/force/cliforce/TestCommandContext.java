@@ -89,7 +89,9 @@ public class TestCommandContext implements CommandContext {
 
     public TestCommandContext withCommandArguments(String... commandArguments) {
         TestCommandContext copy = copy();
-        copy.commandArguments = commandArguments;
+        if (commandArguments != null) {
+            copy.commandArguments = commandArguments;
+        }
         return copy;
     }
 
@@ -128,7 +130,6 @@ public class TestCommandContext implements CommandContext {
         tcc.partnerConnection = partnerConnection;
         tcc.commandArguments = commandArguments;
         tcc.commandReader = commandReader;
-        tcc.commandWriter = commandWriter;
         tcc.vmForceClient = vmForceClient;
         tcc.forceEnv = forceEnv;
         return tcc;
