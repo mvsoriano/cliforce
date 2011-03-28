@@ -20,6 +20,15 @@ public class DefaultCommandsFTest {
         Assert.assertFalse(ctx.getCommandWriter().getOutput().contains("NullPointerException"));
     }
 
+    @Test
+    public void testInstallNonexistentPlugin() throws Exception {
+        DefaultPlugin.PluginCommand cmd = getInjectedCommand(DefaultPlugin.PluginCommand.class);
+        TestCommandContext ctx = new TestCommandContext().withCommandArguments("nonexistent");
+        cmd.execute(ctx);
+        Assert.assertTrue(ctx.getCommandWriter().getOutput().contains("The maven artifact associated with the plugin could not be found."));
+        Assert.assertFalse(ctx.getCommandWriter().getOutput().contains("DependencyResolutionException"));
+    }
+
 
     private <T extends Command> T getInjectedCommand(Class<T> cmd) {
         return Guice.createInjector(new TestModule()).getInstance(cmd);
