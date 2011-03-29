@@ -1,5 +1,6 @@
 package com.force.cliforce.plugin.app.command
 
+import com.force.cliforce.LazyLogger
 import com.vmforce.client.bean.ApplicationInfo
 import com.vmforce.client.bean.ApplicationInfo.{StackEnum, ModelEnum, StagingBean, ResourcesBean}
 import java.util.{Collections, ArrayList}
@@ -146,11 +147,16 @@ class PushArgs {
 }
 
 class PushCommand extends JCommand[PushArgs] {
+  private var log: LazyLogger = new LazyLogger(this)
 
   def executeWithArgs(ctx: CommandContext, args: PushArgs): Unit = {
     requireVMForceClient(ctx)
     if (!args.path.exists) {
       ctx.getCommandWriter.printf("The path given: %s does not exist\n", args.path.getPath)
+      return
+    }
+    if (!args.path.isFile()) {
+      ctx.getCommandWriter.printf("The path is a directory. It should be a war file.\n", args.path.getPath)
       return
     }
     if (args.name.length < 6) {
@@ -159,6 +165,8 @@ class PushCommand extends JCommand[PushArgs] {
     }
     ctx.getCommandWriter.printf("Pushing Application: %s\n", args.name)
     var appInfo = ctx.getVmForceClient.getApplication(args.name)
+    var created = false
+
     if (appInfo == null) {
       ctx.getCommandWriter.printf("Application %s does not exist, creating\n", args.name)
       appInfo = new ApplicationInfo
@@ -173,10 +181,27 @@ class PushCommand extends JCommand[PushArgs] {
       staging.setStack(StackEnum.JT10.getRequestValue)
       appInfo.setStaging(staging)
       ctx.getVmForceClient.createApplication(appInfo)
+      created = true
       AppNameCache.populate(ctx)
       appInfo = ctx.getVmForceClient.getApplication(args.name)
     }
-    ctx.getVmForceClient.deployApplication(args.name, args.path.getAbsolutePath)
+
+    try {
+      ctx.getVmForceClient.deployApplication(args.name, args.path.getAbsolutePath)
+    }
+    catch {
+      case e: Exception => {
+        if (created) {
+          ctx.getCommandWriter.printf("Application %s was created but deployment failed. Deleting application.\n", appInfo.getName());
+          ctx.getCommandWriter().println(e.toString());
+          ctx.getCommandWriter().println(e.getStackTraceString)
+          log.get.debug("Exception while executing command", e)
+          ctx.getVmForceClient.deleteApplication(appInfo.getName);
+        }
+        return;
+      }
+    }
+
     ctx.getCommandWriter.printf("Application Deployed: %s\n", args.name)
     ctx.getCommandWriter.printf("Instances: %s\n", appInfo.getInstances.toString)
     ctx.getCommandWriter.printf("Memory: %sMB\n", appInfo.getResources.getMemory.toString)
