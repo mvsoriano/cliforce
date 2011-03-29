@@ -1,10 +1,10 @@
 package com.force.cliforce.plugin.template.command
 
-import java.io.IOException
 import com.beust.jcommander.Parameter
 import com.force.cliforce._
 import java.util.ArrayList
 import com.force.cliforce.DefaultPlugin.ShellExecutor
+import java.io.{File, IOException}
 
 class NewProjectArgs {
 
@@ -22,6 +22,9 @@ class NewProjectArgs {
   /* uncomment when there is more than one choice
   @Parameter(names = Array("-t", "type"), description = "type of project default:springmvc")
   */
+  @Parameter(names = Array("-d", "--dir"), description = "directory to create the project in, defaults to current dir.")
+  var dir: File = null
+
   var typ = "springmvc"
 
   def getpkg(): String = {
@@ -76,6 +79,9 @@ class NewProjectCommand extends JCommand[NewProjectArgs] {
       }
     }
     val shell = new ShellExecutor
+    if (args.dir ne null) {
+      shell.setWorkingDir(args.dir)
+    }
     val cmd = Array("mvn", "archetype:generate", "-DinteractiveMode=false",
       "-DarchetypeCatalog=http://repo.t.salesforce.com/archiva/repository/snapshots/archetype-catalog.xml",
       "-DarchetypeGroupId=" + args.getGroupArtifact._1,
