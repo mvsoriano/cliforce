@@ -179,9 +179,9 @@ class PushCommand extends JCommand[PushArgs] {
       staging.setStack(StackEnum.JT10.getRequestValue)
       appInfo.setStaging(staging)
       ctx.getVmForceClient.createApplication(appInfo)
+      created = true
       AppNameCache.populate(ctx)
       appInfo = ctx.getVmForceClient.getApplication(args.name)
-      created = true
     }
 
     try {
@@ -191,8 +191,8 @@ class PushCommand extends JCommand[PushArgs] {
       case e: Exception => {
         if (created) {
           ctx.getCommandWriter.printf("Application %s was created but deployment failed. Deleting application.\n", appInfo.getName());
-          ctx.getVmForceClient.deleteApplication(appInfo.getName);
           ctx.getCommandWriter().println(e.getMessage());
+          ctx.getVmForceClient.deleteApplication(appInfo.getName);
         }
         return;
       }
