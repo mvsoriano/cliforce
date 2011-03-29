@@ -68,13 +68,19 @@ class AddConnectionArgs {
   @Parameter(names = Array("-u", "--user"), description = "username with which to connect, youruser@your.org")
   var user: String = null
 
-  @Parameter(names = Array("-p", "--password"), description = "password with which to connect, append your security token if they are enabled")
+  @Parameter(names = Array("-p", "--password"), description = "password with which to connect")
   var password: String = null
 
   @Parameter(names = Array("-h", "--host"), description = "Host to connect to, defaults to vmf01.t.salesforce.com")
   var host = "vmf01.t.salesforce.com"
 
-  def url = "force://" + host + ";user=" + user + ";password=" + password
+  @Parameter(names = Array("-t", "--token"), description = "security token with which to connect")
+  var token: String = ""
+
+  @Parameter(names = Array("--notoken"), description = "set this flag if security tokens are turned off in your org")
+  var notoken = false
+
+  def url = "force://" + host + ";user=" + user + ";password=" + password + token
 
 }
 
@@ -90,17 +96,21 @@ class AddConnectionCommand extends JCommand[AddConnectionArgs] {
       args.name = null
     }
     while (args.name == null || (args.name eq "")) {
-      args.name = ctx.getCommandReader.readLine("connection name:")
+      args.name = ctx.getCommandReader.readLine("connection name: ")
       if (args.name != null && (cliforce.getAvailableEnvironments.containsKey(args.name))) {
         ctx.getCommandWriter.printf("There is already a connection named %s, please rename or remove it first\n", name)
         args.name = null
       }
     }
     while (args.user == null || (args.user eq "")) {
-      args.user = ctx.getCommandReader.readLine("user:")
+      args.user = ctx.getCommandReader.readLine("user: ")
     }
     while (args.password == null || (args.password eq "")) {
-      args.password = ctx.getCommandReader.readLine("password:", '*')
+      args.password = ctx.getCommandReader.readLine("password: ", '*')
+    }
+
+    if (args.token == "" && !args.notoken) {
+      args.token = ctx.getCommandReader.readLine("security token (hit enter if secutiy tokens are disabled): ")
     }
 
     val env = new ForceEnv(args.url, "cliforce");
