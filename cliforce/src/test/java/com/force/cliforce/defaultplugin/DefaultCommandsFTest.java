@@ -1,16 +1,62 @@
 package com.force.cliforce.defaultplugin;
 
 
-import com.force.cliforce.Command;
-import com.force.cliforce.DefaultPlugin;
-import com.force.cliforce.TestCommandContext;
-import com.force.cliforce.TestModule;
+import com.force.cliforce.*;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import javax.servlet.ServletException;
+import java.io.IOException;
+
+/*
+ * Tests for the default commands in CLIForce.
+ * @author sclasen
+ * @since
+ */
 public class DefaultCommandsFTest {
+
+
+    Injector injector;
+    ConnectionManager connection;
+    TestCommandContext context;
+
+    // ensure the client can connect to an org
+    // TODO: Refactor to use new setup for connectionmanager
+    @BeforeClass
+    public void setupEnvironment() throws IOException, ServletException {
+        injector = Guice.createInjector(new TestModule());
+
+        connection = injector.getInstance(TestConnectionManager.class);
+        connection.loadLogin();
+        connection.doLogin();
+
+        context = new TestCommandContext().withVmForceClient(connection.getVmForceClient());
+
+        context.getVmForceClient().deleteAllApplications();
+    }
+
+
+    @DataProvider(name = "expectedOutput")
+    public Object[][] provideExpectedOutputForCommand() {
+        return new Object[][]{
+                { DefaultPlugin.ClasspathCommand.class, "No such plugin: abcdefg1234567\n", new String[]{"abcdefg1234567"}}
+              , { DefaultPlugin.ClasspathCommand.class, "No such plugin: abcdefg1234567\n", new String[]{"abcdefg1234567", "-s"}}
+              , { DefaultPlugin.ClasspathCommand.class, "No such plugin: abcdefg1234567\n", new String[]{"-s", "abcdefg1234567"}}
+        };
+    }
+
+    @Test(dataProvider = "expectedOutput")
+    public void testDefaultCommand(Class<? extends Command> commandClass, String expectedOutput, String[] args) throws Exception {
+        context = context.withCommandArguments(args);
+        Command command = injector.getInstance(commandClass);
+        command.execute(context);
+        String actualOutput = context.out();
+        Assert.assertEquals(actualOutput, expectedOutput, "Unexpected output for " + command + ": " + actualOutput);
+    }
 
     @Test
     public void testClasspathCommandWithNonExistentPlugin() throws Exception {
