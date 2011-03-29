@@ -181,9 +181,9 @@ class PushCommand extends JCommand[PushArgs] {
       staging.setStack(StackEnum.JT10.getRequestValue)
       appInfo.setStaging(staging)
       ctx.getVmForceClient.createApplication(appInfo)
+      created = true
       AppNameCache.populate(ctx)
       appInfo = ctx.getVmForceClient.getApplication(args.name)
-      created = true
     }
 
     try {
