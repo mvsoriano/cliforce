@@ -153,12 +153,18 @@ class PushCommand extends JCommand[PushArgs] {
       ctx.getCommandWriter.printf("The path given: %s does not exist\n", args.path.getPath)
       return
     }
+    if (!args.path.isFile()) {
+      ctx.getCommandWriter.printf("The path is a directory. It should be a war file.\n", args.path.getPath)
+      return
+    }
     if (args.name.length < 6) {
       ctx.getCommandWriter.println("Your application name is invalid, it must be 6 or more characters long")
       return
     }
     ctx.getCommandWriter.printf("Pushing Application: %s\n", args.name)
     var appInfo = ctx.getVmForceClient.getApplication(args.name)
+    var created = false
+
     if (appInfo == null) {
       ctx.getCommandWriter.printf("Application %s does not exist, creating\n", args.name)
       appInfo = new ApplicationInfo
@@ -175,8 +181,21 @@ class PushCommand extends JCommand[PushArgs] {
       ctx.getVmForceClient.createApplication(appInfo)
       AppNameCache.populate(ctx)
       appInfo = ctx.getVmForceClient.getApplication(args.name)
+      created = true
     }
-    ctx.getVmForceClient.deployApplication(args.name, args.path.getAbsolutePath)
+
+    try {
+      ctx.getVmForceClient.deployApplication(args.name, args.path.getAbsolutePath)
+    }
+    catch {
+      case e: Exception => {
+        if (created) {
+          ctx.getVmForceClient.deleteApplication(appInfo.getName);
+        }
+        throw e;
+      }
+    }
+
     ctx.getCommandWriter.printf("Application Deployed: %s\n", args.name)
     ctx.getCommandWriter.printf("Instances: %s\n", appInfo.getInstances.toString)
     ctx.getCommandWriter.printf("Memory: %sMB\n", appInfo.getResources.getMemory.toString)
