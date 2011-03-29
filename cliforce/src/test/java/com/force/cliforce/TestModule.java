@@ -1,13 +1,21 @@
 package com.force.cliforce;
 
 
-import com.google.inject.name.Names;
-
 import javax.inject.Singleton;
 import java.util.Collections;
 import java.util.Set;
 
 public class TestModule extends MainModule {
+
+
+    public TestModule() {
+        this(System.getProperty("positive.test.user.home"));
+    }
+
+    public TestModule(String userHomeDirectory) {
+        System.setProperty("user.home", userHomeDirectory);
+    }
+
 
     @Override
     protected void configure() {
@@ -16,17 +24,8 @@ public class TestModule extends MainModule {
         bind(TestPluginInstaller.class).in(Singleton.class);
         expose(PluginManager.class);
         expose(ConnectionManager.class);
-        expose(TestConnectionManager.class);
         expose(TestPluginInjector.class);
         expose(TestPluginInstaller.class);
-    }
-
-    @Override
-    public void bindConnectionManager() {
-        TestConnectionManager test = new TestConnectionManager();
-        bind(ConnectionManager.class).toInstance(test);
-        bind(TestConnectionManager.class).toInstance(test);
-        bind(String.class).annotatedWith(Names.named("test-credentials")).toInstance("test.login");
     }
 
 

@@ -29,7 +29,7 @@ public class AppCommandTest {
     public void setupEnvironment() throws IOException, ServletException {
         injector = Guice.createInjector(new TestModule());
 
-        connection = injector.getInstance(TestConnectionManager.class);
+        connection = injector.getInstance(ConnectionManager.class);
         connection.loadLogin();
         connection.doLogin();
 
