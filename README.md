@@ -142,7 +142,7 @@ Put cliforce.bat on your path so that you can launch cliforce in any directory b
 
 This tool is scriptable. You simply need to redirect input from a file.
 
-os>./cliforce < mycliforceScript.cli
+os> cliforce < mycliforceScript.cli
 
 #Deployment
 
