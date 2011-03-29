@@ -190,9 +190,11 @@ class PushCommand extends JCommand[PushArgs] {
     catch {
       case e: Exception => {
         if (created) {
+          ctx.getCommandWriter.printf("Application %s was created but deployment failed. Deleting application.\n", appInfo.getName());
           ctx.getVmForceClient.deleteApplication(appInfo.getName);
+          ctx.getCommandWriter().println(e.getMessage());
         }
-        throw e;
+        return;
       }
     }
 
