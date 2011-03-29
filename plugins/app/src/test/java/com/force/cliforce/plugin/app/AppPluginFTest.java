@@ -1,10 +1,7 @@
 package com.force.cliforce.plugin.app;
 
 
-import com.force.cliforce.Command;
-import com.force.cliforce.TestCommandContext;
-import com.force.cliforce.TestConnectionManager;
-import com.force.cliforce.TestModule;
+import com.force.cliforce.*;
 import com.force.cliforce.plugin.app.command.DeleteAppCommand;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -17,7 +14,7 @@ public class AppPluginFTest {
     @Test
     public void deletionOfNonExistentApp() throws Exception {
         Injector testInjector = getTestInjector();
-        TestConnectionManager testConnectionManager = testInjector.getInstance(TestConnectionManager.class);
+        ConnectionManager testConnectionManager = testInjector.getInstance(ConnectionManager.class);
         testConnectionManager.loadLogin();
         testConnectionManager.doLogin();
         DeleteAppCommand cmd = testInjector.getInstance(DeleteAppCommand.class);
