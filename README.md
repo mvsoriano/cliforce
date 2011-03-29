@@ -74,7 +74,7 @@ Clone this project:
 Compile the project:
 
 	$ cd cliforce
-	$ mvn package
+	$ mvn install -DupdateReleaseInfo
 
 This tool uses a URL format similar to JDBC drivers for connecting to Force.com. The URL format is:
 
@@ -84,7 +84,7 @@ Hostname is one of the login servers (test.salesforce.com for sandbox, login.sal
 
 So, for example you can execute the dbclean task on a sandbox org with user scott@acme.com and password tiger by doing the following:
 
-	$ java -jar boot/target/cliforce-0.0.3-SNAPSHOT-boot.jar
+	$ java -jar boot/target/cliforce-0.0.4-SNAPSHOT-boot.jar
 
 You see the force prompt.
 
