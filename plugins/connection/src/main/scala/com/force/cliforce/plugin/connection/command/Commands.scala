@@ -2,8 +2,9 @@ package com.force.cliforce.plugin.connection.command
 
 import collection.JavaConversions._
 import javax.inject.Inject
-import com.force.cliforce.{ForceEnv, CLIForce, CommandContext, Command}
 import com.force.cliforce.Util._
+import com.beust.jcommander.Parameter
+import com.force.cliforce._
 
 class ListConnectionsCommand extends Command {
   @Inject
@@ -18,17 +19,24 @@ class ListConnectionsCommand extends Command {
           case (name, env) => ctx.getCommandWriter.println("""
 ===========================
 Name:     %s
-URL:      %s
 Host:     %s
 User:     %s
 Password: %s
 Valid:    %s
 Message:  %s
 ==========================="""
-            .format(name, env.getUrl, env.getHost, env.getUser, env.getPassword, env.isValid.toString, Option(env.getMessage).toString))
+            .format(name, env.getHost, env.getUser, mask(env.getPassword), env.isValid.toString, Option(env.getMessage).toString))
         }
       }
     }
+  }
+
+  def mask(password: String): String = {
+    val build = new java.lang.StringBuilder
+    for (i <- (1 to password.size)) {
+      build.append("*")
+    }
+    build.toString
   }
 
   def describe = "list the currently available connections"
@@ -53,37 +61,63 @@ class CurrentConnectionCommand extends Command {
   def name = "current"
 }
 
+class AddConnectionArgs {
+  @Parameter(names = Array("-n", "--name"), description = "name of the connection")
+  var name: String = null
 
-class AddConnectionCommand extends Command {
+  @Parameter(names = Array("-u", "--user"), description = "username with which to connect, youruser@your.org")
+  var user: String = null
+
+  @Parameter(names = Array("-p", "--password"), description = "password with which to connect, append your security token if they are enabled")
+  var password: String = null
+
+  @Parameter(names = Array("-h", "--host"), description = "Host to connect to, defaults to vmf01.t.salesforce.com")
+  var host = "vmf01.t.salesforce.com"
+
+  def url = "force://" + host + ";user=" + user + ";password=" + password
+
+}
+
+
+class AddConnectionCommand extends JCommand[AddConnectionArgs] {
   @Inject
   var cliforce: CLIForce = null
 
-  def execute(ctx: CommandContext) = {
+  def executeWithArgs(ctx: CommandContext, args: AddConnectionArgs) = {
     requireCliforce(cliforce)
-    if (ctx.getCommandArguments.size != 2) {
-      ctx.getCommandWriter.println("Error, command expects exactly two arguments")
-      ctx.getCommandWriter.println(describe)
-    } else {
-      val name = ctx.getCommandArguments.apply(0)
-      if (cliforce.getAvailableEnvironments.containsKey(name)) {
+    if (args.name != null && (cliforce.getAvailableEnvironments.containsKey(args.name))) {
+      ctx.getCommandWriter.printf("There is already a connection named %s, please rename or remove it first\n", name)
+      args.name = null
+    }
+    while (args.name == null || (args.name eq "")) {
+      args.name = ctx.getCommandReader.readLine("connection name:")
+      if (args.name != null && (cliforce.getAvailableEnvironments.containsKey(args.name))) {
         ctx.getCommandWriter.printf("There is already a connection named %s, please rename or remove it first\n", name)
-      } else {
-        val env = new ForceEnv(ctx.getCommandArguments.apply(1), "cliforce");
-        if (env.isValid) {
-          cliforce.setAvailableEnvironment(name, env)
-          if (cliforce.getAvailableEnvironments.size == 1) {
-            cliforce.setDefaultEnvironment(name)
-            cliforce.setCurrentEnvironment(name)
-          }
-
-        } else {
-          ctx.getCommandWriter.printf("The url entered is invalid, reason:%s\n", env.getMessage)
-        }
+        args.name = null
       }
     }
+    while (args.user == null || (args.user eq "")) {
+      args.user = ctx.getCommandReader.readLine("user:")
+    }
+    while (args.password == null || (args.password eq "")) {
+      args.password = ctx.getCommandReader.readLine("password:", '*')
+    }
+
+    val env = new ForceEnv(args.url, "cliforce");
+    if (env.isValid) {
+      cliforce.setAvailableEnvironment(args.name, env)
+      if (cliforce.getAvailableEnvironments.size == 1) {
+        cliforce.setDefaultEnvironment(args.name)
+        cliforce.setCurrentEnvironment(args.name)
+      }
+      ctx.getCommandWriter.printf("Connection: %s added\n", args.name)
+    } else {
+      ctx.getCommandWriter.printf("The url entered is invalid, reason:%s\n", env.getMessage)
+    }
+
   }
 
-  def describe = "add an available connection. Usage connection:add <connectionName> <connectionUrl>"
+  def describe = usage("add a database connection")
 
   def name = "add"
 }
