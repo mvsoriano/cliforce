@@ -74,7 +74,7 @@ Clone this project:
 Compile the project:
 
 	$ cd cliforce
-	$ mvn install -DupdateReleaseInfo
+	$ mvn install -DupdateReleaseInfo -DskipTests
 
 This tool uses a URL format similar to JDBC drivers for connecting to Force.com. The URL format is:
 
