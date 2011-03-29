@@ -1,5 +1,6 @@
 package com.force.cliforce.plugin.app.command
 
+import com.force.cliforce.LazyLogger
 import com.vmforce.client.bean.ApplicationInfo
 import com.vmforce.client.bean.ApplicationInfo.{StackEnum, ModelEnum, StagingBean, ResourcesBean}
 import java.util.{Collections, ArrayList}
@@ -146,6 +147,7 @@ class PushArgs {
 }
 
 class PushCommand extends JCommand[PushArgs] {
+  private var log: LazyLogger = new LazyLogger(this)
 
   def executeWithArgs(ctx: CommandContext, args: PushArgs): Unit = {
     requireVMForceClient(ctx)
@@ -179,9 +181,9 @@ class PushCommand extends JCommand[PushArgs] {
       staging.setStack(StackEnum.JT10.getRequestValue)
       appInfo.setStaging(staging)
       ctx.getVmForceClient.createApplication(appInfo)
-      created = true
       AppNameCache.populate(ctx)
       appInfo = ctx.getVmForceClient.getApplication(args.name)
+      created = true
     }
 
     try {
@@ -191,7 +193,9 @@ class PushCommand extends JCommand[PushArgs] {
       case e: Exception => {
         if (created) {
           ctx.getCommandWriter.printf("Application %s was created but deployment failed. Deleting application.\n", appInfo.getName());
-          ctx.getCommandWriter().println(e.getMessage());
+          ctx.getCommandWriter().println(e.toString());
+          ctx.getCommandWriter().println(e.getStackTraceString)
+          log.get.debug("Exception while executing command", e)
           ctx.getVmForceClient.deleteApplication(appInfo.getName);
         }
         return;
