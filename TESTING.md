@@ -5,18 +5,18 @@ run the tests.
 
 There are 2 maven properties defined in the root pom.xml
 
-    ${positive.test.user.home} defaults to /tmp/positive
+    ${positive.test.user.home} defaults to ~/cliforce-test-config/positive
 
-    ${negative.test.user.home} defaults to /tmp/negative
+    ${negative.test.user.home} defaults to ~/cliforce-test-config/negative
 
 So before being able to run tests that use cliforce logins and connections, you need to set up these directories on your local machine
 
 From the root of cliforce Run.
 
     mvn clean install -DupdateReleaseInfo -DskipTests
-    java -Duser.home=/tmp/positive -jar boot/target/cliforce-boot-0.0.4-SNAPSHOT-boot.jar
+    java -Duser.home=~/cliforce-test-config/positive -jar boot/target/cliforce-boot-0.0.4-SNAPSHOT-boot.jar
 
-    #Note that if you will set ${positive.test.user.home} to something other than /tmp/positive via maven
+    #Note that if you will set ${positive.test.user.home} to something other than ~/cliforce-test-config/positive via maven
     #you should use that value in the -Duser.home param above.
 
 This will bring up cliforce, running against the (currently empty) set of files in ${positive.test.user.home}.
@@ -36,8 +36,8 @@ test against.
 
 Now run
 
-    mkdir /tmp/negative/.force
-    cp -r /tmp/positive/.force/* /tmp/negative/.force
+    mkdir ~/cliforce-test-config/negative/.force
+    cp -r ~/cliforce-test-config/positive/.force/* ~/cliforce-test-config/negative/.force
     #Note that if you will set ${negative.test.user.home} to something other than /tmp/negative via maven
     #you should use that value in the -Duser.home param above.
     Go in and edit the users and passwords in cliforce_login and cliforce_urls to be incorrect, so that you get an error when logging in or connecting.
@@ -55,7 +55,7 @@ The tests should run...and pass.
 If you are going to run tests outside maven, from your ide, you will need to configure the appropriate system properties.
 Setup your test runner to have
 
-    -Dpositive.test.user.home=/tmp/positive -Dnegative.test.user.home=/tmp/negative
+    -Dpositive.test.user.home=~/cliforce-test-config/positive -Dnegative.test.user.home=~/cliforce-test-config/negative
     ##or whatever your overriden values for these directories are
 
 

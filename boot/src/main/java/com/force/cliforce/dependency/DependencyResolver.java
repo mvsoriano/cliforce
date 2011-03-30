@@ -1,6 +1,10 @@
 package com.force.cliforce.dependency;
 
 
+import java.io.File;
+import java.net.*;
+import java.util.*;
+
 import org.apache.maven.repository.internal.DefaultServiceLocator;
 import org.apache.maven.repository.internal.MavenRepositorySystemSession;
 import org.apache.maven.wagon.Wagon;
@@ -19,12 +23,6 @@ import org.sonatype.aether.resolution.ArtifactResolutionException;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.graph.PreorderNodeListGenerator;
-
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.*;
 
 /**
  * DependencyResolver  that uses maven-aether to resolve the dependency graph for a given dependency.
@@ -118,7 +116,7 @@ public class DependencyResolver {
 
     public static class ManualWagonProvider implements WagonProvider {
 
-
+        @Override
         public Wagon lookup(String roleHint)
                 throws Exception {
             if (FILE_HINT.equals(roleHint)) {
@@ -129,10 +127,10 @@ public class DependencyResolver {
             return null;
         }
 
+        @Override
         public void release(Wagon wagon) {
 
         }
-
     }
 
 

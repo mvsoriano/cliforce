@@ -1,30 +1,29 @@
 package com.force.cliforce;
 
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.ParameterDescription;
-import com.beust.jcommander.ParameterException;
-import jline.console.completer.FileNameCompleter;
-import jline.console.completer.StringsCompleter;
-
 import java.io.File;
 import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
+import jline.console.completer.FileNameCompleter;
+import jline.console.completer.StringsCompleter;
+
+import com.beust.jcommander.*;
+
 /**
-* base class for Commands that use JCommander to do argument parsing, and JLine completion.
-* <p/>
-* typically, subclasses will implement the describe method by calling usage("Some Description")
-*/
+ * base class for Commands that use JCommander to do argument parsing, and JLine completion.
+ * <p/>
+ * typically, subclasses will implement the describe method by calling usage("Some Description")
+ */
 public abstract class JCommand<T> implements Command {
 
     public static final String MAIN_PARAM = "<main param>";
     private LazyLogger log = new LazyLogger(this);
 
     /**
-* Instance of an object annotated with JCommander annotations. You need to override this method if
-* your args type does not have a default constructor.
-*/
+     * Instance of an object annotated with JCommander annotations. You need to override this method if
+     * your args type does not have a default constructor.
+     */
     public T getArgs() {
         Class clazz = this.getClass();
         while (!(clazz.getGenericSuperclass() instanceof ParameterizedType)) {
@@ -50,7 +49,8 @@ public abstract class JCommand<T> implements Command {
         T args = getArgs();
 
         try {
-            JCommander j = new JCommander(args, ctx.getCommandArguments());
+            //actually need this line since a side-effect of construction populates the args.
+            new JCommander(args, ctx.getCommandArguments());
             executeWithArgs(ctx, args);
         } catch (ParameterException e) {
             ctx.getCommandWriter().printf("Exception while executing command: %s -> %s\n", name(), e.getMessage());
@@ -93,16 +93,16 @@ public abstract class JCommand<T> implements Command {
 
 
     /**
-* Return the candidate set of completions for a given switch and partial value.
-* Subclasses should call super.getCompletionsForSwitch(j,zwitch,partialValue) for switches they
-* do not implement handling for.
-* <p/>
-* This implementation handles completion of values for @Parameters of type java.io.File, and for no-op value completions
-*/
+     * Return the candidate set of completions for a given switch and partial value.
+     * Subclasses should call super.getCompletionsForSwitch(j,zwitch,partialValue) for switches they
+     * do not implement handling for.
+     * <p/>
+     * This implementation handles completion of values for @Parameters of type java.io.File, and for no-op value completions
+     */
     protected List<CharSequence> getCompletionsForSwitch(String switchForCompletion, String partialValue, ParameterDescription parameterDescription, CommandContext context) {
         if (parameterDescription.getField().getType().equals(File.class)) {
             List<CharSequence> candidates = new ArrayList<CharSequence>();
-            int ret = new FileNameCompleter().complete(partialValue, partialValue.length(), candidates);
+            new FileNameCompleter().complete(partialValue, partialValue.length(), candidates);
             if (candidates.size() == 1 && partialValue.contains("/")) {
                 String dir = partialValue.substring(0, partialValue.lastIndexOf("/")) + "/";
                 for (int i = 0; i < candidates.size(); i++) {
@@ -118,13 +118,13 @@ public abstract class JCommand<T> implements Command {
 
 
     /**
-* Fill the candidates list with possible completions.
-* return the offset of where the cursor should be placed.
-* When there is only one completion it is easiest to append the completion to the origBuff - partialArg
-* and return 0.
-* <p/>
-* todo build an FSM diagram of the states we can be in.
-*/
+     * Fill the candidates list with possible completions.
+     * return the offset of where the cursor should be placed.
+     * When there is only one completion it is easiest to append the completion to the origBuff - partialArg
+     * and return 0.
+     * <p/>
+     * todo build an FSM diagram of the states we can be in.
+     */
     public int complete(String origBuff, String[] parsed, int cursor, List<CharSequence> candidates, CommandContext ctx) {
         String[] commandArgs = Arrays.copyOfRange(parsed, 1, parsed.length);
         String lastArg = getLastArgumentForCompletion(commandArgs);
@@ -225,7 +225,7 @@ public abstract class JCommand<T> implements Command {
 
         /*No value completion happened attempt switch completion*/
         StringsCompleter completor = new StringsCompleter(switches.toArray(new String[0]));
-        int res = completor.complete(lastArg, cursor, subCandidates);
+        completor.complete(lastArg, cursor, subCandidates);
 
         //if the last arg is a value, then try to complete the next switch
         if (subCandidates.size() == 0 && lastArgIsValue) {
@@ -257,11 +257,12 @@ public abstract class JCommand<T> implements Command {
                     candidates.addAll(valCandidates);
                 }
             } else {
-                for (CharSequence subCandidate : subCandidates) {
+                List<CharSequence> deduped = deduplicateAndDescribe(subCandidates, descs);
+                for (CharSequence subCandidate : deduped) {
                     if (lastArgIsValue) {
-                        candidates.add(" " + getDescriptiveCandidate(subCandidate.toString(), descs, largestSwitch));
+                        candidates.add(" " + subCandidate);
                     } else {
-                        candidates.add(getDescriptiveCandidate(subCandidate.toString(), descs, largestSwitch));
+                        candidates.add(subCandidate);
                     }
                     Collections.sort(candidates, new Comparator<CharSequence>() {
                         @Override
@@ -289,6 +290,7 @@ public abstract class JCommand<T> implements Command {
 
     }
 
+
     protected int getOverlap(String partial, String unambig) {
         if (unambig.length() == 0) return 0;
         if (partial.length() == 0) return 0;
@@ -315,6 +317,34 @@ public abstract class JCommand<T> implements Command {
             swich = swich.substring(1);
         }
         return swich;
+    }
+
+
+    private List<CharSequence> deduplicateAndDescribe(List<CharSequence> subCandidates, Map<String, ParameterDescription> descs) {
+        Map<ParameterDescription, StringBuilder> reversed = new HashMap<ParameterDescription, StringBuilder>();
+        int largestSwitch = 0;
+        for (CharSequence subCandidate : subCandidates) {
+            ParameterDescription parameterDescription = descs.get(subCandidate.toString());
+            StringBuilder builder = reversed.get(parameterDescription);
+            if (builder == null) {
+                builder = new StringBuilder();
+                reversed.put(parameterDescription, builder);
+                builder.append(subCandidate);
+            } else {
+                builder.append(", ").append(subCandidate);
+            }
+            largestSwitch = Math.max(largestSwitch, builder.length());
+        }
+
+        List<CharSequence> dedupedAndDescribed = new ArrayList<CharSequence>();
+        for (Map.Entry<ParameterDescription, StringBuilder> entry : reversed.entrySet()) {
+            StringBuilder builder = entry.getValue();
+            for (int i = 0, b = builder.length(); i <= largestSwitch - b; i++) {
+                builder.append(" ");
+            }
+            dedupedAndDescribed.add(builder.append(" <").append(entry.getKey().getDescription()).append(">").toString());
+        }
+        return dedupedAndDescribed;
     }
 
     protected String getDescriptiveCandidate(String key, Map<String, ParameterDescription> descs, int largestKey) {
@@ -350,7 +380,7 @@ public abstract class JCommand<T> implements Command {
         }
     }
 
-    protected String getUnambiguousCompletions(final List candidates) {
+    protected String getUnambiguousCompletions(final List<CharSequence> candidates) {
         if ((candidates == null) || (candidates.size() == 0)) {
             return "";
         }

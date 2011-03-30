@@ -1,15 +1,15 @@
 package com.force.cliforce.plugin.app;
 
 
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
 import com.force.cliforce.*;
 import com.force.cliforce.plugin.app.command.DeleteAppCommand;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import org.testng.Assert;
-import org.testng.annotations.Test;
 
 public class AppPluginFTest {
-
 
     @Test
     public void deletionOfNonExistentApp() throws Exception {
@@ -24,14 +24,12 @@ public class AppPluginFTest {
         Assert.assertFalse(ctx.out().contains("done"), ctx.out());
     }
 
-
-    private <T extends Command> T getInjectedCommand(Class<T> cmd) {
+    
+    <T extends Command> T getInjectedCommand(Class<T> cmd) {
         return getTestInjector().getInstance(cmd);
     }
 
     private Injector getTestInjector() {
         return Guice.createInjector(new TestModule());
     }
-
-
 }
