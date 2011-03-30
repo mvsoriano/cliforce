@@ -49,7 +49,8 @@ public abstract class JCommand<T> implements Command {
         T args = getArgs();
 
         try {
-            //JCommander j = new JCommander(args, ctx.getCommandArguments());
+            //actually need this line since a side-effect of construction populates the args.
+            new JCommander(args, ctx.getCommandArguments());
             executeWithArgs(ctx, args);
         } catch (ParameterException e) {
             ctx.getCommandWriter().printf("Exception while executing command: %s -> %s\n", name(), e.getMessage());
