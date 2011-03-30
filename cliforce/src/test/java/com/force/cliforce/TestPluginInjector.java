@@ -18,6 +18,10 @@ public class TestPluginInjector {
             throw new IllegalArgumentException("The provided plugin does not supply command type you specified");
         }
     }
+    
+    public Injector getInjector() {
+        return injector;
+    }
 
 
 }
