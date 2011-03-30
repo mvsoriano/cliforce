@@ -387,7 +387,7 @@ public abstract class JCommand<T> implements Command {
 
         // convert to an array for speed
         String[] strings =
-                (String[]) candidates.toArray(new String[candidates.size()]);
+                candidates.toArray(new String[candidates.size()]);
 
         String first = strings[0];
         StringBuffer candidate = new StringBuffer();
