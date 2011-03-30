@@ -1,12 +1,13 @@
 package com.force.cliforce;
 
 
-import jline.console.completer.Completer;
-import jline.console.completer.StringsCompleter;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
-import java.util.List;
+
+import jline.console.completer.Completer;
+import jline.console.completer.StringsCompleter;
 
 
 class CommandCompletor implements Completer {
@@ -29,7 +30,7 @@ class CommandCompletor implements Completer {
             log.get().debug("cliforce completor returning 0, from first if branch");
             return 0;
         } else if (candidates.size() == 1 && (buffer.endsWith(" ") || args.length > 1)) {
-            String candidate = (String) candidates.remove(0);
+            //String candidate = (String) candidates.remove(0);
             Command command = pluginManager.getCommand(args[0]);
             if (command != null) {
                 if (command instanceof JCommand) {
