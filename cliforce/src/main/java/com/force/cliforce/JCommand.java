@@ -1,15 +1,14 @@
 package com.force.cliforce;
 
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.ParameterDescription;
-import com.beust.jcommander.ParameterException;
-import jline.console.completer.FileNameCompleter;
-import jline.console.completer.StringsCompleter;
-
 import java.io.File;
 import java.lang.reflect.ParameterizedType;
 import java.util.*;
+
+import jline.console.completer.FileNameCompleter;
+import jline.console.completer.StringsCompleter;
+
+import com.beust.jcommander.*;
 
 /**
 * base class for Commands that use JCommander to do argument parsing, and JLine completion.
@@ -50,7 +49,7 @@ public abstract class JCommand<T> implements Command {
         T args = getArgs();
 
         try {
-            JCommander j = new JCommander(args, ctx.getCommandArguments());
+            //JCommander j = new JCommander(args, ctx.getCommandArguments());
             executeWithArgs(ctx, args);
         } catch (ParameterException e) {
             ctx.getCommandWriter().printf("Exception while executing command: %s -> %s\n", name(), e.getMessage());
@@ -102,7 +101,7 @@ public abstract class JCommand<T> implements Command {
     protected List<CharSequence> getCompletionsForSwitch(String switchForCompletion, String partialValue, ParameterDescription parameterDescription, CommandContext context) {
         if (parameterDescription.getField().getType().equals(File.class)) {
             List<CharSequence> candidates = new ArrayList<CharSequence>();
-            int ret = new FileNameCompleter().complete(partialValue, partialValue.length(), candidates);
+            new FileNameCompleter().complete(partialValue, partialValue.length(), candidates);
             if (candidates.size() == 1 && partialValue.contains("/")) {
                 String dir = partialValue.substring(0, partialValue.lastIndexOf("/")) + "/";
                 for (int i = 0; i < candidates.size(); i++) {
@@ -225,7 +224,7 @@ public abstract class JCommand<T> implements Command {
 
         /*No value completion happened attempt switch completion*/
         StringsCompleter completor = new StringsCompleter(switches.toArray(new String[0]));
-        int res = completor.complete(lastArg, cursor, subCandidates);
+        completor.complete(lastArg, cursor, subCandidates);
 
         //if the last arg is a value, then try to complete the next switch
         if (subCandidates.size() == 0 && lastArgIsValue) {

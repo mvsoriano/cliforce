@@ -1,24 +1,21 @@
 package com.force.cliforce;
 
+import static com.force.cliforce.Util.*;
+
+import java.io.*;
+import java.net.URL;
+import java.util.*;
+
+import javax.inject.Inject;
+
+import jline.console.completer.StringsCompleter;
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterDescription;
 import com.force.cliforce.command.BannerCommand;
 import com.force.cliforce.command.DebugCommand;
-import com.force.cliforce.dependency.DependencyResolutionException;
-import com.force.cliforce.dependency.DependencyResolver;
-import com.force.cliforce.dependency.OutputAdapter;
+import com.force.cliforce.dependency.*;
 import com.google.common.base.Joiner;
-import jline.console.completer.StringsCompleter;
-
-import javax.inject.Inject;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.*;
-
-import static com.force.cliforce.Util.*;
 
 /**
  * The default cliforce plugin, provides the sh, banner, history, debug,
@@ -471,6 +468,7 @@ public class DefaultPlugin implements Plugin {
                 this.lineheader = lineheader;
             }
 
+            @Override
             public void run() {
                 InputStreamReader reader = new InputStreamReader(in);
                 BufferedReader breader = new BufferedReader(reader);
