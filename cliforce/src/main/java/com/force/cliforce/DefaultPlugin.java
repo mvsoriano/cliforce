@@ -11,10 +11,7 @@ import com.google.common.base.Joiner;
 import jline.console.completer.StringsCompleter;
 
 import javax.inject.Inject;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URL;
 import java.util.*;
 
@@ -422,6 +419,12 @@ public class DefaultPlugin implements Plugin {
 
     public static class ShellExecutor {
 
+        private File workingDir = null;
+
+        public void setWorkingDir(File dir) {
+            workingDir = dir;
+        }
+
         public void execute(String[] args, CommandWriter writer) throws IOException {
 
 
@@ -434,7 +437,12 @@ public class DefaultPlugin implements Plugin {
             }
 
             writer.printf("sh: Executing: %s\n", Joiner.on(" ").join(args));
-            Process start = new ProcessBuilder(args).start();
+            ProcessBuilder processBuilder = new ProcessBuilder(args);
+            if (workingDir != null) {
+                processBuilder.directory(workingDir);
+            }
+            Process start = processBuilder.start();
+
             Thread t = new Thread(new Reader(start.getInputStream(), writer, "  "));
             Thread err = new Thread(new Reader(start.getErrorStream(), writer, "  "));
             t.setDaemon(true);
