@@ -35,7 +35,7 @@ object AppNameCache {
 
 abstract class AppCommand extends JCommand[AppArg] {
   override def getCompletionsForSwitch(switchForCompletion: String, partialValue: String, parameterDescription: ParameterDescription, ctx: CommandContext) = {
-    if (switchForCompletion eq JCommand.MAIN_PARAM) {
+    if (ctx.getVmForceClient != null && (switchForCompletion eq JCommand.MAIN_PARAM)) {
       val apps = AppNameCache.getApps(ctx)
       val candidates = new ArrayList[CharSequence]
       val cursor = new StringsCompleter(apps).complete(partialValue, partialValue.length, candidates)
@@ -46,6 +46,7 @@ abstract class AppCommand extends JCommand[AppArg] {
   }
 
   def checkApp(app: String, ctx: CommandContext): Boolean = {
+    requireVMForceClient(ctx)
     AppNameCache.populate(ctx).contains(app)
   }
 
