@@ -63,7 +63,7 @@ public class ConnectionTest {
 
     private TestCommandContext addConnSetup() throws Exception {
         AddConnectionCommand addCmd = injector.getInjectedCommand(connPlugin, AddConnectionCommand.class);
-        TestCommandContext ctx = new TestCommandContext().withCommandArguments(new String[]{"-n", "jeff", "-h", "vmf01.t.salesforce.com", "-u", "user@user.com", "-p", "mountains4"});
+        TestCommandContext ctx = new TestCommandContext().withCommandArguments(new String[]{"--notoken", "-n", "jeff", "-h", "vmf01.t.salesforce.com", "-u", "user@user.com", "-p", "mountains4"});
         addCmd.execute(ctx);
         Assert.assertEquals(ctx.getCommandWriter().getOutput(), "Connection: jeff added\n", "unexpected output from connection:add command");
         ctx.getCommandWriter().reset();
