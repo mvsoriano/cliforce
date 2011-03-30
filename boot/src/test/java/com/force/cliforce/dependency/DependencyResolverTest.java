@@ -1,10 +1,11 @@
 package com.force.cliforce.dependency;
 
 
-import com.force.cliforce.Boot;
+import java.io.IOException;
+
 import org.testng.annotations.Test;
 
-import java.io.IOException;
+import com.force.cliforce.Boot;
 
 public class DependencyResolverTest {
 
@@ -52,7 +53,7 @@ public class DependencyResolverTest {
 
     @Test
     public void testPluginDependencyResolution() throws ClassNotFoundException, IOException {
-        ClassLoader loader = Boot.getBootResolver().createClassLoaderFor("com.force.cliforce.plugin", "cliplugin", null, new OutputAdapter() {
+        Boot.getBootResolver().createClassLoaderFor("com.force.cliforce.plugin", "cliplugin", null, new OutputAdapter() {
             @Override
             public void println(String msg) {
                 System.out.println(msg);

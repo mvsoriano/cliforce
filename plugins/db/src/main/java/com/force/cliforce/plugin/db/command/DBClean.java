@@ -1,17 +1,15 @@
 package com.force.cliforce.plugin.db.command;
 
-import com.force.cliforce.Command;
-import com.force.cliforce.CommandContext;
-import com.force.cliforce.Util;
-import com.sforce.soap.metadata.*;
-import com.sforce.soap.partner.DescribeGlobalResult;
-import com.sforce.soap.partner.DescribeGlobalSObjectResult;
-import com.sforce.ws.ConnectionException;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import com.force.cliforce.*;
+import com.sforce.soap.metadata.*;
+import com.sforce.soap.partner.DescribeGlobalResult;
+import com.sforce.soap.partner.DescribeGlobalSObjectResult;
+import com.sforce.ws.ConnectionException;
 
 public class DBClean implements Command {
 
@@ -26,7 +24,7 @@ public class DBClean implements Command {
         return "Deletes all custom objects in the current org";
     }
 
-
+    @Override
     public void execute(CommandContext ctx) throws IOException, ConnectionException {
         Util.requireMetadataConnection(ctx);
         Util.requirePartnerConnection(ctx);
