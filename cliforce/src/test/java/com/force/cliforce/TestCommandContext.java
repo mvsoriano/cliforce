@@ -130,6 +130,7 @@ public class TestCommandContext implements CommandContext {
         tcc.partnerConnection = partnerConnection;
         tcc.commandArguments = commandArguments;
         tcc.commandReader = commandReader;
+        tcc.commandWriter = commandWriter;
         tcc.vmForceClient = vmForceClient;
         tcc.forceEnv = forceEnv;
         return tcc;
