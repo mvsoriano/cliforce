@@ -44,7 +44,7 @@ public class ConnectionTest {
 
     @Test
     public void testAddConnection() throws Exception {
-        TestCommandContext ctx = addConnSetup(new String[][] { {"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountain4"} });
+        TestCommandContext ctx = addConnSetup(new String[][] { {"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"} });
         ListConnectionsCommand listCmd = injector.getInjectedCommand(connPlugin, ListConnectionsCommand.class);
         ctx.setCommandArguments(new String[0]);
         listCmd.execute(ctx);
@@ -60,7 +60,7 @@ public class ConnectionTest {
 
     @Test
     public void testRemoveConnection() throws Exception {
-        TestCommandContext ctx = addConnSetup(new String[][] { {"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountain4"} });
+        TestCommandContext ctx = addConnSetup(new String[][] { {"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"} });
         RemoveConnectionCommand rmCmd = injector.getInjectedCommand(connPlugin, RemoveConnectionCommand.class);
         ctx.setCommandArguments(new String[]{"jeff"});
         rmCmd.execute(ctx);
@@ -82,7 +82,7 @@ public class ConnectionTest {
     
     @Test
     public void testConnectionCurrentOneConnection() throws Exception {
-        TestCommandContext ctx = addConnSetup(new String[][] { {"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountain4"} });
+        TestCommandContext ctx = addConnSetup(new String[][] { {"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"} });
         CurrentConnectionCommand cmd = injector.getInjectedCommand(connPlugin, CurrentConnectionCommand.class);
         cmd.execute(ctx);
         Assert.assertEquals(ctx.getCommandWriter().getOutput(), "Current Connection Name: jeff\n" +
@@ -92,7 +92,7 @@ public class ConnectionTest {
     
     @Test
     public void testRenameConnection() throws Exception {
-        TestCommandContext ctx = addConnSetup(new String[][] { {"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountain4"} });
+        TestCommandContext ctx = addConnSetup(new String[][] { {"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"} });
         RenameConnectionCommand reCmd = injector.getInjectedCommand(connPlugin, RenameConnectionCommand.class);
         ListConnectionsCommand listCmd = injector.getInjectedCommand(connPlugin, ListConnectionsCommand.class);
         ctx.setCommandArguments(new String[] { "jeff", "asdf" });
@@ -113,7 +113,7 @@ public class ConnectionTest {
     
     @Test
     public void testRenameConnectionSameName() throws Exception {
-        TestCommandContext ctx = addConnSetup(new String[][] { {"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountain4"},
+        TestCommandContext ctx = addConnSetup(new String[][] { {"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"},
                 {"asdf", "force://vmf01.t.salesforce.com;user=user@domain.com;password=s3d4gd3"} });
         RenameConnectionCommand reCmd = injector.getInjectedCommand(connPlugin, RenameConnectionCommand.class);
         ListConnectionsCommand listCmd = injector.getInjectedCommand(connPlugin, ListConnectionsCommand.class);
@@ -143,8 +143,8 @@ public class ConnectionTest {
 
     
     /**
-     * Takes in an Array of String Arrays, which contain connection name and force url.
-     * index 0 of string array should be name and index 1 of string array should be force url
+     * Takes in 2 dim Array, which contain connection names and force urls.
+     * column 0 should be connection name and column 1 should be force url
      */
     private TestCommandContext addConnSetup(String[][] connArray) throws Exception {
         ConnectionManager connMan = injector.getInjector().getInstance(ConnectionManager.class);
@@ -152,8 +152,8 @@ public class ConnectionTest {
         ForceEnv env;
         TestCommandContext ctx = new TestCommandContext();
         for (String[] arr : connArray) {
-            env = new ForceEnv(arr[0], "test");
-            ctx = ctx.withCommandArguments(new String[]{"--notoken", "-n", arr[1], "-h", env.getHost(), "-u", env.getUser(), "-p", "mountains4"});
+            env = new ForceEnv(arr[1], "test");
+            ctx = ctx.withCommandArguments(new String[]{"--notoken", "-n", arr[0], "-h", env.getHost(), "-u", env.getUser(), "-p", env.getPassword()});
             addCmd.execute(ctx);
             Assert.assertEquals(ctx.getCommandWriter().getOutput(), "Connection: " + arr[0] + " added\n", "unexpected output from connection:add command");
             ctx.getCommandWriter().reset();
