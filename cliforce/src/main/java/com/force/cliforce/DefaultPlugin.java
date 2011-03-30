@@ -418,6 +418,12 @@ public class DefaultPlugin implements Plugin {
     }
 
     public static class ShellExecutor {
+        private File workingDir = null;
+
+        public void setWorkingDir(File workingDir) {
+            this.workingDir = workingDir;
+        }
+
 
         public void execute(String[] args, CommandWriter writer) throws IOException {
 
@@ -431,7 +437,11 @@ public class DefaultPlugin implements Plugin {
             }
 
             writer.printf("sh: Executing: %s\n", Joiner.on(" ").join(args));
-            Process start = new ProcessBuilder(args).start();
+            ProcessBuilder processBuilder = new ProcessBuilder(args);
+            if (workingDir != null) {
+                processBuilder = processBuilder.directory(workingDir);
+            }
+            Process start = processBuilder.start();
             Thread t = new Thread(new Reader(start.getInputStream(), writer, "  "));
             Thread err = new Thread(new Reader(start.getErrorStream(), writer, "  "));
             t.setDaemon(true);
