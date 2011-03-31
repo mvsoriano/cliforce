@@ -2,11 +2,11 @@ package com.force.cliforce;
 
 import com.force.cliforce.plugin.app.command.AppsCommand;
 import com.force.cliforce.plugin.app.command.DeleteAppCommand;
+import com.force.cliforce.plugin.app.command.PushCommand;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
@@ -15,6 +15,7 @@ import java.io.IOException;
 
 /**
  * Tests for the behavior of cliforce's app command.
+ *
  * @author nnewbold
  * @since vmforce.beta1
  */
@@ -41,19 +42,24 @@ public class AppCommandTest {
     @DataProvider(name = "expectedInput")
     public Object[][] appCommandExpectedInput() {
         return new Object[][]{
-                { DeleteAppCommand.class, "Exception while executing command: delete -> Main parameters are required (\"the name of the application\")\n", null}
-              , { DeleteAppCommand.class, "Deleting nonexistantappname\nthe application was not found\n", new String[]{"nonexistantappname"} }
-              , { AppsCommand.class, "No applications have been deployed\n", null }
+                {DeleteAppCommand.class, "Exception while executing command: delete -> Main parameters are required (\"the name of the application\")\n", null, true}
+                , {DeleteAppCommand.class, "Deleting nonexistantappname\nthe application was not found\n", new String[]{"nonexistantappname"}, true}
+                , {AppsCommand.class, "No applications have been deployed\n", null, true}
+                , {PushCommand.class, "The path given: /no/such/path.war does not exist", new String[]{"-p", "/no/such/path.war", "pushfailapp"}, false}
         };
     }
 
     @Test(dataProvider = "expectedInput")
-    public void testAppOutput(Class<? extends Command> commandClass, String expectedOutput, String[] args) throws Exception {
+    public void testAppOutput(Class<? extends Command> commandClass, String expectedOutput, String[] args, boolean exactOutput) throws Exception {
         context = context.withCommandArguments(args);
         Command command = injector.getInstance(commandClass);
         command.execute(context);
         String actualOutput = context.out();
-        Assert.assertEquals(actualOutput, expectedOutput, "Unexpected output for " + command + ": " + actualOutput);
+        if (exactOutput) {
+            Assert.assertEquals(actualOutput, expectedOutput, "Unexpected output for " + command + ": " + actualOutput);
+        } else {
+            Assert.assertTrue(actualOutput.contains(expectedOutput), "Unexpected output for " + command + ": " + actualOutput);
+        }
     }
 
 
