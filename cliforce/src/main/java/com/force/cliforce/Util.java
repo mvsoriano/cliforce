@@ -37,7 +37,7 @@ public class Util {
     public static void readProperties(String name, Properties properties) throws IOException {
         File propFile = getForcePropertiesFile(name);
         if (!propFile.getParentFile().exists()) {
-            throw new IOException("Unable to create ~/.force/ directory");
+            throw new IOException("Unable to create " + propFile.getCanonicalPath() + " directory");
         }
         if (propFile.exists() || propFile.createNewFile()) {
             FileInputStream fileInputStream = new FileInputStream(propFile);

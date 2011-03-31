@@ -3,7 +3,9 @@ package com.force.cliforce;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import mockit.Mock;
 import mockit.Mocked;
+import mockit.Mockit;
 import mockit.NonStrictExpectations;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -42,7 +44,6 @@ public class DefaultCommandsFTest {
         context.getVmForceClient().deleteAllApplications();
     }
 
-
     @DataProvider(name = "expectedOutput")
     public Object[][] provideExpectedOutputForCommand() {
         return new Object[][]{
@@ -65,6 +66,10 @@ public class DefaultCommandsFTest {
 
     @Test
     public void testInteractiveLogin() throws Exception {
+        Mockit.setUpMock(ConnectionManager.class, new Object(){
+            @Mock
+            void doLogin() {System.out.println("doLogin");}
+        });
         DefaultPlugin.LoginCommand cmd = getInjectedCommand(DefaultPlugin.LoginCommand.class);
         List<String> orderedInputs = Arrays.asList("some.random.target.com", "some.random@user.name.com", "Imagin@ryPa$$w3rd", "n");
         TestCommandContext ctx = new TestCommandContext().withTestCommandReader(new TestCommandReader(orderedInputs));
@@ -83,19 +88,27 @@ public class DefaultCommandsFTest {
 
     @Test
     public void testLoginCommandCorrectlyStoresInputs() throws Exception {
-        new NonStrictExpectations() {
-            @Mocked
-            ConnectionManager connectionManager;
-            {
-                connectionManager.doLogin();
-            }
-        };
+        Mockit.setUpMock(MainConnectionManager.class, new Object(){
+            @Mock
+            void doLogin() {System.out.println("doLogin");}
+            @Mock
+            void saveLogin() {System.out.println("saveLogin");}
+        });
 
-        DefaultPlugin.LoginCommand cmd = getInjectedCommand(DefaultPlugin.LoginCommand.class);
+        Injector testModuleInjector = Guice.createInjector(new TestModule());
+        ConnectionManager connectionManager = testModuleInjector.getInstance(ConnectionManager.class);
+
+        Assert.assertEquals(connectionManager.getUser(), null, "unexpected username: " + connectionManager.getUser());
+        Assert.assertEquals(connectionManager.getPassword(), null, "unexpected username: " + connectionManager.getPassword());
+        Assert.assertEquals(connectionManager.getTarget(), null, "unexpected target: " + connectionManager.getTarget());
+
+        DefaultPlugin.LoginCommand cmd = testModuleInjector.getInstance(DefaultPlugin.LoginCommand.class);
+
         List<String> orderedInputs = Arrays.asList("some.random.target.com", "some.random@user.name.com", "Imagin@ryPa$$w3rd", "n");
         TestCommandContext ctx = new TestCommandContext().withTestCommandReader(new TestCommandReader(orderedInputs));
-        ConnectionManager connectionManager = injector.getInstance(ConnectionManager.class);
+
         cmd.execute(ctx);
+
         Assert.assertEquals(connectionManager.getUser(), "some.random@user.name.com", "unexpected username: " + connectionManager.getUser());
         Assert.assertEquals(connectionManager.getPassword(), "Imagin@ryPa$$w3rd", "unexpected username: " + connectionManager.getPassword());
         Assert.assertEquals(connectionManager.getTarget(), "some.random.target.com", "unexpected target: " + connectionManager.getTarget());

@@ -27,7 +27,7 @@
         <force.client.version>1.0.1</force.client.version>
         <built.at>${build.timestamp}</built.at>
         <guice.version>3.0</guice.version>
-        <jmockit.version>0.999.8</jmockit.version>
+        <jmockit.version>0.999.6</jmockit.version>
         <positive.test.user.home>${user.home}/cliforce-test-config/positive</positive.test.user.home>
         <negative.test.user.home>${user.home}/cliforce-test-config/negative</negative.test.user.home>
     </properties>
