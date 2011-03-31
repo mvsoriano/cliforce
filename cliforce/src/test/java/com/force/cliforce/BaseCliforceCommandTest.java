@@ -2,7 +2,7 @@ package com.force.cliforce;
 
 import java.io.IOException;
 
-public abstract class BaseCommandTest extends BaseTest {
+public abstract class BaseCliforceCommandTest extends BaseCliforceTest {
 
     public abstract String getPluginArtifact();
     
