@@ -3,6 +3,8 @@ package com.force.cliforce.plugin.app;
 
 import com.force.cliforce.*;
 import com.force.cliforce.plugin.app.command.DeleteAppCommand;
+import com.force.cliforce.plugin.app.command.RestartCommand;
+import com.force.cliforce.plugin.app.command.StartCommand;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.testng.Assert;
@@ -49,6 +51,22 @@ public class AppPluginFTest {
         ctx.getCommandWriter().reset();
         unplug.execute(ctx);
         Assert.assertTrue(ctx.out().equals("Removing internal plugins [app] is not suported\n"), ctx.out());
+    }
+    
+    @Test
+    public void startOfNonExistentApp() throws Exception {
+        TestCommandContext ctx = new TestCommandContext().withCommandArguments("nonexistent").withVmForceClient(testConnectionManager.getVmForceClient());
+        StartCommand cmd = getInjectedCommand("app:start");
+        cmd.execute(ctx);
+        Assert.assertTrue(ctx.out().contains("No such app nonexistent"), ctx.out());
+    }
+    
+    @Test
+    public void restartOfNonExistentApp() throws Exception {
+    	TestCommandContext ctx = new TestCommandContext().withCommandArguments("nonexistent").withVmForceClient(testConnectionManager.getVmForceClient());
+    	RestartCommand cmd = getInjectedCommand("app:restart");
+    	cmd.execute(ctx);
+    	Assert.assertTrue(ctx.out().contains("No such app nonexistent"), ctx.out());
     }
 
     <T extends Command> T getInjectedCommand(String name) throws Exception {
