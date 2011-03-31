@@ -16,5 +16,11 @@
             <artifactId>vmforce-client</artifactId>
             <version>${force.client.version}</version>
         </dependency>
+        <dependency>
+            <groupId>mockit</groupId>
+            <artifactId>jmockit</artifactId>
+            <version>${jmockit.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
