@@ -31,8 +31,12 @@ test against.
     Username:<youruser@your.org>
     Password:**********************************
     Login successful.
-    force> connection:add test force://<yourtesthost>;user=<yourtestdbuser>;password=<yourpassword>
-
+    force> connection:add
+    connection name: test
+    user: user@domain.com
+    password: ******
+    security token (hit enter if security tokens are disabled): 
+    Connection: test added
 
 Now run
 
