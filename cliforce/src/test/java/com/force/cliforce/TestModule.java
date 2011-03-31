@@ -27,6 +27,7 @@ public class TestModule extends MainModule {
         expose(ConnectionManager.class);
         expose(TestPluginInjector.class);
         expose(TestPluginInstaller.class);
+        expose(TestCliforceAccessor.class);
     }
 
 
