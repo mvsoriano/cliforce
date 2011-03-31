@@ -105,6 +105,14 @@ public class TestCommandContext implements CommandContext {
         return copy;
     }
 
+    public TestCommandContext withTestCommandReader(TestCommandReader commandReader) {
+        TestCommandContext copy = copy();
+        copy.commandReader = commandReader;
+        copy.commandWriter = new TestCommandWriter();
+        commandReader.setCommandWriter(copy.commandWriter);
+        return copy;
+    }
+
     public TestCommandContext withVmForceClient(VMForceClient vmForceClient) {
         TestCommandContext copy = copy();
         copy.vmForceClient = vmForceClient;
@@ -130,7 +138,6 @@ public class TestCommandContext implements CommandContext {
         tcc.partnerConnection = partnerConnection;
         tcc.commandArguments = commandArguments;
         tcc.commandReader = commandReader;
-        tcc.commandWriter = commandWriter;
         tcc.vmForceClient = vmForceClient;
         tcc.forceEnv = forceEnv;
         return tcc;
