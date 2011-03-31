@@ -58,6 +58,8 @@ Setup your test runner to have
     -Dpositive.test.user.home=~/cliforce-test-config/positive -Dnegative.test.user.home=~/cliforce-test-config/negative
     ##or whatever your overriden values for these directories are
 
+Note: Some of the tests may still complain about the ~ so you may have to use the full path: /home/username/cliforce-test-config... This seems to be most prevalent with tests that rely on file.exists().
+
 
 
 
