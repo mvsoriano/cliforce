@@ -21,13 +21,17 @@ public abstract class BaseCliforceTest {
     
     @BeforeClass
     public void classSetup() throws InterruptedException, IOException, ConnectionException, ServletException {
-        Module guiceModule = new TestModule();
+        Module guiceModule = setupTestModule();
         cliForce = Guice.createInjector(guiceModule).getInstance(CLIForce.class);
         baos = new ByteArrayOutputStream();
         InputStream in = new ByteArrayInputStream(new byte[] {});
         cliForce.init(in, new PrintWriter(baos, true));
         setupCLIForce(cliForce);
     }  
+    
+    public TestModule setupTestModule() {
+        return new TestModule();
+    }
    
     public abstract void setupCLIForce(CLIForce c) throws IOException;
     

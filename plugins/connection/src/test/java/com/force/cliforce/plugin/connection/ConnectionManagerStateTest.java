@@ -1,15 +1,16 @@
 package com.force.cliforce.plugin.connection;
 
+import java.io.File;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
 
 import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.force.cliforce.BaseCliforceCommandTest;
 import com.force.cliforce.Plugin;
+import com.force.cliforce.TestModule;
 import com.sforce.ws.ConnectionException;
 
 /**
@@ -20,14 +21,15 @@ import com.sforce.ws.ConnectionException;
  */
 public class ConnectionManagerStateTest extends BaseCliforceCommandTest {
     
-    @BeforeClass
     @Override
-    public void classSetup() throws InterruptedException, IOException, ConnectionException, ServletException {
-        super.classSetup();
-        // clear out connections in CLIForce object
-        if (getCLIForce().getCurrentEnvironment() != null) {
-            runCommand("connection:remove " + getCLIForce().getCurrentEnvironment());
+    public TestModule setupTestModule() {
+        // we need an empty directory to make sure no properties are loaded so we have an empty state
+        String emptyDirPath = "/tmp/emptytestdir";
+        File emptyDir = new File(emptyDirPath);
+        if (!emptyDir.exists()) {
+            emptyDir.mkdirs();
         }
+        return new TestModule(emptyDirPath);
     }
     
     @Override
@@ -40,7 +42,7 @@ public class ConnectionManagerStateTest extends BaseCliforceCommandTest {
         return new ConnectionPlugin();
     }
 
-    @Test(enabled=false)
+    @Test
     public void testAddRemoveConnection() throws IOException, ConnectionException, ServletException, InterruptedException {
         Assert.assertNull(getCLIForce().getCurrentEnvironment(), "current environment should be null. current environment was " + getCLIForce().getCurrentEnvironment());
         String output = runCommand("connection:add --notoken -n jeff -h vmf01.t.salesforce.com -u user@domain.com -p mountains4");

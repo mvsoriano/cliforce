@@ -95,6 +95,9 @@ public class CLIForce {
         } catch (ExitException e) {
             log.get().error("ExitException->Exiting");
             System.exit(1);
+        } catch (Throwable t) {
+        	log.get().error("Caught generic error", t);
+        	System.exit(1);
         }
     }
 
@@ -118,6 +121,15 @@ public class CLIForce {
             //Swallow, if this happens, there is a possibility we will get SLF4J output during startup on the console.
         }
 
+    }
+
+
+    /*package*/ void setWriter(CommandWriter writer) {
+        this.writer = writer;
+    }
+
+    /*package*/ void setReader(CommandReader reader) {
+        this.commandReader = reader;
     }
 
 
