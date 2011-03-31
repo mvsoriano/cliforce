@@ -66,6 +66,7 @@ public class DefaultCommandsFTest {
 
     @Test
     public void testInteractiveLogin() throws Exception {
+        // mock login so it doesn't change credentials or connect to sfdc service
         Mockit.setUpMock(MainConnectionManager.class, new Object(){
             @Mock
             void doLogin() {System.out.println("doLogin");}
@@ -97,6 +98,7 @@ public class DefaultCommandsFTest {
 
     @Test
     public void testLoginCommandCorrectlyStoresInputs() throws Exception {
+        // mock login so it doesn't change credentials or connect to sfdc service
         Mockit.setUpMock(MainConnectionManager.class, new Object(){
             @Mock
             void doLogin() {System.out.println("doLogin");}
