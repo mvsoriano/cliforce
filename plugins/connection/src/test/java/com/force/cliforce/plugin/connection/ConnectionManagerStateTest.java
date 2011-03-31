@@ -20,6 +20,16 @@ import com.sforce.ws.ConnectionException;
  */
 public class ConnectionManagerStateTest extends BaseCliforceCommandTest {
     
+    @BeforeClass
+    @Override
+    public void classSetup() throws InterruptedException, IOException, ConnectionException, ServletException {
+        super.classSetup();
+        // clear out connections in CLIForce object
+        if (getCLIForce().getCurrentEnvironment() != null) {
+            runCommand("connection:remove " + getCLIForce().getCurrentEnvironment());
+        }
+    }
+    
     @Override
     public String getPluginArtifact() {
         return "connection";
