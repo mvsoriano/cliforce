@@ -1,17 +1,24 @@
 package com.force.cliforce;
 
+import java.io.File;
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+
+import mockit.Mockit;
+
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
+
 import com.force.cliforce.plugin.app.command.AppsCommand;
 import com.force.cliforce.plugin.app.command.DeleteAppCommand;
 import com.force.cliforce.plugin.app.command.PushCommand;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
+import com.vmforce.client.VMForceClient;
 
 /**
  * Tests for the behavior of cliforce's app command.
@@ -22,21 +29,23 @@ import java.io.IOException;
 public class AppCommandTest {
 
     Injector injector;
-    ConnectionManager connection;
-    TestCommandContext context;
+    final String appName = "myAppName";
+	final String appPath = "testspringmvc-1.0-SNAPSHOT.war";
+	File appFileDummy = new File(appPath);
 
     // ensure the client can connect to an org
     @BeforeClass
     public void setupEnvironment() throws IOException, ServletException {
-        injector = Guice.createInjector(new TestModule());
-
-        connection = injector.getInstance(ConnectionManager.class);
-        connection.loadLogin();
-        connection.doLogin();
-
-        context = new TestCommandContext().withVmForceClient(connection.getVmForceClient());
-
-        context.getVmForceClient().deleteAllApplications();
+    	injector = Guice.createInjector(new TestModule());
+    	Mockit.setUpMock(VMForceClient.class, new MockVMForceClient());
+    	if(!appFileDummy.exists()){
+    		Assert.assertTrue(appFileDummy.createNewFile(), "Could not create dummy app file " + appFileDummy.getAbsolutePath());
+    	}
+    }
+    
+    @AfterClass(alwaysRun = true)
+    public void cleanupEnvironment() {
+    	appFileDummy.delete();
     }
 
     @DataProvider(name = "expectedInput")
@@ -51,7 +60,7 @@ public class AppCommandTest {
 
     @Test(dataProvider = "expectedInput")
     public void testAppOutput(Class<? extends Command> commandClass, String expectedOutput, String[] args, boolean exactOutput) throws Exception {
-        context = context.withCommandArguments(args);
+    	TestCommandContext context = new TestCommandContext().withCommandArguments(args).withVmForceClient(new VMForceClient());
         Command command = injector.getInstance(commandClass);
         command.execute(context);
         String actualOutput = context.out();
@@ -62,5 +71,53 @@ public class AppCommandTest {
         }
     }
 
-
+    @Test
+    public void testAppPush() throws Exception{
+    	TestCommandContext pushctx = createCtxWithApp(appName, appPath);
+    	String[] output = pushctx.out().split("\\n");
+    	Assert.assertTrue(output[0].contains(appName), "Did not find " + appName + "on first output line.");
+    	Assert.assertTrue(output[2].contains("Deployed: " + appName), "Command did not report successful deploy on line 3: " + output[2]);
+    	Assert.assertNotNull(pushctx.getVmForceClient().getApplication(appName), "The application was not created in the mock.");
+    }
+    
+    @Test
+    public void testAppApps() throws Exception {
+    	TestCommandContext appsctx = createCtxWithApp(appName, appPath);
+    	appsctx.getCommandWriter().reset();
+    	Command apps = injector.getInstance(AppsCommand.class);
+    	appsctx.setCommandArguments(new String[]{});
+    	apps.execute(appsctx);
+    	String[] output = appsctx.out().split("\\n");
+    	Assert.assertTrue(output[2].contains(appName), appName + " was not shown in app:apps line 2.");
+    }
+    
+    @Test
+    public void testAppDelete() throws Exception {
+    	TestCommandContext delctx = createCtxWithApp(appName, appPath);
+    	delctx.getCommandWriter().reset();
+    	Command del = injector.getInstance(DeleteAppCommand.class);
+    	delctx.setCommandArguments(new String[]{appName});
+    	del.execute(delctx);
+    	String[] output = delctx.out().split("\\n");
+    	Assert.assertTrue(output[0].contains(appName), "Delete message did not contain " + appName);
+    	Assert.assertEquals(output[1], "done", "Delete was not successful.");
+    }
+    
+    /**
+     * Create a TestCommandContext with a fake deployed app. The helper requires a (possibly) empty app file
+     * to be present at appPath.
+     * @param appName The name to use for the (possibly fake) app
+     * @param appPath The location of the (possibly fake) app file
+     * @return {@link TestCommandContext} 
+     * @throws Exception 
+     */
+    private TestCommandContext createCtxWithApp (String appName, String appPath) throws Exception {
+    	Assert.assertTrue(new File(appPath).exists(), "The app file " +appPath+ " does not exist.");
+    	Command cmd = injector.getInstance(PushCommand.class);
+		TestCommandContext ctx = 
+    		new TestCommandContext().withCommandArguments(appName, "--path", appPath)
+    			.withVmForceClient(new VMForceClient()); //uses mock VMForceClient defined in setup
+    	cmd.execute(ctx);
+    	return ctx;
+    }
 }

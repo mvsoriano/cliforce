@@ -20,10 +20,12 @@ public class TestModule extends MainModule {
         super.configure();
         bind(TestPluginInjector.class).in(Singleton.class);
         bind(TestPluginInstaller.class).in(Singleton.class);
+        bind(TestCliforceAccessor.class).in(Singleton.class);
         expose(PluginManager.class);
         expose(ConnectionManager.class);
         expose(TestPluginInjector.class);
         expose(TestPluginInstaller.class);
+        expose(TestCliforceAccessor.class);
     }
 
     @Override
