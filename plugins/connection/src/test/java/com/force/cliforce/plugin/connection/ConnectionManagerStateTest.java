@@ -29,7 +29,7 @@ public class ConnectionManagerStateTest extends BaseCliforceCommandTest {
         return new ConnectionPlugin();
     }
 
-    @Test
+    @Test(enabled=false)
     public void testAddRemoveConnection() throws IOException, ConnectionException, ServletException, InterruptedException {
         Assert.assertNull(getCLIForce().getCurrentEnvironment(),"current environment should be null");
         String output = runCommand("connection:add --notoken -n jeff -h vmf01.t.salesforce.com -u user@domain.com -p mountains4");
