@@ -66,14 +66,24 @@ public class DefaultCommandsFTest {
 
     @Test
     public void testInteractiveLogin() throws Exception {
-        Mockit.setUpMock(ConnectionManager.class, new Object(){
+        Mockit.setUpMock(MainConnectionManager.class, new Object(){
             @Mock
             void doLogin() {System.out.println("doLogin");}
+            @Mock
+            void saveLogin() {System.out.println("saveLogin");}
         });
-        DefaultPlugin.LoginCommand cmd = getInjectedCommand(DefaultPlugin.LoginCommand.class);
+
+        Injector testModuleInjector = Guice.createInjector(new TestModule());
+        ConnectionManager connectionManager = testModuleInjector.getInstance(ConnectionManager.class);
+
+        DefaultPlugin.LoginCommand cmd = testModuleInjector.getInstance(DefaultPlugin.LoginCommand.class);
+
         List<String> orderedInputs = Arrays.asList("some.random.target.com", "some.random@user.name.com", "Imagin@ryPa$$w3rd", "n");
         TestCommandContext ctx = new TestCommandContext().withTestCommandReader(new TestCommandReader(orderedInputs));
+
         cmd.execute(ctx);
+
+        // because we're mocking the actual login, we expect a login success
         Assert.assertEquals(
                 ctx.getCommandWriter().getOutput()
               , "Please log in\n" +
@@ -81,8 +91,7 @@ public class DefaultCommandsFTest {
                         "Login server: some.random.target.com\n" +
                         "Username:some.random@user.name.com\n" +
                         "Password:*****************\n" +
-                        "Unable to log in with provided credentials\n" +
-                        "Enter Y to try again, anything else to cancel.n\n"
+                        "Login successful.\n"
               , "unexpected output: " + ctx.getCommandWriter().getOutput());
     }
 
