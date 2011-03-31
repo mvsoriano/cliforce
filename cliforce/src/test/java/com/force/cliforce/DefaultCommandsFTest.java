@@ -1,13 +1,10 @@
-package com.force.cliforce.defaultplugin;
+package com.force.cliforce;
 
 
-import com.force.cliforce.*;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.sforce.soap.partner.GetUserInfoResult;
-import com.sforce.soap.partner.PartnerConnection;
-import com.sforce.ws.ConnectionException;
-import com.vmforce.client.VMForceClient;
+import mockit.Mocked;
+import mockit.NonStrictExpectations;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -15,7 +12,6 @@ import org.testng.annotations.Test;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -70,14 +66,11 @@ public class DefaultCommandsFTest {
     @Test
     public void testInteractiveLogin() throws Exception {
         DefaultPlugin.LoginCommand cmd = getInjectedCommand(DefaultPlugin.LoginCommand.class);
-        List<String> orderedInputs = Arrays.asList(new String[]{
-            "some.random.target.com", "some.random@user.name.com", "Imagin@ryPa$$w3rd", "n"
-        });
-        TestCommandWriter out = new TestCommandWriter();
-        TestCommandContext ctx = new TestCommandContext().withCommandWriter(out).withCommandReader(new TestCommandReader(orderedInputs, out));
+        List<String> orderedInputs = Arrays.asList("some.random.target.com", "some.random@user.name.com", "Imagin@ryPa$$w3rd", "n");
+        TestCommandContext ctx = new TestCommandContext().withTestCommandReader(new TestCommandReader(orderedInputs));
         cmd.execute(ctx);
         Assert.assertEquals(
-                out.getOutput()
+                ctx.getCommandWriter().getOutput()
               , "Please log in\n" +
                         "Target login server [api.alpha.vmforce.com]:some.random.target.com\n" +
                         "Login server: some.random.target.com\n" +
@@ -86,6 +79,26 @@ public class DefaultCommandsFTest {
                         "Unable to log in with provided credentials\n" +
                         "Enter Y to try again, anything else to cancel.n\n"
               , "unexpected output: " + ctx.getCommandWriter().getOutput());
+    }
+
+    @Test
+    public void testLoginCommandCorrectlyStoresInputs() throws Exception {
+        new NonStrictExpectations() {
+            @Mocked
+            ConnectionManager connectionManager;
+            {
+                connectionManager.doLogin();
+            }
+        };
+
+        DefaultPlugin.LoginCommand cmd = getInjectedCommand(DefaultPlugin.LoginCommand.class);
+        List<String> orderedInputs = Arrays.asList("some.random.target.com", "some.random@user.name.com", "Imagin@ryPa$$w3rd", "n");
+        TestCommandContext ctx = new TestCommandContext().withTestCommandReader(new TestCommandReader(orderedInputs));
+        ConnectionManager connectionManager = injector.getInstance(ConnectionManager.class);
+        cmd.execute(ctx);
+        Assert.assertEquals(connectionManager.getUser(), "some.random@user.name.com", "unexpected username: " + connectionManager.getUser());
+        Assert.assertEquals(connectionManager.getPassword(), "Imagin@ryPa$$w3rd", "unexpected username: " + connectionManager.getPassword());
+        Assert.assertEquals(connectionManager.getTarget(), "some.random.target.com", "unexpected target: " + connectionManager.getTarget());
     }
 
     @Test

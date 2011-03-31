@@ -54,6 +54,21 @@ public class MainConnectionManager implements ConnectionManager {
     }
 
     @Override
+    public String getUser() {
+        return this.user;
+    }
+
+    @Override
+    public String getPassword() {
+        return this.password;
+    }
+
+    @Override
+    public String getTarget() {
+        return this.target;
+    }
+
+    @Override
     public void saveLogin() throws IOException {
         loginProperties.setProperty(USER, user);
         loginProperties.setProperty(PASSWORD, password);

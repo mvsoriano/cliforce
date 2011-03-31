@@ -14,10 +14,14 @@ public class TestCommandReader implements CommandReader {
     CommandWriter out;
     String nextInput;
 
-    public TestCommandReader(List<String> inputs, CommandWriter out) {
+    public TestCommandReader(List<String> inputs) {
         this.inputs = inputs.iterator();
+    }
+
+    public void setCommandWriter(CommandWriter out) {
         this.out = out;
     }
+
     @Override
     public String readLine(String prompt) {
         handleReadLine(prompt);
@@ -41,6 +45,7 @@ public class TestCommandReader implements CommandReader {
     }
 
     private void handleReadLine(String prompt, Character mask) {
+        assertHasWriter();
         assertHasMoreInput();
         nextInput = inputs.next();
         out.print(prompt + maskedOutput(nextInput, mask) + "\n");
@@ -53,6 +58,12 @@ public class TestCommandReader implements CommandReader {
             return String.valueOf(maskedOutput);
         } else {
             return input;
+        }
+    }
+
+    private void assertHasWriter() {
+        if (out == null) {
+            throw new IllegalStateException("No CommandWriter has been provided.");
         }
     }
 
