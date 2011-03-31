@@ -75,7 +75,7 @@ public class AppCommandTest {
     public void testAppPush() throws Exception{
     	TestCommandContext pushctx = createCtxWithApp(appName, appPath);
     	String[] output = pushctx.out().split("\\n");
-    	Assert.assertTrue(output[0].contains(appName), "Did not fine " + appName + "on first output line.");
+    	Assert.assertTrue(output[0].contains(appName), "Did not find " + appName + "on first output line.");
     	Assert.assertTrue(output[2].contains("Deployed: " + appName), "Command did not report successful deploy on line 3: " + output[2]);
     	Assert.assertNotNull(pushctx.getVmForceClient().getApplication(appName), "The application was not created in the mock.");
     }
