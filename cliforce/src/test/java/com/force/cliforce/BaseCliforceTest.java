@@ -14,7 +14,7 @@ import com.google.inject.Guice;
 import com.google.inject.Module;
 import com.sforce.ws.ConnectionException;
 
-public abstract class BaseTest {
+public abstract class BaseCliforceTest {
     
     private CLIForce cliForce;
     private ByteArrayOutputStream baos;
@@ -31,11 +31,15 @@ public abstract class BaseTest {
    
     public abstract void setupCLIForce(CLIForce c) throws IOException;
     
-    public String runCommand(String cmd) throws IOException, ConnectionException, ServletException, InterruptedException {
+    private String executeCommand(String... cmd) throws IOException, ConnectionException, ServletException, InterruptedException {
         baos.reset();
-        cliForce.executeWithArgs(new String[] {cmd});
+        cliForce.executeWithArgs(cmd);
         String outputStr = new String(baos.toByteArray());
         return outputStr;
+    }
+    
+    public String runCommand(String cmd) throws IOException, ConnectionException, ServletException, InterruptedException {
+        return executeCommand(cmd.split(" "));
     }
  
     public CLIForce getCLIForce() {
