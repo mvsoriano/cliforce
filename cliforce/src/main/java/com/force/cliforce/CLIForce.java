@@ -95,6 +95,8 @@ public class CLIForce {
         } catch (ExitException e) {
             log.get().error("ExitException->Exiting");
             System.exit(1);
+        } catch (Throwable t) {
+        	log.get().error("Caught generic error", t);
         }
     }
 
