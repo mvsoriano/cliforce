@@ -5,6 +5,7 @@ import java.io.IOException;
 import javax.servlet.ServletException;
 
 import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.force.cliforce.BaseCliforceCommandTest;
@@ -29,15 +30,15 @@ public class ConnectionManagerStateTest extends BaseCliforceCommandTest {
         return new ConnectionPlugin();
     }
 
-    @Test(enabled=false)
+    @Test
     public void testAddRemoveConnection() throws IOException, ConnectionException, ServletException, InterruptedException {
-        Assert.assertNull(getCLIForce().getCurrentEnvironment(),"current environment should be null");
+        Assert.assertNull(getCLIForce().getCurrentEnvironment(), "current environment should be null. current environment was " + getCLIForce().getCurrentEnvironment());
         String output = runCommand("connection:add --notoken -n jeff -h vmf01.t.salesforce.com -u user@domain.com -p mountains4");
         Assert.assertEquals(output, "Connection: jeff added\n", "unexpected output from command");
         Assert.assertEquals(getCLIForce().getCurrentEnvironment(),"jeff", "unexpected current environment");
         output = runCommand("connection:remove jeff");
         Assert.assertEquals(output, "Connection: jeff removed\n", "unexpected output from command");
-        Assert.assertNull(getCLIForce().getCurrentEnvironment(),"current environment should be null");
+        Assert.assertNull(getCLIForce().getCurrentEnvironment(), "current environment should be null. current environment was " + getCLIForce().getCurrentEnvironment());
     }
     
 }
