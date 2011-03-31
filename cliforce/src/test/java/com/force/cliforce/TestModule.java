@@ -2,12 +2,10 @@ package com.force.cliforce;
 
 
 import javax.inject.Singleton;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 public class TestModule extends MainModule {
-
 
     public TestModule() {
         this(System.getProperty("positive.test.user.home"));
@@ -16,7 +14,6 @@ public class TestModule extends MainModule {
     public TestModule(String userHomeDirectory) {
         System.setProperty("user.home", userHomeDirectory);
     }
-
 
     @Override
     protected void configure() {
@@ -29,10 +26,10 @@ public class TestModule extends MainModule {
         expose(TestPluginInstaller.class);
     }
 
-
     @Override
     public Set<String> provideInternalPlugins() {
         //mutable for testing
         return new HashSet<String>();
     }
+    
 }
