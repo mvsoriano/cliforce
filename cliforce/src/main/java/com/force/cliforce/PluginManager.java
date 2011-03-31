@@ -20,7 +20,7 @@ public interface PluginManager {
 
     String getInstalledPluginVersion(String plugin);
 
-    void injectDefaultPluginAndAddCommands(Plugin p);
+    void injectDefaultPluginAndAddCommands(DefaultPlugin p);
 
     void injectPluginAndAddCommands(String artifact, Plugin p);
 

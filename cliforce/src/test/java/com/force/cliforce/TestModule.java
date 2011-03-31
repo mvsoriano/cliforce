@@ -3,6 +3,7 @@ package com.force.cliforce;
 
 import javax.inject.Singleton;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 public class TestModule extends MainModule {
@@ -31,6 +32,7 @@ public class TestModule extends MainModule {
 
     @Override
     public Set<String> provideInternalPlugins() {
-        return Collections.emptySet();
+        //mutable for testing
+        return new HashSet<String>();
     }
 }

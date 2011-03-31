@@ -1,35 +1,59 @@
 package com.force.cliforce.plugin.app;
 
 
-import org.testng.Assert;
-import org.testng.annotations.Test;
-
 import com.force.cliforce.*;
 import com.force.cliforce.plugin.app.command.DeleteAppCommand;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import org.testng.Assert;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
+
+import java.io.IOException;
 
 public class AppPluginFTest {
 
-    @Test
-    public void deletionOfNonExistentApp() throws Exception {
-        Injector testInjector = getTestInjector();
-        ConnectionManager testConnectionManager = testInjector.getInstance(ConnectionManager.class);
+    Injector testInjector;
+    PluginManager testPluginManager;
+    ConnectionManager testConnectionManager;
+
+
+    @BeforeTest
+    public void createInjectorAndInstallAppPlugin() throws IOException {
+        testInjector = Guice.createInjector(new TestModule());
+        TestPluginInstaller testPluginInstaller = testInjector.getInstance(TestPluginInstaller.class);
+        testPluginInstaller.installDefaultPlugin();
+        testPluginInstaller.installPlugin("app", "LATEST", new AppPlugin(), true);
+        testConnectionManager = testInjector.getInstance(ConnectionManager.class);
         testConnectionManager.loadLogin();
         testConnectionManager.doLogin();
-        DeleteAppCommand cmd = testInjector.getInstance(DeleteAppCommand.class);
+        testPluginManager = testInjector.getInstance(PluginManager.class);
+    }
+
+    @Test
+    public void deletionOfNonExistentApp() throws Exception {
         TestCommandContext ctx = new TestCommandContext().withCommandArguments("nonexistent").withVmForceClient(testConnectionManager.getVmForceClient());
+        DeleteAppCommand cmd = getInjectedCommand("app:delete");
         cmd.execute(ctx);
         Assert.assertTrue(ctx.out().contains("the application was not found"), ctx.out());
         Assert.assertFalse(ctx.out().contains("done"), ctx.out());
     }
 
-    
-    <T extends Command> T getInjectedCommand(Class<T> cmd) {
-        return getTestInjector().getInstance(cmd);
+    @Test
+    public void cantManuallyPluginOrUnplugAppPlugin() throws Exception {
+        TestCommandContext ctx = new TestCommandContext().withCommandArguments("app");
+        DefaultPlugin.PluginCommand plug = getInjectedCommand("plugin");
+        DefaultPlugin.UnplugCommand unplug = getInjectedCommand("unplug");
+        plug.execute(ctx);
+        Assert.assertTrue(ctx.out().equals("Manually installing internal plugins [app] is not suported\n"), ctx.out());
+        ctx.getCommandWriter().reset();
+        unplug.execute(ctx);
+        Assert.assertTrue(ctx.out().equals("Removing internal plugins [app] is not suported\n"), ctx.out());
     }
 
-    private Injector getTestInjector() {
-        return Guice.createInjector(new TestModule());
+    <T extends Command> T getInjectedCommand(String name) throws Exception {
+        return (T) testPluginManager.getCommand(name);
     }
+
+
 }
