@@ -3,6 +3,7 @@ package com.force.cliforce;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.sforce.ws.ConnectionException;
 import mockit.Mock;
 import mockit.Mocked;
 import mockit.Mockit;
@@ -22,7 +23,7 @@ import java.util.List;
  * @author sclasen
  * @since
  */
-public class DefaultCommandsFTest {
+public class DefaultCommandsFTest extends BaseCliforceTest {
 
 
     Injector injector;
@@ -32,7 +33,7 @@ public class DefaultCommandsFTest {
     // ensure the client can connect to an org
     // TODO: Refactor to use new setup for connectionmanager
     @BeforeClass
-    public void setupEnvironment() throws IOException, ServletException {
+    public void setupTestContext() throws IOException, ServletException {
         injector = Guice.createInjector(new TestModule());
 
         connection = injector.getInstance(ConnectionManager.class);
@@ -44,8 +45,8 @@ public class DefaultCommandsFTest {
         context.getVmForceClient().deleteAllApplications();
     }
 
-    @DataProvider(name = "expectedOutput")
-    public Object[][] provideExpectedOutputForCommand() {
+    @DataProvider(name = "commandExecutionWithArgs")
+    public Object[][] providecommandExecutionWithArgs() {
         return new Object[][]{
                 { DefaultPlugin.ClasspathCommand.class, "No such plugin: abcdefg1234567\n", new String[]{"abcdefg1234567"}}
               , { DefaultPlugin.ClasspathCommand.class, "No such plugin: abcdefg1234567\n", new String[]{"abcdefg1234567", "-s"}}
@@ -55,7 +56,7 @@ public class DefaultCommandsFTest {
         };
     }
 
-    @Test(dataProvider = "expectedOutput")
+    @Test(dataProvider = "commandExecutionWithArgs")
     public void testDefaultCommand(Class<? extends Command> commandClass, String expectedOutput, String[] args) throws Exception {
         context = context.withCommandArguments(args);
         Command command = injector.getInstance(commandClass);
@@ -64,65 +65,18 @@ public class DefaultCommandsFTest {
         Assert.assertEquals(actualOutput, expectedOutput, "Unexpected output for " + command + ": " + actualOutput);
     }
 
-    @Test
-    public void testInteractiveLogin() throws Exception {
-        // mock login so it doesn't change credentials or connect to sfdc service
-        Mockit.setUpMock(MainConnectionManager.class, new Object(){
-            @Mock
-            void doLogin() {System.out.println("doLogin");}
-            @Mock
-            void saveLogin() {System.out.println("saveLogin");}
-        });
-
-        Injector testModuleInjector = Guice.createInjector(new TestModule());
-        ConnectionManager connectionManager = testModuleInjector.getInstance(ConnectionManager.class);
-
-        DefaultPlugin.LoginCommand cmd = testModuleInjector.getInstance(DefaultPlugin.LoginCommand.class);
-
-        List<String> orderedInputs = Arrays.asList("some.random.target.com", "some.random@user.name.com", "Imagin@ryPa$$w3rd", "n");
-        TestCommandContext ctx = new TestCommandContext().withTestCommandReader(new TestCommandReader(orderedInputs));
-
-        cmd.execute(ctx);
-
-        // because we're mocking the actual login, we expect a login success
-        Assert.assertEquals(
-                ctx.getCommandWriter().getOutput()
-              , "Please log in\n" +
-                        "Target login server [api.alpha.vmforce.com]:some.random.target.com\n" +
-                        "Login server: some.random.target.com\n" +
-                        "Username:some.random@user.name.com\n" +
-                        "Password:*****************\n" +
-                        "Login successful.\n"
-              , "unexpected output: " + ctx.getCommandWriter().getOutput());
+    @DataProvider(name = "stringCommands")
+    public Object[][] provideStringCommands() {
+        return new Object[][] {
+                { "!debug --on", "!debug --on: event not found\n" }
+              , { "!debug", "!debug: event not found" }
+        };
     }
 
-    @Test
-    public void testLoginCommandCorrectlyStoresInputs() throws Exception {
-        // mock login so it doesn't change credentials or connect to sfdc service
-        Mockit.setUpMock(MainConnectionManager.class, new Object(){
-            @Mock
-            void doLogin() {System.out.println("doLogin");}
-            @Mock
-            void saveLogin() {System.out.println("saveLogin");}
-        });
-
-        Injector testModuleInjector = Guice.createInjector(new TestModule());
-        ConnectionManager connectionManager = testModuleInjector.getInstance(ConnectionManager.class);
-
-        Assert.assertEquals(connectionManager.getUser(), null, "unexpected username: " + connectionManager.getUser());
-        Assert.assertEquals(connectionManager.getPassword(), null, "unexpected username: " + connectionManager.getPassword());
-        Assert.assertEquals(connectionManager.getTarget(), null, "unexpected target: " + connectionManager.getTarget());
-
-        DefaultPlugin.LoginCommand cmd = testModuleInjector.getInstance(DefaultPlugin.LoginCommand.class);
-
-        List<String> orderedInputs = Arrays.asList("some.random.target.com", "some.random@user.name.com", "Imagin@ryPa$$w3rd", "n");
-        TestCommandContext ctx = new TestCommandContext().withTestCommandReader(new TestCommandReader(orderedInputs));
-
-        cmd.execute(ctx);
-
-        Assert.assertEquals(connectionManager.getUser(), "some.random@user.name.com", "unexpected username: " + connectionManager.getUser());
-        Assert.assertEquals(connectionManager.getPassword(), "Imagin@ryPa$$w3rd", "unexpected username: " + connectionManager.getPassword());
-        Assert.assertEquals(connectionManager.getTarget(), "some.random.target.com", "unexpected target: " + connectionManager.getTarget());
+    @Test(dataProvider = "stringCommands", enabled = false)
+    public void testStringCommand(String commandLineInput, String expectedOutput) throws IOException, ServletException, InterruptedException, ConnectionException {
+        String actualOutput = executeCommand(commandLineInput);
+        Assert.assertEquals(actualOutput, expectedOutput, "Unexpected command output: " + actualOutput);
     }
 
     @Test
@@ -151,5 +105,8 @@ public class DefaultCommandsFTest {
         return Guice.createInjector(new TestModule());
     }
 
-
+    @Override
+    public void setupCLIForce(CLIForce c) throws IOException {
+        //noop
+    }
 }
