@@ -35,7 +35,7 @@ public abstract class BaseCliforceTest {
    
     public abstract void setupCLIForce(CLIForce c) throws IOException;
     
-    private String executeCommand(String... cmd) throws IOException, ConnectionException, ServletException, InterruptedException {
+    protected String executeCommand(String... cmd) throws IOException, ConnectionException, ServletException, InterruptedException {
         baos.reset();
         cliForce.executeWithArgs(cmd);
         String outputStr = new String(baos.toByteArray());
