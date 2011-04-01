@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.testng.Assert;
 import org.testng.annotations.Test;
+
+import scala.actors.threadpool.Arrays;
 
 import com.force.cliforce.BaseCommandCompletorTest;
 import com.force.cliforce.CLIForce;
@@ -29,12 +32,14 @@ public class DefaultCommandsCompletorTest extends BaseCommandCompletorTest {
         return null;
     }
     
+    @SuppressWarnings("unchecked")
     @Test
     public void testBasicCommandCompletion() {
         List<CharSequence> candidates = new ArrayList<CharSequence>();
         String buffer = "e";
-        getCompletor().complete(buffer, buffer.length(), candidates);
-
+        int cursor = getCompletor().complete(buffer, buffer.length(), candidates);
+        Assert.assertEquals(cursor, 0, "unexpected cursor position");
+        verifyCandidateList(candidates, Arrays.asList(new String[] {"env", "exit"}));
     }
 
 }
