@@ -110,7 +110,7 @@ class AddConnectionCommand extends JCommand[AddConnectionArgs] {
     }
 
     if (args.token == "" && !args.notoken) {
-      args.token = ctx.getCommandReader.readLine("security token (hit enter if security tokens are disabled): ")
+      args.token = ctx.getCommandReader.readLine("security token: ")
     }
 
     val env = new ForceEnv(args.url, "cliforce");
