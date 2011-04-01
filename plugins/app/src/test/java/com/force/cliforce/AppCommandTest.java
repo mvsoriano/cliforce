@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import javax.servlet.ServletException;
 
+import com.force.cliforce.plugin.app.command.StopCommand;
 import mockit.Mockit;
 
 import org.testng.Assert;
@@ -55,6 +56,8 @@ public class AppCommandTest {
                 , {DeleteAppCommand.class, "Deleting nonexistantappname\nthe application was not found\n", new String[]{"nonexistantappname"}, true}
                 , {AppsCommand.class, "No applications have been deployed\n", null, true}
                 , {PushCommand.class, "The path given: /no/such/path.war does not exist", new String[]{"-p", "/no/such/path.war", "pushfailapp"}, false}
+                , {StopCommand.class, "Exception while executing command: stop -> Main parameters are required (\"the name of the application\")\n", new String[] {}, true}
+                , {StopCommand.class, "No such app nonexistantappname\n", new String[]{"nonexistantappname"}, true }
         };
     }
 

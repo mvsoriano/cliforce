@@ -9,6 +9,7 @@ import mockit.Mockit;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.util.Arrays;
@@ -56,6 +57,20 @@ public class DefaultCommandsUnitTest {
         Assert.assertFalse(ctx.getCommandWriter().getOutput().contains("java.lang.ArrayIndexOutOfBoundsException"), "Incorrect output");
     }
 
+    @DataProvider(name = "expectedData")
+    public Object[][] appCommandExpectedInput() {
+        return new Object[][]{
+            { "sh: Executing: echo something\n  something", new String[] {"echo", "something"}}
+        };
+    }
+
+    @Test(dataProvider = "expectedData")
+    public void testShellCommandWithArgs(String expectedOutput, String[] args) throws Exception {
+       DefaultPlugin.ShellCommand cmd = new DefaultPlugin.ShellCommand();
+        TestCommandContext ctx = new TestCommandContext().withCommandArguments(args);
+        cmd.execute(ctx);
+        Assert.assertTrue(ctx.getCommandWriter().getOutput().contains(expectedOutput), "Incorrect output:" + expectedOutput);
+    }
 
     @Test
     public void testInteractiveLogin() throws Exception {
