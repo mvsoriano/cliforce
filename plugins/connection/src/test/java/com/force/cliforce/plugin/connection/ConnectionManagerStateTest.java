@@ -5,7 +5,9 @@ import java.io.IOException;
 
 import javax.servlet.ServletException;
 
+import org.apache.commons.io.FileUtils;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
 import com.force.cliforce.BaseCliforceCommandTest;
@@ -21,10 +23,11 @@ import com.sforce.ws.ConnectionException;
  */
 public class ConnectionManagerStateTest extends BaseCliforceCommandTest {
     
+	private final String emptyDirPath = "/tmp/emptytestdir";
+	
     @Override
     public TestModule setupTestModule() {
         // we need an empty directory to make sure no properties are loaded so we have an empty state
-        String emptyDirPath = "/tmp/emptytestdir";
         File emptyDir = new File(emptyDirPath);
         if (!emptyDir.exists()) {
             emptyDir.mkdirs();
@@ -42,6 +45,13 @@ public class ConnectionManagerStateTest extends BaseCliforceCommandTest {
         return new ConnectionPlugin();
     }
 
+    @AfterClass(alwaysRun=true)
+    public void cleanupForceDir() throws IOException {
+    	File emptyDir = new File(emptyDirPath);
+    	if(emptyDir.exists()) FileUtils.deleteDirectory(emptyDir);
+    }
+    
+    
     @Test
     public void testAddRemoveConnection() throws IOException, ConnectionException, ServletException, InterruptedException {
         Assert.assertNull(getCLIForce().getCurrentEnvironment(), "current environment should be null. current environment was " + getCLIForce().getCurrentEnvironment());

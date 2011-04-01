@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import javax.servlet.ServletException;
 
+import com.force.cliforce.plugin.app.command.StopCommand;
 import mockit.Mockit;
 
 import org.testng.Assert;
@@ -16,6 +17,7 @@ import org.testng.annotations.Test;
 import com.force.cliforce.plugin.app.command.AppsCommand;
 import com.force.cliforce.plugin.app.command.DeleteAppCommand;
 import com.force.cliforce.plugin.app.command.PushCommand;
+import com.force.cliforce.plugin.app.command.StopCommand;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.vmforce.client.VMForceClient;
@@ -51,10 +53,12 @@ public class AppCommandTest {
     @DataProvider(name = "expectedInput")
     public Object[][] appCommandExpectedInput() {
         return new Object[][]{
-                {DeleteAppCommand.class, "Exception while executing command: delete -> Main parameters are required (\"the name of the application\")\n", null, true}
-                , {DeleteAppCommand.class, "Deleting nonexistantappname\nthe application was not found\n", new String[]{"nonexistantappname"}, true}
-                , {AppsCommand.class, "No applications have been deployed\n", null, true}
-                , {PushCommand.class, "The path given: /no/such/path.war does not exist", new String[]{"-p", "/no/such/path.war", "pushfailapp"}, false}
+                {DeleteAppCommand.class, "Exception while executing command: delete -> Main parameters are required (\"the name of the application\")\n", null, true},
+                {DeleteAppCommand.class, "Deleting nonexistantappname\nthe application was not found\n", new String[]{"nonexistantappname"}, true},
+                {AppsCommand.class, "No applications have been deployed\n", null, true}, 
+                {PushCommand.class, "The path given: /no/such/path.war does not exist", new String[]{"-p", "/no/such/path.war", "pushfailapp"}, false},
+                {StopCommand.class, "No such app nonexistantappname\n", new String[]{"nonexistantappname"}, true},
+                {StopCommand.class, "Exception while executing command: stop -> Main parameters are required (\"the name of the application\")\n", new String[]{}, true}
         };
     }
 
