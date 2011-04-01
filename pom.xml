@@ -67,6 +67,11 @@
             <name>Scala-Tools Dependencies Repository for Releases</name>
             <url>http://scala-tools.org/repo-releases</url>
         </repository>
+        <repository>
+           <id>jmockit-svn</id>
+           <url>http://jmockit.googlecode.com/svn/maven-repo</url>
+           <releases><checksumPolicy>ignore</checksumPolicy></releases>
+        </repository>
 
     </repositories>
 

@@ -13,6 +13,13 @@
   <name>cliforce</name>
   <dependencies>
     <dependency>
+       <groupId>mockit</groupId>
+       <artifactId>jmockit</artifactId>
+       <version>${jmockit.version}</version>
+       <scope>test</scope>
+
+    </dependency>
+    <dependency>
       <groupId>com.force.cliforce</groupId>
       <artifactId>cliforce-boot</artifactId>
       <version>${project.version}</version>
@@ -117,6 +124,7 @@
       <version>1</version>
     </dependency>
     <!-- Test -->
+
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
@@ -155,6 +163,12 @@
           </execution>
         </executions>
       </plugin>
+        <plugin>
+           <artifactId>maven-surefire-plugin</artifactId>
+           <configuration>
+              <argLine>-javaagent:"${settings.localRepository}"/mockit/jmockit/${jmockit.version}/jmockit-${jmockit.version}.jar</argLine>
+           </configuration>
+        </plugin>
     </plugins>
   </build>
 

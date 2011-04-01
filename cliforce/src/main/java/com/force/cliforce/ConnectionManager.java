@@ -23,6 +23,10 @@ public interface ConnectionManager {
 
     void setLogin(String user, String password, String target);
 
+    String getUser();
+    String getPassword();
+    String getTarget();
+
     void doLogin();
 
     Map<String, ForceEnv> getAvailableEnvironments();

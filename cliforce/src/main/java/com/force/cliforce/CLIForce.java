@@ -124,6 +124,15 @@ public class CLIForce {
     }
 
 
+    /*package*/ void setWriter(CommandWriter writer) {
+        this.writer = writer;
+    }
+
+    /*package*/ void setReader(CommandReader reader) {
+        this.commandReader = reader;
+    }
+
+
     public void init(InputStream in, PrintWriter out) throws IOException, ConnectionException, ServletException {
         SLF4JBridgeHandler.install();
         injectDefaultPluginAndAddCommands();
