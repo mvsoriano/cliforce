@@ -14,6 +14,9 @@ import com.google.inject.Guice;
 import com.google.inject.Module;
 import com.sforce.ws.ConnectionException;
 
+/**
+ * Use this class if you require the a CLIForce object in your command test.
+ */
 public abstract class BaseCliforceCommandTest {
     
     private CLIForce cliForce;
