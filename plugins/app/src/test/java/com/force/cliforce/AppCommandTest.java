@@ -5,6 +5,7 @@ import java.io.IOException;
 
 import javax.servlet.ServletException;
 
+import com.force.cliforce.plugin.app.command.StopCommand;
 import mockit.Mockit;
 
 import org.testng.Assert;
