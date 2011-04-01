@@ -68,12 +68,12 @@ public class DefaultCommandsFTest extends BaseCliforceTest {
     @DataProvider(name = "stringCommands")
     public Object[][] provideStringCommands() {
         return new Object[][] {
-                { "!debug --on", "!debug --on: event not found\n" }
-              , { "!debug", "!debug: event not found" }
+                { "!debug --on", "Unknown Command !debug --on\n" }
+              , { "!debug", "Unknown Command !debug\n" }
         };
     }
 
-    @Test(dataProvider = "stringCommands", enabled = false)
+    @Test(dataProvider = "stringCommands")
     public void testStringCommand(String commandLineInput, String expectedOutput) throws IOException, ServletException, InterruptedException, ConnectionException {
         String actualOutput = executeCommand(commandLineInput);
         Assert.assertEquals(actualOutput, expectedOutput, "Unexpected command output: " + actualOutput);
