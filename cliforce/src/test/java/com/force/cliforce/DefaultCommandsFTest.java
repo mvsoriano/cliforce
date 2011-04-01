@@ -23,7 +23,7 @@ import java.util.List;
  * @author sclasen
  * @since
  */
-public class DefaultCommandsFTest extends BaseCliforceTest {
+public class DefaultCommandsFTest extends BaseCliforceCommandTest {
 
 
     Injector injector;
@@ -108,5 +108,17 @@ public class DefaultCommandsFTest extends BaseCliforceTest {
     @Override
     public void setupCLIForce(CLIForce c) throws IOException {
         //noop
+    }
+
+    @Override
+    public String getPluginArtifact() {
+        // not needed to test Default commands
+        return null;
+    }
+
+    @Override
+    public Plugin getPlugin() {
+        // not needed to test Default commands
+        return null;
     }
 }
