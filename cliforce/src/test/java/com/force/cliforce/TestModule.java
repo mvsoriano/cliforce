@@ -26,6 +26,7 @@ public class TestModule extends MainModule {
         expose(TestPluginInjector.class);
         expose(TestPluginInstaller.class);
         expose(TestCliforceAccessor.class);
+        expose(CommandCompletor.class);
     }
 
     @Override

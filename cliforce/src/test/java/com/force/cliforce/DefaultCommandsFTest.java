@@ -25,7 +25,6 @@ import java.util.List;
  */
 public class DefaultCommandsFTest extends BaseCliforceCommandTest {
 
-
     Injector injector;
     ConnectionManager connection;
     TestCommandContext context;
@@ -107,7 +106,7 @@ public class DefaultCommandsFTest extends BaseCliforceCommandTest {
 
     @Override
     public void setupCLIForce(CLIForce c) throws IOException {
-        //noop
+        //overriding with an empty method because we don't want to install additional plugins
     }
 
     @Override
