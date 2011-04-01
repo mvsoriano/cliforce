@@ -62,7 +62,10 @@ public class DefaultCommandsUnitTest {
     @DataProvider(name = "expectedData")
     public Object[][] appCommandExpectedInput() {
         return new Object[][]{
-            { "sh: Executing: echo something\n  something", new String[] {"echo", "something"}}
+                { "sh: Executing: echo something\n  something", new String[] {"echo", "something"}}
+                , { "sh: Executing: abc\nThe command failed to execute. Please check the path to the executable you provided",
+                        new String[] {"abc"}}
+                , {"sh: Executing: ls -e\n  ls: invalid option -- 'e'\n  Try `ls --help' for more information.", new String[] {"ls", "-e"}}
         };
     }
 
