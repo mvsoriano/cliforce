@@ -47,10 +47,10 @@ public class AppPluginFTest {
         DefaultPlugin.PluginCommand plug = getInjectedCommand("plugin");
         DefaultPlugin.UnplugCommand unplug = getInjectedCommand("unplug");
         plug.execute(ctx);
-        Assert.assertTrue(ctx.out().equals("Manually installing internal plugins [app] is not suported\n"), ctx.out());
+        Assert.assertTrue(ctx.out().equals("Manually installing internal plugins [app] is not supported\n"), ctx.out());
         ctx.getCommandWriter().reset();
         unplug.execute(ctx);
-        Assert.assertTrue(ctx.out().equals("Removing internal plugins [app] is not suported\n"), ctx.out());
+        Assert.assertTrue(ctx.out().equals("Removing internal plugins [app] is not supported\n"), ctx.out());
     }
     
     @Test
