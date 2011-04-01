@@ -81,6 +81,13 @@ public class AppCommandTest {
     }
     
     @Test
+    public void testAppPushShortName() throws Exception{
+    	TestCommandContext pushctx = createCtxWithApp("short", appPath);
+    	String[] output = pushctx.out().split("\\n");
+    	Assert.assertTrue(output[0].contains("Your application name is invalid, it must be 6 or more characters long"), "Incorrect error message with app name that is less than 6 characters long");
+    }
+    
+    @Test
     public void testAppApps() throws Exception {
     	TestCommandContext appsctx = createCtxWithApp(appName, appPath);
     	appsctx.getCommandWriter().reset();
