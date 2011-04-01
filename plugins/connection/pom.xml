@@ -11,4 +11,12 @@
   <artifactId>connection</artifactId>
   <name>connection plugin</name>
   
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>1.3.2</version>
+    </dependency>
+  </dependencies>
+  
 </project>
