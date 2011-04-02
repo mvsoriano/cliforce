@@ -2,6 +2,7 @@ package com.force.cliforce.defaultplugin;
 
 
 import com.force.cliforce.*;
+import com.force.cliforce.command.DebugCommand;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -65,7 +66,7 @@ public class DefaultCommandsUnitTest {
                 { "sh: Executing: echo something\n  something", new String[] {"echo", "something"}}
                 , { "sh: Executing: abc\nThe command failed to execute. Please check the path to the executable you provided",
                         new String[] {"abc"}}
-                , {"sh: Executing: ls -e\n  ls: invalid option -- 'e'\n  Try `ls --help' for more information.", new String[] {"ls", "-e"}}
+                //bug: this is os-dependent , {"sh: Executing: ls -e\n  ls: invalid option -- 'e'\n  Try `ls --help' for more information.", new String[] {"ls", "-e"}}
         };
     }
 
@@ -131,6 +132,7 @@ public class DefaultCommandsUnitTest {
         return new Object[][]{
                 {DefaultPlugin.UnplugCommand.class, "Removing plugin: strangeApp\n....not found\n", new String[]{"strangeApp"}, true}
                 , {DefaultPlugin.PluginCommand.class, "The maven artifact associated with the plugin could not be found.\n", new String[]{"strangeApp"}, true}
+                //, {DebugCommand.class, "The maven artifact associated with the plugin could not be found.\n", new String[]{}, true}
         };
     }
 
@@ -147,6 +149,34 @@ public class DefaultCommandsUnitTest {
             Assert.assertEquals(actualOutput, expectedOutput, "Unexpected output for " + command + ": " + actualOutput);
         } else {
             Assert.assertTrue(actualOutput.contains(expectedOutput), "Unexpected output for " + command + ": " + actualOutput);
+        }
+    }
+
+    @Test
+    public  void testDebugCommand() throws Exception {
+        String [] expectedOutput = new String[] {
+                "turns debug output on/off",
+                "Usage: debug [args]",
+                "args:" ,
+                "--off\tTurns off debug logging to the console",
+                "--on\tTurns on debug logging to the console"};
+
+        TestCommandContext context = new TestCommandContext().withVmForceClient(new VMForceClient());
+        Injector injector = Guice.createInjector(new TestModule());
+        Command command = injector.getInstance(DebugCommand.class);
+        command.execute(context);
+
+        String [] actualOutput = context.out().split("\n");
+
+
+        int j = 0;
+        for(int i=0;i < actualOutput.length; i++) {
+            if (actualOutput[i].trim().equals("")) {
+                continue;
+            }
+
+            Assert.assertEquals(actualOutput[i].trim(),expectedOutput[j], "Actual output line:" + actualOutput[i].trim() + "\nExpected output line:" + expectedOutput[j]);
+            j++;
         }
     }
 
