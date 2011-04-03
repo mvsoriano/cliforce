@@ -9,9 +9,6 @@ import java.util.Map;
 
 import javax.servlet.ServletException;
 
-import mockit.Mock;
-import mockit.MockClass;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
