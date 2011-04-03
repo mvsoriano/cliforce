@@ -19,18 +19,14 @@ import com.vmforce.client.VMForceClient;
 import com.vmforce.client.bean.ApplicationInfo;
 import com.vmforce.client.bean.ApplicationInfo.ModelEnum;
 
-
-@MockClass(realClass = VMForceClient.class)
-public class MockVMForceClient {
+public class MockVMForceClient extends VMForceClient {
 
 	private HashMap<String, ApplicationInfo> apps;
 	
-	@Mock
-	public void $init(){
+	public MockVMForceClient() {
 		apps = new HashMap<String, ApplicationInfo>();
 	}
 
-	@Mock
 	public Map createApplication (ApplicationInfo info) {
 		if(apps.containsKey(info.getName())){
 			apps.remove(info.getName());
@@ -39,7 +35,6 @@ public class MockVMForceClient {
 		return new HashMap();
 	}
 	
-	@Mock
 	public ApplicationInfo getApplication (String appName) {
 		if(apps.containsKey(appName)){
 			return apps.get(appName);
@@ -47,19 +42,16 @@ public class MockVMForceClient {
 		return null;
 	}
 	
-	@Mock
 	public List<ApplicationInfo> getApplications() {
 		return new ArrayList<ApplicationInfo>(apps.values());		
 	}
 	
-	@Mock
 	public void deployApplication(String appName, String localPathToAppFile) throws IOException, ServletException {
 		if(!apps.containsKey(appName)){
 			apps.put(appName, new ApplicationInfo(appName, 1, 512, Collections.singletonList("dummyURL"), ModelEnum.SPRING));			
 		}
 	}
 	
-	@Mock
 	public void deleteApplication(String appName){
 		if(apps.containsKey(appName)){
 			apps.remove(appName);
@@ -68,7 +60,6 @@ public class MockVMForceClient {
 		}
 	}
 	
-	@Mock
 	public void deleteAllApplications() {
 		if(apps != null){
 			apps.clear();

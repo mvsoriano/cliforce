@@ -3,10 +3,10 @@ package com.force.cliforce;
 import java.io.File;
 import java.io.IOException;
 
+import javax.management.RuntimeErrorException;
 import javax.servlet.ServletException;
 
-import com.force.cliforce.plugin.app.command.StopCommand;
-import mockit.Mockit;
+import mockit.MockClass;
 
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -39,7 +39,6 @@ public class AppCommandTest {
     @BeforeClass
     public void setupEnvironment() throws IOException, ServletException {
     	injector = Guice.createInjector(new TestModule());
-    	Mockit.setUpMock(VMForceClient.class, new MockVMForceClient());
     	if(!appFileDummy.exists()){
     		Assert.assertTrue(appFileDummy.createNewFile(), "Could not create dummy app file " + appFileDummy.getAbsolutePath());
     	}
@@ -64,7 +63,7 @@ public class AppCommandTest {
 
     @Test(dataProvider = "expectedInput")
     public void testAppOutput(Class<? extends Command> commandClass, String expectedOutput, String[] args, boolean exactOutput) throws Exception {
-    	TestCommandContext context = new TestCommandContext().withCommandArguments(args).withVmForceClient(new VMForceClient());
+    	TestCommandContext context = new TestCommandContext().withCommandArguments(args).withVmForceClient(new MockVMForceClient());
         Command command = injector.getInstance(commandClass);
         command.execute(context);
         String actualOutput = context.out();
@@ -89,6 +88,18 @@ public class AppCommandTest {
     	TestCommandContext pushctx = createCtxWithApp("short", appPath);
     	String[] output = pushctx.out().split("\\n");
     	Assert.assertTrue(output[0].contains("Your application name is invalid, it must be 6 or more characters long"), "Incorrect error message with app name that is less than 6 characters long");
+    }
+    
+    @Test
+    public void testAppPushWithDeploymentException() throws Exception{
+    	Assert.assertTrue(new File(appPath).exists(), "The app file " +appPath+ " does not exist.");
+    	Command cmd = injector.getInstance(PushCommand.class);
+		TestCommandContext ctx = 
+    		new TestCommandContext().withCommandArguments(appName, "--path", appPath)
+    			.withVmForceClient(new MockVMForceClientDeploymentException()); //uses mock VMForceClient defined in setup
+    	cmd.execute(ctx);
+    	//check that the application was deleted
+    	Assert.assertNull(ctx.getVmForceClient().getApplication(appName), "The application should have been deleted after a deployment failure.");
     }
     
     @Test
@@ -127,8 +138,18 @@ public class AppCommandTest {
     	Command cmd = injector.getInstance(PushCommand.class);
 		TestCommandContext ctx = 
     		new TestCommandContext().withCommandArguments(appName, "--path", appPath)
-    			.withVmForceClient(new VMForceClient()); //uses mock VMForceClient defined in setup
+    			.withVmForceClient(new MockVMForceClient()); //uses mock VMForceClient defined in setup
     	cmd.execute(ctx);
     	return ctx;
+    }
+    
+    private class MockVMForceClientDeploymentException extends MockVMForceClient {
+
+		@Override
+		public void deployApplication(String appName, String localPathToAppFile)
+				throws IOException, ServletException {
+			throw new RuntimeErrorException(null);
+		}
+    	
     }
 }
