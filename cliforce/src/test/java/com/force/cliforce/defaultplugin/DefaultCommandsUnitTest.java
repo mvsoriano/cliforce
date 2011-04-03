@@ -3,7 +3,9 @@ package com.force.cliforce.defaultplugin;
 
 import com.force.cliforce.*;
 import com.google.inject.Guice;
+import com.google.inject.Inject;
 import com.google.inject.Injector;
+import com.vmforce.client.VMForceClient;
 import mockit.Mock;
 import mockit.Mockit;
 import org.testng.Assert;
@@ -120,5 +122,29 @@ public class DefaultCommandsUnitTest {
     }
 
 
+
+    @DataProvider(name = "pluginTestData")
+    public Object[][] pluginTestData() {
+        return new Object[][]{
+                {DefaultPlugin.UnplugCommand.class, "Removing plugin: strangeApp\n....not found\n", new String[]{"strangeApp"}, true}
+                , {DefaultPlugin.PluginCommand.class, "The maven artifact associated with the plugin could not be found.\n", new String[]{"strangeApp"}, true}
+        };
+    }
+
+    @Test(dataProvider = "pluginTestData")
+    public void testMissingPlugin(Class<? extends Command> commandClass, String expectedOutput, String[] args, boolean exactOutput) throws Exception {
+    	TestCommandContext context = new TestCommandContext().withCommandArguments(args).withVmForceClient(new VMForceClient());
+        Injector injector = Guice.createInjector(new TestModule());
+        injector.getInstance(TestCliforceAccessor.class).setWriter(context.getCommandWriter());
+        Command command = injector.getInstance(commandClass);
+        command.execute(context);
+
+        String actualOutput = context.out();
+        if (exactOutput) {
+            Assert.assertEquals(actualOutput, expectedOutput, "Unexpected output for " + command + ": " + actualOutput);
+        } else {
+            Assert.assertTrue(actualOutput.contains(expectedOutput), "Unexpected output for " + command + ": " + actualOutput);
+        }
+    }
 
 }
