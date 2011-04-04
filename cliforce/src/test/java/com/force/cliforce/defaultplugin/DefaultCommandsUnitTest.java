@@ -155,11 +155,12 @@ public class DefaultCommandsUnitTest {
     @Test
     public  void testDebugCommand() throws Exception {
         String [] expectedOutput = new String[] {
-                "turns debug output on/off",
-                "Usage: debug [args]",
-                "args:" ,
-                "--off\tTurns off debug logging to the console",
-                "--on\tTurns on debug logging to the console"};
+                "turns debug output on/off"
+                , "Usage: debug [args]"
+                , "args:"
+                , "--off\tTurns off debug logging to the console"
+                , "--on\tTurns on debug logging to the console"
+        };
 
         TestCommandContext context = new TestCommandContext().withVmForceClient(new VMForceClient());
         Injector injector = Guice.createInjector(new TestModule());
@@ -175,9 +176,12 @@ public class DefaultCommandsUnitTest {
                 continue;
             }
 
+            Assert.assertTrue(j<expectedOutput.length, "Actual output exceeds expected output. Found:" + actualOutput[i]);
             Assert.assertEquals(actualOutput[i].trim(),expectedOutput[j], "Actual output line:" + actualOutput[i].trim() + "\nExpected output line:" + expectedOutput[j]);
             j++;
         }
+
+        Assert.assertEquals(j, expectedOutput.length, "Actual output does not contain:" + expectedOutput[j-1]);
     }
 
 }
