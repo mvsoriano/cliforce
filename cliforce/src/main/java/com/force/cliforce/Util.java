@@ -17,6 +17,11 @@ public class Util {
 
     static LazyLogger log = new LazyLogger(Util.class);
 
+
+    public static String getCliforceHome() {
+        return Boot.getCliforceHome();
+    }
+
     public static String getApiVersion() {
         String url = com.sforce.soap.metadata.Connector.END_POINT;
         String apiVersion = url.substring(url.lastIndexOf("/") + 1);
@@ -72,7 +77,7 @@ public class Util {
     }
 
     static File getForcePropertiesFile(String name) {
-        return new File(System.getProperty("user.home") + "/.force/cliforce_" + name);
+        return new File(getCliforceHome() + "/.force/cliforce_" + name);
     }
 
     /**

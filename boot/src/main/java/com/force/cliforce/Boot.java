@@ -15,7 +15,7 @@ public class Boot {
     static Properties repositories;
 
     public static void main(String[] args) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
-        if (!(new File(System.getProperty("user.home") + "/.force/cliforce_plugins").exists())) {
+        if (!(new File(getCliforceHome() + "/.force/cliforce_plugins").exists())) {
             System.out.println("Downloading dependencies, this can take some time the first time you run cliforce");
         }
         DependencyResolver resolver = getBootResolver();
@@ -33,6 +33,14 @@ public class Boot {
         resolver.setRepositories(repo);
         resolver.setCLIForceMavenCoordinates(cli.getProperty("groupId") + ":" + cli.getProperty("artifactId") + ":" + cli.getProperty("version"));
         return resolver;
+    }
+
+    public static String getCliforceHome() {
+        return System.getProperty("cliforce.home", System.getProperty("user.home"));
+    }
+
+    public static String getLocalMavenRepository() {
+        return System.getProperty("maven.repo", getCliforceHome() + "/.m2/repository/");
     }
 
 

@@ -3,11 +3,11 @@ package com.force.cliforce.plugin.template.command;
 
 import com.force.cliforce.TestCommandContext;
 import com.force.cliforce.TestModule;
+import com.force.cliforce.Util;
 import com.google.inject.Guice;
 import com.sforce.async.RestConnection;
 import com.sforce.soap.metadata.MetadataConnection;
 import com.sforce.soap.partner.PartnerConnection;
-
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -18,7 +18,7 @@ public class TemplatePluginUnitTest {
     @Test
     public void templateOutputDosentHaveUglyPrefix() throws Exception {
         NewProjectCommand cmd = Guice.createInjector(new TestModule()).getInstance(NewProjectCommand.class);
-        File workingDir = new File(new File(System.getProperty("user.home")), "template-test");
+        File workingDir = new File(Util.getCliforceHome(), "template-test");
         if (!workingDir.exists()) {
             workingDir.mkdir();
         }
@@ -30,12 +30,12 @@ public class TemplatePluginUnitTest {
         Assert.assertTrue(proj.exists());
         Assert.assertTrue(new File(proj, "pom.xml").exists());
     }
-    
+
 
     @Test
     public void templateConnectionExceptions() throws Exception {
         NewProjectCommand cmd = Guice.createInjector(new TestModule()).getInstance(NewProjectCommand.class);
-        File workingDir = new File(new File(System.getProperty("user.home")), "template-test");
+        File workingDir = new File(Util.getCliforceHome(), "template-test");
         if (!workingDir.exists()) {
             workingDir.mkdir();
         }
@@ -47,23 +47,23 @@ public class TemplatePluginUnitTest {
         Assert.assertTrue(proj.exists());
         Assert.assertTrue(new File(proj, "pom.xml").exists());
     }
-    
+
     private class TestCommandContextConnectionExceptions extends TestCommandContext {
 
-		@Override
-		public MetadataConnection getMetadataConnection() {
-			throw new RuntimeException();
-		}
+        @Override
+        public MetadataConnection getMetadataConnection() {
+            throw new RuntimeException();
+        }
 
-		@Override
-		public PartnerConnection getPartnerConnection() {
-			throw new RuntimeException();
-		}
+        @Override
+        public PartnerConnection getPartnerConnection() {
+            throw new RuntimeException();
+        }
 
-		@Override
-		public RestConnection getRestConnection() {
-			throw new RuntimeException();
-		}
-    	
-    }    
+        @Override
+        public RestConnection getRestConnection() {
+            throw new RuntimeException();
+        }
+
+    }
 }

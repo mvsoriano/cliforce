@@ -14,7 +14,7 @@ public class TestModule extends MainModule {
     }
 
     public TestModule(String userHomeDirectory) {
-        System.setProperty("user.home", userHomeDirectory);
+        System.setProperty("cliforce.home", userHomeDirectory);
     }
 
     @Override
