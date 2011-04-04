@@ -63,19 +63,23 @@ public class DefaultCommandsUnitTest {
     @DataProvider(name = "expectedData")
     public Object[][] appCommandExpectedInput() {
         return new Object[][]{
-                { "sh: Executing: echo something\n  something", new String[] {"echo", "something"}}
+                { "sh: Executing: echo something\n  something", new String[] {"echo", "something"}, true}
                 , { "sh: Executing: abc\nThe command failed to execute. Please check the path to the executable you provided",
-                        new String[] {"abc"}}
-                //bug: this is os-dependent , {"sh: Executing: ls -e\n  ls: invalid option -- 'e'\n  Try `ls --help' for more information.", new String[] {"ls", "-e"}}
+                        new String[] {"abc"}, true}
+                , {"stderr", new String[] {"dir ", "-3", "/3"} /*-3 for unix, /3 for win*/, false /* check that stderr is not in the output */}
         };
     }
 
     @Test(dataProvider = "expectedData")
-    public void testShellCommandWithArgs(String expectedOutput, String[] args) throws Exception {
+    public void testShellCommandWithArgs(String expectedOutput, String[] args, boolean testForMatch) throws Exception {
        DefaultPlugin.ShellCommand cmd = new DefaultPlugin.ShellCommand();
         TestCommandContext ctx = new TestCommandContext().withCommandArguments(args);
         cmd.execute(ctx);
-        Assert.assertTrue(ctx.getCommandWriter().getOutput().contains(expectedOutput), "Incorrect output:" + expectedOutput);
+        if (testForMatch) {
+            Assert.assertTrue(ctx.getCommandWriter().getOutput().contains(expectedOutput), "Incorrect output:" + expectedOutput);
+        } else {
+            Assert.assertFalse(ctx.getCommandWriter().getOutput().contains(expectedOutput), "Incorrect output:" + expectedOutput);
+        }
     }
 
     @Test
@@ -132,7 +136,6 @@ public class DefaultCommandsUnitTest {
         return new Object[][]{
                 {DefaultPlugin.UnplugCommand.class, "Removing plugin: strangeApp\n....not found\n", new String[]{"strangeApp"}, true}
                 , {DefaultPlugin.PluginCommand.class, "The maven artifact associated with the plugin could not be found.\n", new String[]{"strangeApp"}, true}
-                //, {DebugCommand.class, "The maven artifact associated with the plugin could not be found.\n", new String[]{}, true}
         };
     }
 
