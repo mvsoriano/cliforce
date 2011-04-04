@@ -11,23 +11,33 @@ import javax.servlet.ServletException;
 import org.testng.annotations.BeforeClass;
 
 import com.google.inject.Guice;
+import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.sforce.ws.ConnectionException;
 
+/**
+ * Use this class if you need the CLIForce object in your command test.
+ */
 public abstract class BaseCliforceCommandTest {
     
     private CLIForce cliForce;
     private ByteArrayOutputStream baos;
+    private Injector injector;
     
     @BeforeClass
     public void classSetup() throws InterruptedException, IOException, ConnectionException, ServletException {
         Module guiceModule = setupTestModule();
-        cliForce = Guice.createInjector(guiceModule).getInstance(CLIForce.class);
+        injector = Guice.createInjector(guiceModule);
+        cliForce = injector.getInstance(CLIForce.class);
         baos = new ByteArrayOutputStream();
         InputStream in = new ByteArrayInputStream(new byte[] {});
         cliForce.init(in, new PrintWriter(baos, true));
         setupCLIForce(cliForce);
     }  
+    
+    public Injector getInjector() {
+        return injector;
+    }
     
     public TestModule setupTestModule() {
         return new TestModule();

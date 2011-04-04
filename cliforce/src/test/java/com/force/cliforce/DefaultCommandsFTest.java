@@ -4,10 +4,6 @@ package com.force.cliforce;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.sforce.ws.ConnectionException;
-import mockit.Mock;
-import mockit.Mocked;
-import mockit.Mockit;
-import mockit.NonStrictExpectations;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -15,8 +11,6 @@ import org.testng.annotations.Test;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 /*
  * Tests for the default commands in CLIForce.
@@ -24,7 +18,6 @@ import java.util.List;
  * @since
  */
 public class DefaultCommandsFTest extends BaseCliforceCommandTest {
-
 
     Injector injector;
     ConnectionManager connection;
@@ -107,7 +100,7 @@ public class DefaultCommandsFTest extends BaseCliforceCommandTest {
 
     @Override
     public void setupCLIForce(CLIForce c) throws IOException {
-        //noop
+        //overriding with an empty method because we don't want to install additional plugins
     }
 
     @Override

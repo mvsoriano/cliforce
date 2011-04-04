@@ -9,6 +9,7 @@ import com.force.cliforce.TestModule;
 import com.force.cliforce.TestPluginInjector;
 import com.force.cliforce.plugin.connection.command.AddConnectionCommand;
 import com.force.cliforce.plugin.connection.command.CurrentConnectionCommand;
+import com.force.cliforce.plugin.connection.command.DefaultConnectionCommand;
 import com.force.cliforce.plugin.connection.command.ListConnectionsCommand;
 import com.force.cliforce.plugin.connection.command.RemoveConnectionCommand;
 import com.force.cliforce.plugin.connection.command.RenameConnectionCommand;
@@ -65,6 +66,15 @@ public class ConnectionTest {
         ctx.setCommandArguments(new String[]{"jeff"});
         rmCmd.execute(ctx);
         Assert.assertEquals(ctx.getCommandWriter().getOutput(), "Connection: jeff removed\n", "unexpected ouput from command");
+    }
+    
+    @Test
+    public void testDefaultConnectionNonExistentConn() throws Exception {
+    	TestCommandContext ctx = addConnSetup(new String[][] { {"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"} });
+    	DefaultConnectionCommand rmCmd = injector.getInjectedCommand(connPlugin, DefaultConnectionCommand.class);
+    	ctx.setCommandArguments(new String[]{"fake"});
+    	rmCmd.execute(ctx);
+    	Assert.assertEquals(ctx.getCommandWriter().getOutput(), "There is no such connection: fake available\n", "unexpected ouput from command");
     }
     
     @Test
