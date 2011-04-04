@@ -217,7 +217,7 @@ public class DefaultPlugin implements Plugin {
             requireCliforce(cliForce);
             requireResolver(resolver);
             if (cliForce.getInternalPlugins().contains(arg.artifact()) && !arg.internal) {
-                ctx.getCommandWriter().printf("Manually installing internal plugins [%s] is not suported\n", Joiner.on(", ").join(cliForce.getInternalPlugins()));
+                ctx.getCommandWriter().printf("Manually installing internal plugins [%s] is not supported\n", Joiner.on(", ").join(cliForce.getInternalPlugins()));
                 return;
             }
             CommandWriter output = ctx.getCommandWriter();
@@ -349,7 +349,7 @@ public class DefaultPlugin implements Plugin {
 
             for (String arg : ctx.getCommandArguments()) {
                 if (cliForce.getInternalPlugins().contains(arg)) {
-                    ctx.getCommandWriter().printf("Removing internal plugins [%s] is not suported\n", Joiner.on(", ").join(cliForce.getInternalPlugins()));
+                    ctx.getCommandWriter().printf("Removing internal plugins [%s] is not supported\n", Joiner.on(", ").join(cliForce.getInternalPlugins()));
                 } else {
                     ctx.getCommandWriter().printf("Removing plugin: %s\n", arg);
                     cliForce.removePlugin(arg);

@@ -10,7 +10,7 @@ import jline.console.completer.Completer;
 import jline.console.completer.StringsCompleter;
 
 
-class CommandCompletor implements Completer {
+public class CommandCompletor implements Completer {
 
     LazyLogger log = new LazyLogger(this);
 

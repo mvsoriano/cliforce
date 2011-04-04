@@ -2,13 +2,17 @@ package com.force.cliforce.defaultplugin;
 
 
 import com.force.cliforce.*;
+import com.force.cliforce.command.DebugCommand;
 import com.google.inject.Guice;
+import com.google.inject.Inject;
 import com.google.inject.Injector;
+import com.vmforce.client.VMForceClient;
 import mockit.Mock;
 import mockit.Mockit;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.util.Arrays;
@@ -56,6 +60,27 @@ public class DefaultCommandsUnitTest {
         Assert.assertFalse(ctx.getCommandWriter().getOutput().contains("java.lang.ArrayIndexOutOfBoundsException"), "Incorrect output");
     }
 
+    @DataProvider(name = "expectedData")
+    public Object[][] appCommandExpectedInput() {
+        return new Object[][]{
+                { "sh: Executing: echo something\n  something", new String[] {"echo", "something"}, true}
+                , { "sh: Executing: abc\nThe command failed to execute. Please check the path to the executable you provided",
+                        new String[] {"abc"}, true}
+                , {"stderr", new String[] {"dir ", "-3", "/3"} /*-3 for unix, /3 for win*/, false /* check that stderr is not in the output */}
+        };
+    }
+
+    @Test(dataProvider = "expectedData")
+    public void testShellCommandWithArgs(String expectedOutput, String[] args, boolean testForMatch) throws Exception {
+       DefaultPlugin.ShellCommand cmd = new DefaultPlugin.ShellCommand();
+        TestCommandContext ctx = new TestCommandContext().withCommandArguments(args);
+        cmd.execute(ctx);
+        if (testForMatch) {
+            Assert.assertTrue(ctx.getCommandWriter().getOutput().contains(expectedOutput), "Incorrect output:" + expectedOutput);
+        } else {
+            Assert.assertFalse(ctx.getCommandWriter().getOutput().contains(expectedOutput), "Incorrect output:" + expectedOutput);
+        }
+    }
 
     @Test
     public void testInteractiveLogin() throws Exception {
@@ -105,5 +130,61 @@ public class DefaultCommandsUnitTest {
     }
 
 
+
+    @DataProvider(name = "pluginTestData")
+    public Object[][] pluginTestData() {
+        return new Object[][]{
+                {DefaultPlugin.UnplugCommand.class, "Removing plugin: strangeApp\n....not found\n", new String[]{"strangeApp"}, true}
+                , {DefaultPlugin.PluginCommand.class, "The maven artifact associated with the plugin could not be found.\n", new String[]{"strangeApp"}, true}
+        };
+    }
+
+    @Test(dataProvider = "pluginTestData")
+    public void testMissingPlugin(Class<? extends Command> commandClass, String expectedOutput, String[] args, boolean exactOutput) throws Exception {
+    	TestCommandContext context = new TestCommandContext().withCommandArguments(args).withVmForceClient(new VMForceClient());
+        Injector injector = Guice.createInjector(new TestModule());
+        injector.getInstance(TestCliforceAccessor.class).setWriter(context.getCommandWriter());
+        Command command = injector.getInstance(commandClass);
+        command.execute(context);
+
+        String actualOutput = context.out();
+        if (exactOutput) {
+            Assert.assertEquals(actualOutput, expectedOutput, "Unexpected output for " + command + ": " + actualOutput);
+        } else {
+            Assert.assertTrue(actualOutput.contains(expectedOutput), "Unexpected output for " + command + ": " + actualOutput);
+        }
+    }
+
+    @Test
+    public  void testDebugCommand() throws Exception {
+        String [] expectedOutput = new String[] {
+                "turns debug output on/off"
+                , "Usage: debug [args]"
+                , "args:"
+                , "--off\tTurns off debug logging to the console"
+                , "--on\tTurns on debug logging to the console"
+        };
+
+        TestCommandContext context = new TestCommandContext().withVmForceClient(new VMForceClient());
+        Injector injector = Guice.createInjector(new TestModule());
+        Command command = injector.getInstance(DebugCommand.class);
+        command.execute(context);
+
+        String [] actualOutput = context.out().split("\n");
+
+
+        int j = 0;
+        for(int i=0;i < actualOutput.length; i++) {
+            if (actualOutput[i].trim().equals("")) {
+                continue;
+            }
+
+            Assert.assertTrue(j<expectedOutput.length, "Actual output exceeds expected output. Found:" + actualOutput[i]);
+            Assert.assertEquals(actualOutput[i].trim(),expectedOutput[j], "Actual output line:" + actualOutput[i].trim() + "\nExpected output line:" + expectedOutput[j]);
+            j++;
+        }
+
+        Assert.assertEquals(j, expectedOutput.length, "Actual output does not contain:" + expectedOutput[j-1]);
+    }
 
 }

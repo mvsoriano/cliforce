@@ -5,6 +5,8 @@ import javax.inject.Singleton;
 import java.util.HashSet;
 import java.util.Set;
 
+import jline.console.completer.Completer;
+
 public class TestModule extends MainModule {
 
     public TestModule() {
@@ -26,6 +28,7 @@ public class TestModule extends MainModule {
         expose(TestPluginInjector.class);
         expose(TestPluginInstaller.class);
         expose(TestCliforceAccessor.class);
+        
     }
 
     @Override
@@ -33,5 +36,13 @@ public class TestModule extends MainModule {
         //mutable for testing
         return new HashSet<String>();
     }
-
+    
+    @Override
+    public void bindCompletor() {
+        CommandCompletor cmdComp = new CommandCompletor();
+        bind(Completer.class).toInstance(cmdComp);
+        bind(CommandCompletor.class).toInstance(cmdComp);
+        expose(CommandCompletor.class);
+    }
+    
 }
