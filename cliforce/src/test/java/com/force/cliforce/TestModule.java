@@ -12,7 +12,7 @@ public class TestModule extends MainModule {
     }
 
     public TestModule(String userHomeDirectory) {
-        System.setProperty("user.home", userHomeDirectory);
+        System.setProperty("cliforce.home", userHomeDirectory);
     }
 
     @Override
@@ -33,5 +33,5 @@ public class TestModule extends MainModule {
         //mutable for testing
         return new HashSet<String>();
     }
-    
+
 }

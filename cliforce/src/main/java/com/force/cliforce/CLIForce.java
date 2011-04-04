@@ -96,8 +96,8 @@ public class CLIForce {
             log.get().error("ExitException->Exiting");
             System.exit(1);
         } catch (Throwable t) {
-        	log.get().error("Caught generic error", t);
-        	System.exit(1);
+            log.get().error("Caught generic error", t);
+            System.exit(1);
         }
     }
 
@@ -113,7 +113,7 @@ public class CLIForce {
         //system.err on startup due to timing issues during init.
         try {
 
-            File errors = new File(System.getProperty("user.home") + "/.force/cliforce.errors");
+            File errors = new File(Util.getCliforceHome() + "/.force/cliforce.errors");
             if (errors.exists() || errors.createNewFile()) {
                 System.setErr(new PrintStream(errors));
             }
@@ -194,7 +194,7 @@ public class CLIForce {
     }
 
     private void setupHistory(ConsoleReader r, PrintWriter o) throws IOException {
-        File hist = new File(System.getProperty("user.home") + "/.force/cliforce_history");
+        File hist = new File(Util.getCliforceHome() + "/.force/cliforce_history");
         if (!hist.getParentFile().exists()) {
             if (!hist.getParentFile().mkdir()) {
                 o.println("can't create .force directory");

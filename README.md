@@ -138,6 +138,27 @@ Create a cliforce.bat batch file:
 (replacing <VERSION> with your version)and put the jar in the same directory as the batch file.
 Put cliforce.bat on your path so that you can launch cliforce in any directory by typing cliforce at the command prompt.
 
+##Java System properties you may want to add to your script
+
+cliforce create/uses a directory named .force to store login, connection,plugin and history information. By default this directory is created under the user's home directory.
+To override this location, set the java system property cliforce.home
+
+        java -Dcliforce.home=/path/to/different/home -jav cliforce-boot.jar
+
+Note that this will still create a directory called .force under /path/to/different/home
+
+
+cliforce creates or uses a local maven repository to download and store resolved dependencies. By default this directory is assumed to be .m2/repository under the users's home directory, unless
+cliforce.home is set, then the assumption is that the repo would be in .m2/reposotory under cliforce.home. To override this location set the java system property maven.repo
+
+So to set an alternate cliforce.home but to use the local maven repository of the user, you can do the following.
+
+        java -Dcliforce.home=/path/to/different/home -Dmaven.repo=/path/to/user/home/.m2/repository -jar cliforce-boot.jar
+
+
+
+
+
 #Scripting
 
 This tool is scriptable. You simply need to redirect input from a file.
