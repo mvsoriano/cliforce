@@ -1,14 +1,15 @@
 package com.force.cliforce;
 
 
-import java.io.File;
-import java.lang.reflect.ParameterizedType;
-import java.util.*;
-
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.ParameterDescription;
+import com.beust.jcommander.ParameterException;
 import jline.console.completer.FileNameCompleter;
 import jline.console.completer.StringsCompleter;
 
-import com.beust.jcommander.*;
+import java.io.File;
+import java.lang.reflect.ParameterizedType;
+import java.util.*;
 
 /**
  * base class for Commands that use JCommander to do argument parsing, and JLine completion.
@@ -258,6 +259,7 @@ public abstract class JCommand<T> implements Command {
                 }
             } else {
                 List<CharSequence> deduped = deduplicateAndDescribe(subCandidates, descs);
+
                 for (CharSequence subCandidate : deduped) {
                     if (lastArgIsValue) {
                         candidates.add(" " + subCandidate);
@@ -271,6 +273,7 @@ public abstract class JCommand<T> implements Command {
                         }
                     });
                 }
+                if(candidates.size() == 1) candidates.add(" ");
             }
             String frag = getUnambiguousCompletions(candidates);
             if (frag.length() > 0 && !lastArgIsValue) {
