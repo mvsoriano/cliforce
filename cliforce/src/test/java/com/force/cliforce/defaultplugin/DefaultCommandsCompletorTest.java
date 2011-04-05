@@ -51,5 +51,17 @@ public class DefaultCommandsCompletorTest extends BaseCommandCompletorTest {
     public void testBannerCommandHelpText() {
         runCompletorTestCase("banner ", 7, Arrays.asList(new String[] {" ", "print the banner"}));
     }
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testClasspathCommandOneHyphen() {
+        runCompletorTestCase("classpath -", 12, Arrays.asList(new String[] {"--sort, -s  <sort the returned list of files on the classpath alphabetically>", " "}));
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testClasspathCommandTwoHyphens() {
+        runCompletorTestCase("classpath --", 0, Arrays.asList(new String[] {"classpath --sort "}));
+    }
 
 }
