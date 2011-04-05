@@ -16,6 +16,7 @@ import com.force.cliforce.Util._
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.http.HttpStatus
 import collection.Iterable
+import net.liftweb.json.{JsonParser, DefaultFormats}
 
 object AppNameCache {
   lazy val cache = new HashMap[ForceEnv, List[String]];
@@ -33,7 +34,12 @@ object AppNameCache {
   }
 }
 
+case class ErrorResponse(code: String, description: String)
+
 abstract class AppCommand extends JCommand[AppArg] {
+  implicit val formats = DefaultFormats
+  val log = new LazyLogger(this.getClass)
+
   override def getCompletionsForSwitch(switchForCompletion: String, partialValue: String, parameterDescription: ParameterDescription, ctx: CommandContext) = {
     if (ctx.getVmForceClient != null && (switchForCompletion eq JCommand.MAIN_PARAM)) {
       val apps = AppNameCache.getApps(ctx)
@@ -58,7 +64,13 @@ abstract class AppCommand extends JCommand[AppArg] {
         if (e.getStatusCode eq HttpStatus.NOT_FOUND) {
           ctx.getCommandWriter.println("the application was not found")
         } else {
-          throw e;
+          val msg = for {
+            j <- JsonParser.parseOpt(e.getStatusText)
+            e <- j.extractOpt[ErrorResponse]
+          } yield e.description
+
+          ctx.getCommandWriter.println(msg.getOrElse(e.getStatusText))
+          log.get.debug("httpclientexception", e)
         }
       }
     }
