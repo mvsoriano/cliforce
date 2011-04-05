@@ -1,10 +1,6 @@
 package com.force.cliforce.defaultplugin;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import scala.actors.threadpool.Arrays;
@@ -35,11 +31,25 @@ public class DefaultCommandsCompletorTest extends BaseCommandCompletorTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testBasicCommandCompletion() {
-        List<CharSequence> candidates = new ArrayList<CharSequence>();
-        String buffer = "e";
-        int cursor = getCompletor().complete(buffer, buffer.length(), candidates);
-        Assert.assertEquals(cursor, 0, "unexpected cursor position");
-        verifyCandidateList(candidates, Arrays.asList(new String[] {"env", "exit"}));
+        runCompletorTestCase("e", 0, Arrays.asList(new String[] {"env", "exit"}));
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testEmptyStringBuffer() {
+        runCompletorTestCase("", 0, Arrays.asList(new String[] {"banner", "classpath", "debug", "env", "exit", "help", "history", "login", "plugin", "require", "sh", "sysprops", "unplug", "version"}));
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testFullCommandInBufferNoArgs() {
+        runCompletorTestCase("banner", 0, Arrays.asList(new String[] {"banner "}));
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testBannerCommandHelpText() {
+        runCompletorTestCase("banner ", 7, Arrays.asList(new String[] {" ", "print the banner"}));
     }
 
 }

@@ -1,9 +1,5 @@
 package com.force.cliforce;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import scala.actors.threadpool.Arrays;
@@ -25,12 +21,7 @@ public class AppCommandCompletorTest extends BaseCommandCompletorTest {
     @SuppressWarnings("unchecked")
     @Test
     public void testBasicAppCommandCompletion() {
-        List<CharSequence> candidates = new ArrayList<CharSequence>();
-        String buffer = "app";
-        int cursor = getCompletor().complete(buffer, buffer.length(), candidates);
-        Assert.assertEquals(cursor, 0, "unexpected cursor position");
-        verifyCandidateList(candidates, Arrays.asList(new String[] {"app:apps", "app:delete", "app:push", "app:restart", "app:start", "app:stop", "app:tail"}));
-        
+        runCompletorTestCase("app", 0, Arrays.asList(new String[] {"app:apps", "app:delete", "app:push", "app:restart", "app:start", "app:stop", "app:tail"}));
     }
 
 }

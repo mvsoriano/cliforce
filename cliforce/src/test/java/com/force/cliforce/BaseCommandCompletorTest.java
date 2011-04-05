@@ -1,6 +1,7 @@
 package com.force.cliforce;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -27,6 +28,13 @@ public abstract class BaseCommandCompletorTest extends BaseCliforceCommandTest {
     
     public CommandCompletor getCompletor() {
         return completor;
+    }
+    
+    public void runCompletorTestCase(String buffer, int expectedCursor, List<String> expectedCandidates) {
+        List<CharSequence> candidates = new ArrayList<CharSequence>();
+        int cursor = getCompletor().complete(buffer, buffer.length(), candidates);
+        Assert.assertEquals(cursor, expectedCursor, "unexpected cursor position");
+        verifyCandidateList(candidates, expectedCandidates);
     }
     
     public void verifyCandidateList(List<CharSequence> actualCandidates, List<String> expectedCandidates) {
