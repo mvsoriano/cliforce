@@ -63,5 +63,12 @@ public class DefaultCommandsCompletorTest extends BaseCommandCompletorTest {
     public void testClasspathCommandTwoHyphens() {
         runCompletorTestCase("classpath --", 0, Arrays.asList(new String[] {"classpath --sort "}));
     }
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testRequireCommandHelpText() {
+        runCompletorTestCase("require ", 8, Arrays.asList(new String[] {"<main param>   <maven artifact id for an artifact in group com.force.cliforce.plugin>", 
+                "--version, -v  <maven artifact version for the specified artifact, if unspecified RELEASE meta-version is used>"}));
+    }
 
 }
