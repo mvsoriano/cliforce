@@ -12,7 +12,7 @@ import org.testng.annotations.Test;
 import javax.servlet.ServletException;
 import java.io.IOException;
 
-/*
+/**
  * Tests for the default commands in CLIForce.
  * @author sclasen
  * @since

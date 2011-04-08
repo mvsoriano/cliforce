@@ -12,8 +12,10 @@ import org.testng.annotations.BeforeClass;
 import com.sforce.ws.ConnectionException;
 
 /**
- * 
  * Base class for CommandCompletor tests
+ *
+ * @author jeffrey.lai
+ * @since javasdk-21.0.2-BETA
  */
 public abstract class BaseCommandCompletorTest extends BaseCliforceCommandTest {
     
@@ -30,6 +32,12 @@ public abstract class BaseCommandCompletorTest extends BaseCliforceCommandTest {
         return completor;
     }
     
+    /**
+     * This method runs a completion test case and verifies results
+     * @param buffer is the command text that is typed into the prompt
+     * @param expectedCursor this is the expected return value from the complete method
+     * @param expectedCandidates these are the expected candidates for completing the command
+     */
     public void runCompletorTestCase(String buffer, int expectedCursor, List<String> expectedCandidates) {
         List<CharSequence> candidates = new ArrayList<CharSequence>();
         int cursor = getCompletor().complete(buffer, buffer.length(), candidates);
