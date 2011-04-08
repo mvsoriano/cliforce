@@ -60,5 +60,11 @@ public interface CommandContext {
     VMForceClient getVmForceClient();
 
     CommandWriter getCommandWriter();
-
+    
+    /**
+     * can be null
+     * 
+     * @return
+     */
+    String getConnectionName();
 }

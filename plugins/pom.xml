@@ -16,6 +16,7 @@
     <module>db</module>
     <module>template</module>
     <module>connection</module>
+    <module>jpa</module>
   </modules>
 
   <dependencies>

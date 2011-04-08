@@ -6,4 +6,6 @@ target
 *.iml
 *.iws
 *.scala_dependencies
+deploy
+deploy.zip
 

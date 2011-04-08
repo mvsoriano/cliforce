@@ -56,6 +56,8 @@ class NewProjectContextWrapper(val ctx: CommandContext, val args: Array[String])
   def getPartnerConnection = ctx.getPartnerConnection
 
   def getMetadataConnection = ctx.getMetadataConnection
+  
+  def getConnectionName = ctx.getConnectionName
 }
 
 class NewProjectCommand extends JCommand[NewProjectArgs] {

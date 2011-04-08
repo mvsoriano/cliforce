@@ -33,13 +33,19 @@ import org.sonatype.aether.util.graph.PreorderNodeListGenerator;
  */
 public class DependencyResolver {
 
+    public enum Scope {
+        RUNTIME,
+        COMPILE,
+        TEST
+    }
 
     public static final String JCL_OVER_SLF4J = "jcl-over-slf4j";
     public static final String LOG4J_OVER_SLF4J = "log4j-over-slf4j";
     public static final String LOG_4_J = "log4j";
     public static final String COMMONS_LOGGING = "commons-logging";
     public static final String COMMONS_LOGGING_API = "commons-logging-api";
-    public static final String RUNTIME = "runtime";
+    public static final String COMPILE = "compile";
+    public static final String TEST = "test";
     public static final String SNAPSHOT = "SNAPSHOT";
     public static final String LATEST = "LATEST";
     public static final String RELEASE = "RELEASE";
@@ -132,14 +138,13 @@ public class DependencyResolver {
 
         }
     }
-
-
-    private URLClassLoader createClassLoaderInternal(String groupId, String artifactId, String version, ClassLoader parent) {
+    
+    private URLClassLoader createClassLoaderInternal(String groupId, String artifactId, String version, Scope scope, ClassLoader parent) {
         try {
             initialize();
             DefaultArtifact defaultArtifact = new DefaultArtifact(groupId + ":" + artifactId + ":" + version);
             Dependency dependency =
-                    new Dependency(defaultArtifact, RUNTIME);
+                    new Dependency(defaultArtifact, scope.toString().toLowerCase());
             CollectRequest collectRequest = new CollectRequest();
             collectRequest.setRoot(dependency);
             for (RemoteRepository remoteRepository : remoteRepositories) {
@@ -161,6 +166,12 @@ public class DependencyResolver {
                     File file = dn.getDependency().getArtifact().getFile();
                     if (file != null) {
                         classpath.add(file.toURI().toURL());
+                        if (scope == Scope.TEST && version.equals(dn.getVersion().toString())) {
+                            file = new File(file.getPath().replace(".jar", "-tests.jar"));
+                            if (file.exists()) {
+                                classpath.add(file.toURI().toURL());
+                            }
+                        }
                     }
                 }
             }
@@ -252,14 +263,28 @@ public class DependencyResolver {
      * @throws DependencyResolutionException if the artifact cant be resolved
      */
     public ClassLoader createClassLoaderFor(String groupId, String artifactId, String version, ClassLoader parent, OutputAdapter out) throws DependencyResolutionException {
+        return createClassLoaderFor(groupId, artifactId, version, Scope.RUNTIME, parent, out);
+    }
+
+    /**
+     * Create a classloader that contains all the runtime dependencies of the given maven dependency.
+     * Attempt offline resolution first, and if that fails, attempt online resolution.
+     *
+     * @param groupId    maven groupId
+     * @param artifactId maven artifactid
+     * @param version    maven version
+     * @param scope      maven dependency scope ("runtime", "test" etc.)
+     * @param parent     for the created classloader
+     * @param out        output adapter
+     * @return a classloader with all the runtime dependencies of the given maven artifact.
+     * @throws DependencyResolutionException if the artifact cant be resolved
+     */
+    public ClassLoader createClassLoaderFor(String groupId, String artifactId, String version, Scope scope, ClassLoader parent, OutputAdapter out) throws DependencyResolutionException {
         try {
-            return createClassLoaderInternal(groupId, artifactId, version, parent);
+            return createClassLoaderInternal(groupId, artifactId, version, scope, parent);
         } catch (DependencyResolutionException dre) {
             out.println(dre, "Exception resolving dependencies");
             throw dre;
         }
-
     }
-
-
 }

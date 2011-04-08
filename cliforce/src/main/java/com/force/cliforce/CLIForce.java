@@ -1,7 +1,22 @@
 package com.force.cliforce;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.core.util.StatusPrinter;
+import java.io.*;
+import java.net.URL;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+
+import javax.inject.Inject;
+import javax.servlet.ServletException;
+
+import jline.console.ConsoleReader;
+import jline.console.completer.Completer;
+import jline.console.history.FileHistory;
+import jline.console.history.History;
+
+import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
+
 import com.force.sdk.connector.ForceServiceConnector;
 import com.google.inject.Guice;
 import com.google.inject.name.Named;
@@ -11,20 +26,9 @@ import com.sforce.soap.metadata.MetadataConnection;
 import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.ws.ConnectionException;
 import com.vmforce.client.VMForceClient;
-import jline.console.ConsoleReader;
-import jline.console.completer.Completer;
-import jline.console.history.FileHistory;
-import jline.console.history.History;
-import org.slf4j.LoggerFactory;
-import org.slf4j.bridge.SLF4JBridgeHandler;
 
-import javax.inject.Inject;
-import javax.servlet.ServletException;
-import java.io.*;
-import java.net.URL;
-import java.util.*;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.core.util.StatusPrinter;
 
 public class CLIForce {
 
@@ -547,6 +551,11 @@ public class CLIForce {
         @Override
         public CommandWriter getCommandWriter() {
             return writer;
+        }
+        
+        @Override
+        public String getConnectionName() {
+            return connector.getConnectionName();
         }
     }
 

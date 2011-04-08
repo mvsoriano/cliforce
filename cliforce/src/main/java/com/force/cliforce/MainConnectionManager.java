@@ -1,22 +1,22 @@
 package com.force.cliforce;
 
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import javax.servlet.ServletException;
+
+import org.apache.commons.httpclient.HttpHost;
+
 import com.force.sdk.connector.ForceConnectorConfig;
 import com.force.sdk.connector.ForceServiceConnector;
 import com.sforce.ws.ConnectionException;
 import com.vmforce.client.VMForceClient;
 import com.vmforce.client.connector.RestTemplateConnector;
-import org.apache.commons.httpclient.HttpHost;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 public class MainConnectionManager implements ConnectionManager {
 
@@ -228,6 +228,7 @@ public class MainConnectionManager implements ConnectionManager {
                 config.setTraceMessage(false);
                 config.setPrettyPrintXml(true);
                 ForceServiceConnector connector = new ForceServiceConnector(config);
+                connector.setConnectionName(getCurrentEnvironment());
                 current = new EnvConnections(config, connector);
                 EnvConnections prev = connections.putIfAbsent(env, current);
                 return prev == null ? current.forceServiceConnector : prev.forceServiceConnector;

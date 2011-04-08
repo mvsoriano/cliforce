@@ -28,6 +28,7 @@ public class TestCommandContext implements CommandContext {
     private VMForceClient vmForceClient;
     private TestCommandWriter commandWriter = new TestCommandWriter();
     private ForceEnv forceEnv;
+    private String connectionName;
 
     @Override
     public MetadataConnection getMetadataConnection() {
@@ -67,6 +68,11 @@ public class TestCommandContext implements CommandContext {
     @Override
     public ForceEnv getForceEnv() {
         return forceEnv;
+    }
+    
+    @Override
+    public String getConnectionName() {
+        return connectionName;
     }
 
     public TestCommandContext withMetadataConnection(MetadataConnection metadataConnection) {
@@ -123,6 +129,12 @@ public class TestCommandContext implements CommandContext {
         return copy;
     }
 
+    public TestCommandContext withConnectionName(String connectionName) {
+        TestCommandContext copy = copy();
+        copy.connectionName = connectionName;
+        return copy;
+    }
+    
     private TestCommandContext copy() {
         TestCommandContext tcc = new TestCommandContext();
         tcc.metadataConnection = metadataConnection;
@@ -132,6 +144,7 @@ public class TestCommandContext implements CommandContext {
         tcc.commandReader = commandReader;
         tcc.vmForceClient = vmForceClient;
         tcc.forceEnv = forceEnv;
+        tcc.connectionName = connectionName;
         return tcc;
     }
 
