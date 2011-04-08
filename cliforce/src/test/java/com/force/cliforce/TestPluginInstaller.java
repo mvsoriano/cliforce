@@ -16,8 +16,18 @@ public class TestPluginInstaller {
     @Inject
     private PluginManager pluginManager;
 
-    public void installPlugin(String artifact, String version, Plugin p) throws IOException {
-        pluginManager.installPlugin(artifact, version, p, true);
+    @Inject
+    private CLIForce cliForce;
+
+    public void installPlugin(String artifact, String version, Plugin p, boolean internal) throws IOException {
+        pluginManager.installPlugin(artifact, version, p, internal);
+        if (internal) {
+            cliForce.getInternalPlugins().add(artifact);
+        }
+    }
+
+    public void installDefaultPlugin() {
+        pluginManager.injectDefaultPluginAndAddCommands(new DefaultPlugin());
     }
 
 }

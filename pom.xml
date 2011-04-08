@@ -27,6 +27,8 @@
         <force.client.version>1.0.1</force.client.version>
         <built.at>${build.timestamp}</built.at>
         <guice.version>3.0</guice.version>
+        <jmockit.version>0.999.6</jmockit.version>
+        <maven.clover.version>3.0.2</maven.clover.version>
         <positive.test.user.home>${user.home}/cliforce-test-config/positive</positive.test.user.home>
         <negative.test.user.home>${user.home}/cliforce-test-config/negative</negative.test.user.home>
     </properties>
@@ -65,6 +67,11 @@
             <id>scala-tools.releases</id>
             <name>Scala-Tools Dependencies Repository for Releases</name>
             <url>http://scala-tools.org/repo-releases</url>
+        </repository>
+        <repository>
+           <id>jmockit-svn</id>
+           <url>http://jmockit.googlecode.com/svn/maven-repo</url>
+           <releases><checksumPolicy>ignore</checksumPolicy></releases>
         </repository>
 
     </repositories>
@@ -218,6 +225,16 @@
                         <sourceInclude>**/*.scala</sourceInclude>
                         <sourceInclude>**/*.java</sourceInclude>
                     </sourceIncludes>
+                </configuration>
+            </plugin>
+ 
+            <plugin>
+                <groupId>com.atlassian.maven.plugins</groupId>
+                <artifactId>maven-clover2-plugin</artifactId>
+                <version>${maven.clover.version}</version>
+                <configuration>
+                    <generateHtml>true</generateHtml>
+                    <generateXml>true</generateXml>
                 </configuration>
             </plugin>
 

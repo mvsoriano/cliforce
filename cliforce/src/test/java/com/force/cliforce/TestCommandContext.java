@@ -101,13 +101,21 @@ public class TestCommandContext implements CommandContext {
         return copy;
     }
 
-    public void setCommandArguments(String[] commandArguments) {
+    public void setCommandArguments(String... commandArguments) {
         this.commandArguments = commandArguments;
     }
 
     public TestCommandContext withCommandReader(CommandReader commandReader) {
         TestCommandContext copy = copy();
         copy.commandReader = commandReader;
+        return copy;
+    }
+
+    public TestCommandContext withTestCommandReader(TestCommandReader commandReader) {
+        TestCommandContext copy = copy();
+        copy.commandReader = commandReader;
+        copy.commandWriter = new TestCommandWriter();
+        commandReader.setCommandWriter(copy.commandWriter);
         return copy;
     }
 

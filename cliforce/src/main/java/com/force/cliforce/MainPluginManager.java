@@ -86,7 +86,7 @@ public class MainPluginManager implements PluginManager {
     }
 
     @Override
-    public void injectDefaultPluginAndAddCommands(Plugin p) {
+    public void injectDefaultPluginAndAddCommands(DefaultPlugin p) {
         PluginModule module = new PluginModule(p);
         Injector injector = mainInjector.createChildInjector(module);
         for (Class<? extends Command> cmdClass : p.getCommands()) {

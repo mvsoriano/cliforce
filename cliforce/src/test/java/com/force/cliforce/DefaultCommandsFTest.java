@@ -1,9 +1,9 @@
-package com.force.cliforce.defaultplugin;
+package com.force.cliforce;
 
 
-import com.force.cliforce.*;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.sforce.ws.ConnectionException;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
@@ -12,13 +12,12 @@ import org.testng.annotations.Test;
 import javax.servlet.ServletException;
 import java.io.IOException;
 
-/*
+/**
  * Tests for the default commands in CLIForce.
  * @author sclasen
  * @since
  */
-public class DefaultCommandsFTest {
-
+public class DefaultCommandsFTest extends BaseCliforceCommandTest {
 
     Injector injector;
     ConnectionManager connection;
@@ -27,7 +26,7 @@ public class DefaultCommandsFTest {
     // ensure the client can connect to an org
     // TODO: Refactor to use new setup for connectionmanager
     @BeforeClass
-    public void setupEnvironment() throws IOException, ServletException {
+    public void setupTestContext() throws IOException, ServletException {
         injector = Guice.createInjector(new TestModule());
 
         connection = injector.getInstance(ConnectionManager.class);
@@ -39,23 +38,38 @@ public class DefaultCommandsFTest {
         context.getVmForceClient().deleteAllApplications();
     }
 
-
-    @DataProvider(name = "expectedOutput")
-    public Object[][] provideExpectedOutputForCommand() {
+    @DataProvider(name = "commandExecutionWithArgs")
+    public Object[][] providecommandExecutionWithArgs() {
         return new Object[][]{
                 { DefaultPlugin.ClasspathCommand.class, "No such plugin: abcdefg1234567\n", new String[]{"abcdefg1234567"}}
               , { DefaultPlugin.ClasspathCommand.class, "No such plugin: abcdefg1234567\n", new String[]{"abcdefg1234567", "-s"}}
               , { DefaultPlugin.ClasspathCommand.class, "No such plugin: abcdefg1234567\n", new String[]{"-s", "abcdefg1234567"}}
+              , { DefaultPlugin.ClasspathCommand.class, "No such plugin: abcdefg1234567\n", new String[]{"abcdefg1234567", "--sort"}}
+              , { DefaultPlugin.ClasspathCommand.class, "No such plugin: abcdefg1234567\n", new String[]{"--sort", "abcdefg1234567"}}
         };
     }
 
-    @Test(dataProvider = "expectedOutput")
+    @Test(dataProvider = "commandExecutionWithArgs")
     public void testDefaultCommand(Class<? extends Command> commandClass, String expectedOutput, String[] args) throws Exception {
         context = context.withCommandArguments(args);
         Command command = injector.getInstance(commandClass);
         command.execute(context);
         String actualOutput = context.out();
         Assert.assertEquals(actualOutput, expectedOutput, "Unexpected output for " + command + ": " + actualOutput);
+    }
+
+    @DataProvider(name = "stringCommands")
+    public Object[][] provideStringCommands() {
+        return new Object[][] {
+                { "!debug --on", "Unknown Command !debug --on\n" }
+              , { "!debug", "Unknown Command !debug\n" }
+        };
+    }
+
+    @Test(dataProvider = "stringCommands")
+    public void testStringCommand(String commandLineInput, String expectedOutput) throws IOException, ServletException, InterruptedException, ConnectionException {
+        String actualOutput = executeCommand(commandLineInput);
+        Assert.assertEquals(actualOutput, expectedOutput, "Unexpected command output: " + actualOutput);
     }
 
     @Test
@@ -84,5 +98,20 @@ public class DefaultCommandsFTest {
         return Guice.createInjector(new TestModule());
     }
 
+    @Override
+    public void setupCLIForce(CLIForce c) throws IOException {
+        //overriding with an empty method because we don't want to install additional plugins
+    }
 
+    @Override
+    public String getPluginArtifact() {
+        // not needed to test Default commands
+        return null;
+    }
+
+    @Override
+    public Plugin getPlugin() {
+        // not needed to test Default commands
+        return null;
+    }
 }

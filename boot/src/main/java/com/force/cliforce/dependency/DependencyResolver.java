@@ -1,10 +1,7 @@
 package com.force.cliforce.dependency;
 
 
-import java.io.File;
-import java.net.*;
-import java.util.*;
-
+import com.force.cliforce.Boot;
 import org.apache.maven.repository.internal.DefaultServiceLocator;
 import org.apache.maven.repository.internal.MavenRepositorySystemSession;
 import org.apache.maven.wagon.Wagon;
@@ -23,6 +20,12 @@ import org.sonatype.aether.resolution.ArtifactResolutionException;
 import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.graph.PreorderNodeListGenerator;
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.*;
 
 /**
  * DependencyResolver  that uses maven-aether to resolve the dependency graph for a given dependency.
@@ -64,7 +67,7 @@ public class DependencyResolver {
     private List<RemoteRepository> remoteRepositories;
     private URL log4jOverSlf4j;
     private URL cloggingOverSlf4j;
-    private LocalRepository localRepository = new LocalRepository(System.getProperty("user.home") + "/.m2/repository/");
+    private LocalRepository localRepository = new LocalRepository(Boot.getLocalMavenRepository());
 
 
     public void setRepositories(Properties repositories) {

@@ -1,6 +1,8 @@
 package com.force.cliforce;
 
 import com.google.inject.Guice;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -29,7 +31,8 @@ public class MainConnectionManagerLoginTest {
             mgr.doLogin();
             Assert.fail("we expected login to fail");
         } catch (HttpClientErrorException e) {
-            Assert.assertEquals(e.getMessage(), "403 Forbidden", "unexpected error message");
+            Assert.assertTrue(e.getMessage().contains("Invalid username, password, security token; or user locked out."), "unexpected error message");
+            Assert.assertEquals(e.getStatusCode(), HttpStatus.FORBIDDEN, "unexpected status code");
         }
     }
 

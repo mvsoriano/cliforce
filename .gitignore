@@ -2,6 +2,7 @@
 .settings
 .project
 target
+test-output/
 *.ipr
 *.iml
 *.iws

@@ -27,7 +27,6 @@ public class MainConnectionManager implements ConnectionManager {
     protected Properties envProperties = new Properties();
     protected Properties loginProperties = new Properties();
     private volatile VMForceClient vmForceClient;
-    private volatile RestTemplateConnector restTemplateConnector;
     private volatile ForceEnv currentEnv;
     private volatile String currentEnvName;
     private String user;
@@ -54,6 +53,21 @@ public class MainConnectionManager implements ConnectionManager {
     }
 
     @Override
+    public String getUser() {
+        return this.user;
+    }
+
+    @Override
+    public String getPassword() {
+        return this.password;
+    }
+
+    @Override
+    public String getTarget() {
+        return this.target;
+    }
+
+    @Override
     public void saveLogin() throws IOException {
         loginProperties.setProperty(USER, user);
         loginProperties.setProperty(PASSWORD, password);
@@ -66,7 +80,7 @@ public class MainConnectionManager implements ConnectionManager {
         VMForceClient forceClient = new VMForceClient();
         RestTemplateConnector restConnector = new RestTemplateConnector();
         restConnector.setTarget(new HttpHost(target));
-        restConnector.debug(false);
+        restConnector.debug(true);
         forceClient.setHttpConnector(restConnector);
         try {
             forceClient.login(user, password);
@@ -75,7 +89,6 @@ public class MainConnectionManager implements ConnectionManager {
         } catch (ServletException e) {
             throw new RuntimeException("Failed to login", e);
         }
-        restTemplateConnector = restConnector;
         vmForceClient = forceClient;
     }
 
@@ -160,7 +173,7 @@ public class MainConnectionManager implements ConnectionManager {
             ForceEnv env = envs.remove(name);
             connections.remove(env);
             writeForceUrls();
-            if(name != null && name.equals(currentEnvName)){
+            if (name != null && name.equals(currentEnvName)) {
                 currentEnv = null;
                 currentEnvName = null;
             }
@@ -180,9 +193,6 @@ public class MainConnectionManager implements ConnectionManager {
     public void setDebugOnConnections(boolean debug) {
         for (EnvConnections envConnections : connections.values()) {
             envConnections.config.setTraceMessage(debug);
-        }
-        if (restTemplateConnector != null) {
-            restTemplateConnector.debug(debug);
         }
     }
 
