@@ -21,11 +21,12 @@ import com.vmforce.client.bean.ApplicationInfo;
 import com.vmforce.client.bean.ApplicationInfo.ModelEnum;
 
 @MockClass(realClass = VMForceClient.class, instantiation = Instantiation.PerMockSetup)
-public class MockVMForceClient {
+public class MockVMForceClient extends VMForceClient {
     
 	private HashMap<String, ApplicationInfo> apps = new HashMap<String, ApplicationInfo>();
 
 	@SuppressWarnings("rawtypes")
+	@Override
     @Mock
 	public Map createApplication (ApplicationInfo info) {
 		if(apps.containsKey(info.getName())){
@@ -35,6 +36,7 @@ public class MockVMForceClient {
 		return new HashMap();
 	}
 	
+	@Override
 	@Mock
 	public ApplicationInfo getApplication (String appName) {
 		if(apps.containsKey(appName)){
@@ -43,11 +45,13 @@ public class MockVMForceClient {
 		return null;
 	}
 	
+	@Override
 	@Mock
 	public List<ApplicationInfo> getApplications() {
 		return new ArrayList<ApplicationInfo>(apps.values());		
 	}
 	
+	@Override
 	@Mock
 	public void deployApplication(String appName, String localPathToAppFile) throws IOException, ServletException {
 		if(!apps.containsKey(appName)){
@@ -55,6 +59,7 @@ public class MockVMForceClient {
 		}
 	}
 	
+	@Override
 	@Mock
 	public void deleteApplication(String appName){
 		if(apps.containsKey(appName)){
@@ -64,6 +69,7 @@ public class MockVMForceClient {
 		}
 	}
 	
+	@Override
 	@Mock
 	public void deleteAllApplications() {
 		if(apps != null){
