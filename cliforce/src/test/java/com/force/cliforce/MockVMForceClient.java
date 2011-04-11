@@ -9,6 +9,10 @@ import java.util.Map;
 
 import javax.servlet.ServletException;
 
+import mockit.Mock;
+import mockit.MockClass;
+import mockit.Instantiation;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -16,14 +20,13 @@ import com.vmforce.client.VMForceClient;
 import com.vmforce.client.bean.ApplicationInfo;
 import com.vmforce.client.bean.ApplicationInfo.ModelEnum;
 
-public class MockVMForceClient extends VMForceClient {
+@MockClass(realClass = VMForceClient.class, instantiation = Instantiation.PerMockSetup)
+public class MockVMForceClient {
+    
+	private HashMap<String, ApplicationInfo> apps = new HashMap<String, ApplicationInfo>();
 
-	private HashMap<String, ApplicationInfo> apps;
-	
-	public MockVMForceClient() {
-		apps = new HashMap<String, ApplicationInfo>();
-	}
-
+	@SuppressWarnings("rawtypes")
+    @Mock
 	public Map createApplication (ApplicationInfo info) {
 		if(apps.containsKey(info.getName())){
 			apps.remove(info.getName());
@@ -32,6 +35,7 @@ public class MockVMForceClient extends VMForceClient {
 		return new HashMap();
 	}
 	
+	@Mock
 	public ApplicationInfo getApplication (String appName) {
 		if(apps.containsKey(appName)){
 			return apps.get(appName);
@@ -39,16 +43,19 @@ public class MockVMForceClient extends VMForceClient {
 		return null;
 	}
 	
+	@Mock
 	public List<ApplicationInfo> getApplications() {
 		return new ArrayList<ApplicationInfo>(apps.values());		
 	}
 	
+	@Mock
 	public void deployApplication(String appName, String localPathToAppFile) throws IOException, ServletException {
 		if(!apps.containsKey(appName)){
 			apps.put(appName, new ApplicationInfo(appName, 1, 512, Collections.singletonList("dummyURL"), ModelEnum.SPRING));			
 		}
 	}
 	
+	@Mock
 	public void deleteApplication(String appName){
 		if(apps.containsKey(appName)){
 			apps.remove(appName);
@@ -57,9 +64,11 @@ public class MockVMForceClient extends VMForceClient {
 		}
 	}
 	
+	@Mock
 	public void deleteAllApplications() {
 		if(apps != null){
 			apps.clear();
 		}
-	}	
+	}
+	
 }
