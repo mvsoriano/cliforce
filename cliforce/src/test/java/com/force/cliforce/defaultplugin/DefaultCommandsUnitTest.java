@@ -4,7 +4,6 @@ package com.force.cliforce.defaultplugin;
 import com.force.cliforce.*;
 import com.force.cliforce.command.DebugCommand;
 import com.google.inject.Guice;
-import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.vmforce.client.VMForceClient;
 import mockit.Mock;
@@ -26,11 +25,13 @@ public class DefaultCommandsUnitTest {
     @BeforeClass
     public void mockLogin() {
         // mock login so it doesn't change credentials or connect to sfdc service
-        Mockit.setUpMock(MainConnectionManager.class, new Object(){
+        Mockit.setUpMock(MainConnectionManager.class, new MainConnectionManager(){
+            @Override
             @Mock
-            void doLogin() {System.out.println("doLogin");}
+            public void doLogin() {System.out.println("doLogin");}
+            @Override
             @Mock
-            void saveLogin() {System.out.println("saveLogin");}
+            public void saveLogin() {System.out.println("saveLogin");}
         });
     }
 
