@@ -2,26 +2,21 @@ package com.force.cliforce;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.management.RuntimeErrorException;
 import javax.servlet.ServletException;
 
-import mockit.Mock;
-import mockit.Mockit;
 
+import com.force.cliforce.plugin.app.command.*;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import com.force.cliforce.plugin.app.command.AppsCommand;
-import com.force.cliforce.plugin.app.command.DeleteAppCommand;
-import com.force.cliforce.plugin.app.command.PushCommand;
-import com.force.cliforce.plugin.app.command.StopCommand;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.vmforce.client.VMForceClient;
 
 /**
  * Tests for the behavior of cliforce's app command.
@@ -39,7 +34,6 @@ public class AppCommandTest {
     // ensure the client can connect to an org
     @BeforeClass
     public void setupEnvironment() throws IOException, ServletException {
-        Mockit.setUpMock(VMForceClient.class, MockVMForceClient.class);
         injector = Guice.createInjector(new TestModule());
     	if(!appFileDummy.exists()){
     		Assert.assertTrue(appFileDummy.createNewFile(), "Could not create dummy app file " + appFileDummy.getAbsolutePath());
@@ -50,7 +44,6 @@ public class AppCommandTest {
     @AfterClass(alwaysRun = true)
     public void cleanupEnvironment() {
     	appFileDummy.delete();
-    	Mockit.tearDownMocks();
     }
 
     @DataProvider(name = "expectedInput")
@@ -67,15 +60,21 @@ public class AppCommandTest {
 
     @Test(dataProvider = "expectedInput")
     public void testAppOutput(Class<? extends Command> commandClass, String expectedOutput, String[] args, boolean exactOutput) throws Exception {
-    	TestCommandContext context = new TestCommandContext().withCommandArguments(args).withVmForceClient(new VMForceClient());
+    	TestCommandContext context = new TestCommandContext().withCommandArguments(args).withVmForceClient(new MockVMForceClient());
         Command command = injector.getInstance(commandClass);
         command.execute(context);
-        String actualOutput = context.out();
-        if (exactOutput) {
-            Assert.assertEquals(actualOutput, expectedOutput, "Unexpected output for " + command + ": " + actualOutput);
-        } else {
-            Assert.assertTrue(actualOutput.contains(expectedOutput), "Unexpected output for " + command + ": " + actualOutput);
-        }
+        assertCorrectOutput(context, expectedOutput, command, exactOutput);
+    }
+
+    @Test
+    public void testAppAppsWithValidDeployedApplication() throws Exception {
+    	TestCommandContext appsctx = createCtxWithApp(appName, appPath);
+    	appsctx.getCommandWriter().reset();
+    	Command apps = injector.getInstance(AppsCommand.class);
+    	appsctx.setCommandArguments(new String[]{});
+    	apps.execute(appsctx);
+    	String[] output = appsctx.out().split("\\n");
+    	Assert.assertTrue(output[2].contains(appName), appName + " was not shown in app:apps line 2.");
     }
 
     @Test
@@ -96,53 +95,48 @@ public class AppCommandTest {
     
     @Test
     public void testAppPushWithDeploymentException() throws Exception{
-        try {
-            // setup vmforce mock so that exception is thrown on deploy
-            Mockit.setUpMock(VMForceClient.class, new MockVMForceClient() {
-                @Override
-                @Mock
-                public void deployApplication(String appName, String localPathToAppFile) throws IOException, ServletException {
-                    throw new RuntimeErrorException(null);
-                }
-            });
-            
             Assert.assertTrue(new File(appPath).exists(), "The app file " +appPath+ " does not exist.");
             Command cmd = injector.getInstance(PushCommand.class);
             TestCommandContext ctx = 
                 new TestCommandContext().withCommandArguments(appName, "--path", appPath)
-    			    .withVmForceClient(new VMForceClient());
+    			    .withVmForceClient(new MockVMForceClientDeploymentException());
             cmd.execute(ctx);
             //check that the application was deleted
             Assert.assertNull(ctx.getVmForceClient().getApplication(appName), "The application should have been deleted after a deployment failure.");
-        } finally {
-            // restore vmforce mock to the one that's needed for all other tests
-            Mockit.setUpMock(VMForceClient.class, MockVMForceClient.class);
+    }
+
+    @DataProvider(name = "expectedOutputForCommandsWithDeployedApp")
+    public Object[][] provideCommandsForVerification() {
+        return new Object[][]{
+                {StartCommand.class, "Starting "+appName+"\ndone\n", new String[]{appName}, new String[]{}, true}
+              , {RestartCommand.class, "Restarting "+appName+"\ndone\n", new String[]{appName}, new String[]{}, true}
+              , {DeleteAppCommand.class, "Deleting "+appName+"\ndone\n", new String[]{appName}, new String[]{}, true}
+              , {StopCommand.class, "Stopping "+appName+"\ndone\n", new String[]{appName}, new String[]{}, true}
+              , {TailFileCommand.class, "Tailing logs on app: "+appName+" instance 0, press enter to interrupt", new String[]{appName, "-p", "logs"}, new String[] {"\n"}, false}
+        };
+    }
+
+    @Test(dataProvider = "expectedOutputForCommandsWithDeployedApp")
+    public void testCommandWithDeployedApp(Class<? extends Command> commandClass, String expectedOutput, String[] args, String[] inputs, boolean exactOutput) throws Exception {
+        TestCommandContext ctxWithApp = createCtxWithApp(appName, appPath).withTestCommandReader(new TestCommandReader(Arrays.asList(inputs)));
+        ctxWithApp.getCommandWriter().reset();
+
+        Command command = injector.getInstance(commandClass);
+    	ctxWithApp.setCommandArguments(args);
+    	command.execute(ctxWithApp);
+
+        assertCorrectOutput(ctxWithApp, expectedOutput, command, exactOutput);
+    }
+
+    private void assertCorrectOutput(TestCommandContext contextWithOutput, String expectedOutput, Command command, boolean exactOutput) {
+        String actualOutput = contextWithOutput.out();
+        if (exactOutput) {
+            Assert.assertEquals(actualOutput, expectedOutput, "Unexpected output for " + command + ": " + actualOutput);
+        } else {
+            Assert.assertTrue(actualOutput.contains(expectedOutput), "Unexpected output for " + command + ": " + actualOutput);
         }
     }
-    
-    @Test
-    public void testAppApps() throws Exception {
-    	TestCommandContext appsctx = createCtxWithApp(appName, appPath);
-    	appsctx.getCommandWriter().reset();
-    	Command apps = injector.getInstance(AppsCommand.class);
-    	appsctx.setCommandArguments(new String[]{});
-    	apps.execute(appsctx);
-    	String[] output = appsctx.out().split("\\n");
-    	Assert.assertTrue(output[2].contains(appName), appName + " was not shown in app:apps line 2.");
-    }
-    
-    @Test
-    public void testAppDelete() throws Exception {
-    	TestCommandContext delctx = createCtxWithApp(appName, appPath);
-    	delctx.getCommandWriter().reset();
-    	Command del = injector.getInstance(DeleteAppCommand.class);
-    	delctx.setCommandArguments(new String[]{appName});
-    	del.execute(delctx);
-    	String[] output = delctx.out().split("\\n");
-    	Assert.assertTrue(output[0].contains(appName), "Delete message did not contain " + appName);
-    	Assert.assertEquals(output[1], "done", "Delete was not successful.");
-    }
-    
+
     /**
      * Create a TestCommandContext with a fake deployed app. The helper requires a (possibly) empty app file
      * to be present at appPath.
@@ -156,9 +150,19 @@ public class AppCommandTest {
     	Command cmd = injector.getInstance(PushCommand.class);
 		TestCommandContext ctx = 
     		new TestCommandContext().withCommandArguments(appName, "--path", appPath)
-    			.withVmForceClient(new VMForceClient()); 
+    			.withVmForceClient(new MockVMForceClient()); 
     	cmd.execute(ctx);
     	return ctx;
+    }
+    
+    private class MockVMForceClientDeploymentException extends MockVMForceClient {
+        
+        @Override
+        public void deployApplication(String appName, String localPathToAppFile)
+                throws IOException, ServletException {
+            throw new RuntimeErrorException(null);
+        }
+        
     }
  
 }
