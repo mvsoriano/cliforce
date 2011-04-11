@@ -6,7 +6,6 @@ import java.io.IOException;
 import javax.management.RuntimeErrorException;
 import javax.servlet.ServletException;
 
-import mockit.Mockit;
 
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -20,7 +19,6 @@ import com.force.cliforce.plugin.app.command.PushCommand;
 import com.force.cliforce.plugin.app.command.StopCommand;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.vmforce.client.VMForceClient;
 
 /**
  * Tests for the behavior of cliforce's app command.
