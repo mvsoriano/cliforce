@@ -7,7 +7,6 @@ import javax.management.RuntimeErrorException;
 import javax.servlet.ServletException;
 
 import mockit.Mock;
-import mockit.MockUp;
 import mockit.Mockit;
 
 import org.testng.Assert;
