@@ -78,7 +78,7 @@ public class AppCommandFilePathCompletorTest extends BaseCommandCompletorTest {
         String buffer = "app:push -p " + testDirContainsZeroFilesPath + "/";
         int cursor = buffer.length() + 1;
         runCompletorTestCase(buffer, cursor, Arrays.asList(new String[] {" --instances, -i  <Number of instances to deploy (default 1)>",  
-                " --mem, -m        <Memory to allocate to the application, in MB (default 512)>", " <main param>     <Name of the application to push>"}));
+                " --mem, -m        <Memory to allocate to the application, in MB (default 512)(valid values 64, 128, 256, 512 or 1024)>", " <main param>     <Name of the application to push>"}));
     }
     
     @SuppressWarnings("unchecked")
