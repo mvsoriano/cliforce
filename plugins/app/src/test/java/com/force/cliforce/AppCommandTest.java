@@ -2,21 +2,19 @@ package com.force.cliforce;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.management.RuntimeErrorException;
 import javax.servlet.ServletException;
 
 
+import com.force.cliforce.plugin.app.command.*;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
-import com.force.cliforce.plugin.app.command.AppsCommand;
-import com.force.cliforce.plugin.app.command.DeleteAppCommand;
-import com.force.cliforce.plugin.app.command.PushCommand;
-import com.force.cliforce.plugin.app.command.StopCommand;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
@@ -65,12 +63,18 @@ public class AppCommandTest {
     	TestCommandContext context = new TestCommandContext().withCommandArguments(args).withVmForceClient(new MockVMForceClient());
         Command command = injector.getInstance(commandClass);
         command.execute(context);
-        String actualOutput = context.out();
-        if (exactOutput) {
-            Assert.assertEquals(actualOutput, expectedOutput, "Unexpected output for " + command + ": " + actualOutput);
-        } else {
-            Assert.assertTrue(actualOutput.contains(expectedOutput), "Unexpected output for " + command + ": " + actualOutput);
-        }
+        assertCorrectOutput(context, expectedOutput, command, exactOutput);
+    }
+
+    @Test
+    public void testAppAppsWithValidDeployedApplication() throws Exception {
+    	TestCommandContext appsctx = createCtxWithApp(appName, appPath);
+    	appsctx.getCommandWriter().reset();
+    	Command apps = injector.getInstance(AppsCommand.class);
+    	appsctx.setCommandArguments(new String[]{});
+    	apps.execute(appsctx);
+    	String[] output = appsctx.out().split("\\n");
+    	Assert.assertTrue(output[2].contains(appName), appName + " was not shown in app:apps line 2.");
     }
 
     @Test
@@ -100,30 +104,39 @@ public class AppCommandTest {
             //check that the application was deleted
             Assert.assertNull(ctx.getVmForceClient().getApplication(appName), "The application should have been deleted after a deployment failure.");
     }
-    
-    @Test
-    public void testAppApps() throws Exception {
-    	TestCommandContext appsctx = createCtxWithApp(appName, appPath);
-    	appsctx.getCommandWriter().reset();
-    	Command apps = injector.getInstance(AppsCommand.class);
-    	appsctx.setCommandArguments(new String[]{});
-    	apps.execute(appsctx);
-    	String[] output = appsctx.out().split("\\n");
-    	Assert.assertTrue(output[2].contains(appName), appName + " was not shown in app:apps line 2.");
+
+    @DataProvider(name = "expectedOutputForCommandsWithDeployedApp")
+    public Object[][] provideCommandsForVerification() {
+        return new Object[][]{
+                {StartCommand.class, "Starting "+appName+"\ndone\n", new String[]{appName}, new String[]{}, true}
+              , {RestartCommand.class, "Restarting "+appName+"\ndone\n", new String[]{appName}, new String[]{}, true}
+              , {DeleteAppCommand.class, "Deleting "+appName+"\ndone\n", new String[]{appName}, new String[]{}, true}
+              , {StopCommand.class, "Stopping "+appName+"\ndone\n", new String[]{appName}, new String[]{}, true}
+              , {TailFileCommand.class, "Tailing logs on app: "+appName+" instance 0, press enter to interrupt", new String[]{appName, "-p", "logs"}, new String[] {"\n"}, false}
+        };
     }
-    
-    @Test
-    public void testAppDelete() throws Exception {
-    	TestCommandContext delctx = createCtxWithApp(appName, appPath);
-    	delctx.getCommandWriter().reset();
-    	Command del = injector.getInstance(DeleteAppCommand.class);
-    	delctx.setCommandArguments(new String[]{appName});
-    	del.execute(delctx);
-    	String[] output = delctx.out().split("\\n");
-    	Assert.assertTrue(output[0].contains(appName), "Delete message did not contain " + appName);
-    	Assert.assertEquals(output[1], "done", "Delete was not successful.");
+
+    @Test(dataProvider = "expectedOutputForCommandsWithDeployedApp")
+    public void testCommandWithDeployedApp(Class<? extends Command> commandClass, String expectedOutput, String[] args, String[] inputs, boolean exactOutput) throws Exception {
+        TestCommandContext ctxWithApp = createCtxWithApp(appName, appPath).withTestCommandReader(new TestCommandReader(Arrays.asList(inputs)));
+        ctxWithApp.getCommandWriter().reset();
+
+        Command command = injector.getInstance(commandClass);
+    	ctxWithApp.setCommandArguments(args);
+    	command.execute(ctxWithApp);
+
+        assertCorrectOutput(ctxWithApp, expectedOutput, command, exactOutput);
     }
-    
+
+    private void assertCorrectOutput(TestCommandContext contextWithOutput, String expectedOutput, Command command, boolean exactOutput) {
+        String actualOutput = contextWithOutput.out();
+        if (exactOutput) {
+            Assert.assertEquals(actualOutput, expectedOutput, "Unexpected output for " + command + ": " + actualOutput);
+        } else {
+            Assert.assertTrue(actualOutput.contains(expectedOutput), "Unexpected output for " + command + ": " + actualOutput);
+        }
+    }
+
     /**
      * Create a TestCommandContext with a fake deployed app. The helper requires a (possibly) empty app file
      * to be present at appPath.

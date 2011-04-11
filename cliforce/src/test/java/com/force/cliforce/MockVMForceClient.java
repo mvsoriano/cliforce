@@ -48,7 +48,7 @@ public class MockVMForceClient extends VMForceClient {
 	@Override
 	@Mock
 	public List<ApplicationInfo> getApplications() {
-		return new ArrayList<ApplicationInfo>(apps.values());		
+		return new ArrayList<ApplicationInfo>(apps.values());
 	}
 	
 	@Override
@@ -76,5 +76,12 @@ public class MockVMForceClient extends VMForceClient {
 			apps.clear();
 		}
 	}
-	
+
+    @Mock
+    public void updateApplication(ApplicationInfo info) {
+        if (apps.containsKey(info.getName())) {
+            apps.put(info.getName(), info);
+        }
+    }
+
 }
