@@ -1,14 +1,11 @@
 package com.force.cliforce.plugin.app.command
 
-import com.force.cliforce.LazyLogger
 import com.vmforce.client.bean.ApplicationInfo
 import com.vmforce.client.bean.ApplicationInfo.{StackEnum, ModelEnum, StagingBean, ResourcesBean}
 import java.util.{Collections, ArrayList}
 import collection.JavaConversions._
 import java.io.File
-import com.beust.jcommander.converters.FileConverter
 import collection.mutable.HashMap
-import com.force.cliforce.{ForceEnv, JCommand, CommandContext, Command}
 import com.beust.jcommander.{ParameterDescription, Parameter}
 import java.lang.String
 import jline.console.completer.StringsCompleter
@@ -17,7 +14,7 @@ import org.springframework.web.client.HttpClientErrorException
 import org.springframework.http.HttpStatus
 import collection.Iterable
 import net.liftweb.json.{JsonParser, DefaultFormats}
-import collection.immutable.TreeSet
+import com.force.cliforce._
 
 object AppNameCache {
   lazy val cache = new HashMap[ForceEnv, List[String]];
@@ -157,7 +154,7 @@ class PushArgs {
     names = Array("-p", "--path"),
     description = "Local path to the deployable application",
     required = true,
-    converter = classOf[FileConverter])
+    converter = classOf[TildeAwareFileConverter])
   var path: File = null;
 }
 
