@@ -26,29 +26,22 @@ class BannerCommand extends Command {
 
 
 class DebugArgs {
-  @Parameter(names = Array("--on"), description = "Turns on debug logging to the console")
-  val on = false
   @Parameter(names = Array("--off"), description = "Turns off debug logging to the console")
   val off = false
-
 }
 
 class DebugCommand() extends JCommand[DebugArgs] {
 
   @Inject
-  var cliforce:CLIForce=null;
+  var cliforce: CLIForce = null;
 
 
-  def describe = usage("turns debug output on/off")
+  def describe = usage("Turns debug output on. Or off with the --off switch")
 
   def name = "debug"
 
   def executeWithArgs(ctx: CommandContext, args: DebugArgs) = {
-    if (args.on ^ args.off) {
-      cliforce.setDebug(args.on)
-    } else{
-      ctx.getCommandWriter.println(describe)
-    }
+    cliforce.setDebug(!args.off)
   }
 }
 
