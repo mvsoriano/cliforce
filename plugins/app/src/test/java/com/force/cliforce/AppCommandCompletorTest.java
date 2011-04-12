@@ -27,7 +27,7 @@ import com.vmforce.client.VMForceClient;
  * @since javasdk-21.0.2-BETA
  */
 @SuppressWarnings("unchecked")
-public class AppCommandCompletorTest extends BaseCommandCompletorTest {
+public class AppCommandCompletorTest extends BaseCliforceCommandTest {
     
     private final String appPath = "testspringmvc-1.0-SNAPSHOT.war";
     private File appFileDummy = new File(appPath);

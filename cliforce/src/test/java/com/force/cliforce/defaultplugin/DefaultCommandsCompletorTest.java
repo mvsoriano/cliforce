@@ -6,7 +6,7 @@ import org.testng.annotations.Test;
 
 import scala.actors.threadpool.Arrays;
 
-import com.force.cliforce.BaseCommandCompletorTest;
+import com.force.cliforce.BaseCliforceCommandTest;
 import com.force.cliforce.CLIForce;
 import com.force.cliforce.Plugin;
 
@@ -18,7 +18,7 @@ import com.force.cliforce.Plugin;
  * @since 
  */
 @SuppressWarnings("unchecked")
-public class DefaultCommandsCompletorTest extends BaseCommandCompletorTest {
+public class DefaultCommandsCompletorTest extends BaseCliforceCommandTest {
     
     @Override
     public void setupCLIForce(CLIForce c) throws IOException {
