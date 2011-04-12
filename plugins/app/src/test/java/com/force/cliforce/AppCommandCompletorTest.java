@@ -26,6 +26,7 @@ import com.vmforce.client.VMForceClient;
  * @author jeffrey.lai
  * @since javasdk-21.0.2-BETA
  */
+@SuppressWarnings("unchecked")
 public class AppCommandCompletorTest extends BaseCommandCompletorTest {
     
     private final String appPath = "testspringmvc-1.0-SNAPSHOT.war";
@@ -57,13 +58,11 @@ public class AppCommandCompletorTest extends BaseCommandCompletorTest {
         return new AppPlugin();
     }
     
-    @SuppressWarnings("unchecked")
     @Test
     public void testBasicAppCommandCompletion() {
         runCompletorTestCase("app", 0, Arrays.asList(new String[] {"app:apps", "app:delete", "app:push", "app:restart", "app:start", "app:stop", "app:tail"}));
     }
     
-    @SuppressWarnings("unchecked")
     @Test
     public void testAppsCommandHelpText() {
         runCompletorTestCase("app:apps ", 9, Arrays.asList(new String[] {" ", "lists deployed apps"}));
@@ -82,7 +81,6 @@ public class AppCommandCompletorTest extends BaseCommandCompletorTest {
         };
     }
     
-    @SuppressWarnings("unchecked")
     @Test(dataProvider="allAppCommandsNoSpace")
     public void testCommandNoSpace(String cmd) {
         runCompletorTestCase(cmd, 0, Arrays.asList(new String[] {cmd + " "}));
@@ -98,13 +96,11 @@ public class AppCommandCompletorTest extends BaseCommandCompletorTest {
         };
     }
     
-    @SuppressWarnings("unchecked")
     @Test(dataProvider = "commandsWithOnlyAppNameParam")
     public void testCommandWithAppNameCompletionHelpText(String cmd) {
         runCompletorTestCase(cmd, cmd.length(), Arrays.asList(new String[] {" main param: the name of the application", " "}));
     }
     
-    @SuppressWarnings("unchecked")
     @Test(dataProvider = "commandsWithOnlyAppNameParam")
     public void testCommandWithAppNameCompletionOneApp(String cmd) throws IOException, ConnectionException, ServletException, InterruptedException {
         pushFakeApp("california");
@@ -112,7 +108,6 @@ public class AppCommandCompletorTest extends BaseCommandCompletorTest {
         runCommand("app:delete california");
     }
     
-    @SuppressWarnings("unchecked")
     @Test(dataProvider = "commandsWithOnlyAppNameParam")
     public void testCommandWithAppNameCompletionTwoApps(String cmd) throws IOException, ConnectionException, ServletException, InterruptedException {
         pushFakeApp("california");
@@ -124,6 +119,33 @@ public class AppCommandCompletorTest extends BaseCommandCompletorTest {
     
     private void pushFakeApp(String appName) throws IOException, ConnectionException, ServletException, InterruptedException {
         runCommand("app:push " + appName + " -p " + appPath);
+    }
+    
+    @Test
+    public void testPushCommandPathSpecified() {
+        String buffer = "app:push --path " + appPath + " ";
+        runCompletorTestCase(buffer, buffer.length() - 1, Arrays.asList(new String[] {" --instances, -i  <Number of instances to deploy (default 1)>", 
+                " --mem, -m        <Memory to allocate to the application, in MB (default 512)(valid values 64, 128, 256, 512 or 1024)>", 
+                " <main param>     <Name of the application to push>"}));
+    }
+    
+    @Test
+    public void testPushCommandInstancesAndPathSpecified() {
+        String buffer = "app:push --path " + appPath + " -i 1 ";
+        runCompletorTestCase(buffer, buffer.length() - 1, Arrays.asList(new String[] {" --mem, -m     <Memory to allocate to the application, in MB (default 512)(valid values 64, 128, 256, 512 or 1024)>", 
+                " <main param>  <Name of the application to push>"}));
+    }
+    
+    @Test
+    public void testPushCommandAllParamsSpecified() {
+        String buffer = "app:push --path " + appPath + " -i 1 -m 512 newappname";
+        runCompletorTestCase(buffer, -1, Arrays.asList(new String[] {}));
+    }
+    
+    @Test
+    public void testTailCommandNoArguments() {
+        runCompletorTestCase("app:tail ", 9, Arrays.asList(new String[] {"<main param>    <Application on which to tail a file>", 
+                "--instance, -i  <Instance on which to tail a file, default:0>", "--path, -p      <path to file>"}));
     }
 
 }
