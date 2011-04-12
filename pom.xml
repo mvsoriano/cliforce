@@ -9,6 +9,7 @@
         <module>boot</module>
         <module>cliforce</module>
         <module>plugins</module>
+        <module>ftest</module>
     </modules>
     <name>cliforce-parent</name>
     <description>command line shell for vmforce</description>

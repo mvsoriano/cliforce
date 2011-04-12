@@ -78,14 +78,6 @@ public class DefaultCommandsCompletorTest extends BaseCommandCompletorTest {
     }
     
     @Test(enabled=false)
-    public void testClasspathCommandLoadedPlugins() {
-    	//TODO: we need to find a way to import plugins here w/out creating a dependency cycle 
-//    	testPluginInstaller.installPlugin("app", "LATEST", new AppPlugin(), true);
-//    	testPluginInstaller.installPlugin("db", "LATEST", new DBPlugin(), true);
-    	runCompletorTestCase("classpath --sort ", 17, Arrays.asList(new String[] {"app", " ", "db"}));
-    }
-    
-    @Test(enabled=false)
     public void testDebug() {
     	//TODO: write automation when fixing W-932298 and W-932306
     }
