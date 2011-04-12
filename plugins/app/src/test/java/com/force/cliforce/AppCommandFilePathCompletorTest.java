@@ -94,13 +94,12 @@ public class AppCommandFilePathCompletorTest extends BaseCommandCompletorTest {
         runCompletorTestCase("app:push -p " + testDirHasSpaceInName + "/", 0, Arrays.asList(new String[] {"app:push -p " + testDirHasSpaceInName + "/test0.txt "}));        
     }
     
-    // TODO re-enable this test once W-933702 is resolved
     @SuppressWarnings("unchecked")
-    @Test(enabled=false)
+    @Test
     public void testAppPushPathCompletionWithThreeChoices() {
         String buffer = "app:push -p " + testDirContainsThreeFilesPath + "/";
         int cursor = buffer.length();
-        runCompletorTestCase(buffer, cursor, Arrays.asList(new String[] {"test0.txt", "test1.txt", "test2.txt"}));
+        runCompletorTestCase(buffer, cursor, Arrays.asList(new String[] {"test0.txt ", "test1.txt ", "test2.txt "}));
     }
     
     @SuppressWarnings("unchecked")
