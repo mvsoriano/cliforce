@@ -210,8 +210,13 @@ public abstract class JCommand<T> implements Command {
             partial = "";
         } else if (descs.containsKey(MAIN_PARAM) && descs.get(MAIN_PARAM).isAssigned()) {
             //we are completing a partial main arg
-            switchForCompletion = MAIN_PARAM;
-            partial = lastArg;
+            if (!origBuff.endsWith(" ")) {
+                switchForCompletion = MAIN_PARAM;
+                partial = lastArg;
+            } else {
+                partial = "";
+                lastArg = "";
+            }
         }
 
         if (switchForCompletion != null && descs.containsKey(switchForCompletion)) {
