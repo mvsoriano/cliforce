@@ -20,12 +20,14 @@ import com.sforce.ws.ConnectionException;
 public abstract class BaseCommandCompletorTest extends BaseCliforceCommandTest {
     
     protected CommandCompletor completor;
+    protected TestPluginInstaller testPluginInstaller;
     
     @Override
     @BeforeClass
     public void classSetup() throws InterruptedException, IOException, ConnectionException, ServletException {
         super.classSetup();
-        completor = getInjector().getInstance(CommandCompletor.class);
+        completor = getInjector().getInstance(CommandCompletor.class);        
+        testPluginInstaller = getInjector().getInstance(TestPluginInstaller.class);
     }
     
     public CommandCompletor getCompletor() {
