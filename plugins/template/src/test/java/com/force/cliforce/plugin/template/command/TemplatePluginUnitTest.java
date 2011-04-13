@@ -48,6 +48,14 @@ public class TemplatePluginUnitTest {
         Assert.assertTrue(new File(proj, "pom.xml").exists());
     }
 
+    @Test
+    public void testInvalidDirectoryForTemplateCreate() throws Exception {
+        NewProjectCommand command = Guice.createInjector(new TestModule()).getInstance(NewProjectCommand.class);
+        TestCommandContext commandContext = new TestCommandContext().withCommandArguments("project", "-d", "totally/invalid/path/abc123doeraeme");
+        command.execute(commandContext);
+        Assert.assertTrue(commandContext.out().contains("totally/invalid/path/abc123doeraeme does not exist or is not a directory\n"), "Unexpected output for " + command + " " + commandContext.out());
+    }
+
     private class TestCommandContextConnectionExceptions extends TestCommandContext {
 
         @Override
