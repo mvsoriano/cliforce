@@ -12,12 +12,12 @@ class JPAClean extends JPACommand[JPACleanParam] {
 
   override def describe = "Deletes schema for all writable JPA entities in the current org"
 
-  override def executeInternal[P >: Nothing <: Any](ctx: CommandContext, args: P, persistenceProvider: PersistenceProvider, persistenceUnit: String, overrideProps: JMap[String, Object]): Unit = {
+  override def executeInternal(ctx: CommandContext, args: JPACleanParam, persistenceProvider: PersistenceProvider, persistenceUnit: String, overrideProps: JMap[String, Object]): Unit = {
     overrideProps.put("force.deleteSchema", java.lang.Boolean.TRUE)
-    if (args.asInstanceOf[JPACleanParam].force) {
+    if (args.force) {
       overrideProps.put("datanucleus.autoCreateSchema", java.lang.Boolean.TRUE)
     }
-    if (args.asInstanceOf[JPACleanParam].purge) {
+    if (args.purge) {
       overrideProps.put("force.purgeOnDeleteSchema", java.lang.Boolean.TRUE);
     }
     persistenceProvider.createEntityManagerFactory(persistenceUnit, overrideProps);

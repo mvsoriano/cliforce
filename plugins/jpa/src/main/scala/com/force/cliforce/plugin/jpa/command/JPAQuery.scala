@@ -14,7 +14,7 @@ class JPAQuery extends JPACommand[JPAParam] {
       
   def describe = "Run JPQL (or SOQL) against the current org"
       
-  override def executeInternal[P >: Nothing <: Any](ctx: CommandContext, args: P, persistenceProvider: PersistenceProvider, persistenceUnit: String, overrideProps: JMap[String, Object]): Unit = {
+  override def executeInternal(ctx: CommandContext, args: JPAParam, persistenceProvider: PersistenceProvider, persistenceUnit: String, overrideProps: JMap[String, Object]): Unit = {
     overrideProps.put("datanucleus.autoCreateSchema", java.lang.Boolean.FALSE)
 
     val emf = persistenceProvider.createEntityManagerFactory(persistenceUnit, overrideProps)
