@@ -6,7 +6,7 @@ import org.testng.annotations.Test;
 
 import scala.actors.threadpool.Arrays;
 
-import com.force.cliforce.BaseCommandCompletorTest;
+import com.force.cliforce.BaseCliforceCommandTest;
 import com.force.cliforce.CLIForce;
 import com.force.cliforce.Plugin;
 import com.force.cliforce.plugin.app.AppPlugin;
@@ -19,7 +19,7 @@ import com.force.cliforce.plugin.template.TemplatePlugin;
  * @author dhain
  * @since javasdk-21.0.2-BETA
  */
-public class CommandsCompletorWithPluginsTest extends BaseCommandCompletorTest {
+public class CommandsCompletorWithPluginsTest extends BaseCliforceCommandTest {
 
 	@Override
 	public String getPluginArtifact() {
