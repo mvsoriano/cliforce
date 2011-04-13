@@ -98,7 +98,7 @@ class NewProjectCommand extends JCommand[NewProjectArgs] {
       "-DgroupId=" + args.group,
       "-DartifactId=" + args.artifact,
       "-Dversion=" + args.version,
-      "-Dpackagename=" + args.getpkg
+      "-DpackageName=" + args.getpkg
     )
     ctx.getCommandWriter.println("Executing:" + cmd.reduceLeft((acc, str) => acc + " " + str))
     try {
