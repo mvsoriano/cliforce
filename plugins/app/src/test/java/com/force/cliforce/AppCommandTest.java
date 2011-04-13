@@ -86,6 +86,18 @@ public class AppCommandTest {
     }
 
     @Test
+    public void testAppPushInvalidMem() throws Exception {
+    	Command cmd = injector.getInstance(PushCommand.class);
+		TestCommandContext ctx = 
+    		new TestCommandContext().withCommandArguments(appName, "--path", appPath, "--mem", "2000")
+    			.withVmForceClient(new MockVMForceClient()); 
+    	cmd.execute(ctx);
+    	String output = ctx.out();
+    	Assert.assertTrue(output.contains("valid values for app memory are: 64, 128, 256, 512, 1024"), "Wrong error message thrown" +
+    			"for invalid memory limit.");
+    }
+    
+    @Test
     public void testAppPushFromHomeDirUsingTilde() throws Exception {
         String fileName = appFileDummy.getName();
         String appNameInHomeDir = appName + "HomeDir";
