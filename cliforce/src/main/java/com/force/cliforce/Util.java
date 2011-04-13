@@ -118,7 +118,7 @@ public class Util {
         try {
             metadataConnection = context.getMetadataConnection();
         } catch (Exception e) {
-            log.get().debug("Exception getting metadata conenction", e);
+            log.get().debug("Exception getting metadata connection", e);
             throw new ResourceException(msg + "invalid.\nPlease add a valid connection using connection:add", e);
         }
 

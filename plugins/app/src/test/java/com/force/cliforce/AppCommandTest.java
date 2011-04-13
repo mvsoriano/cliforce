@@ -1,7 +1,6 @@
 package com.force.cliforce;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.Arrays;
 
 import javax.management.RuntimeErrorException;
@@ -85,7 +84,59 @@ public class AppCommandTest {
     	Assert.assertTrue(output[2].contains("Deployed: " + appName), "Command did not report successful deploy on line 3: " + output[2]);
     	Assert.assertNotNull(pushctx.getVmForceClient().getApplication(appName), "The application was not created in the mock.");
     }
+
+    @Test
+    public void testAppPushInvalidMem() throws Exception {
+    	Command cmd = injector.getInstance(PushCommand.class);
+		TestCommandContext ctx = 
+    		new TestCommandContext().withCommandArguments(appName, "--path", appPath, "--mem", "2000")
+    			.withVmForceClient(new MockVMForceClient()); 
+    	cmd.execute(ctx);
+    	String output = ctx.out();
+    	Assert.assertTrue(output.contains("valid values for app memory are: 64, 128, 256, 512, 1024"), "Wrong error message thrown" +
+    			"for invalid memory limit.");
+    }
     
+    @Test
+    public void testAppPushFromHomeDirUsingTilde() throws Exception {
+        String fileName = appFileDummy.getName();
+        String appNameInHomeDir = appName + "HomeDir";
+
+        File appInHomeDir = copyFile(appFileDummy.getCanonicalPath(), System.getProperty("user.home") + "/" + fileName);
+        String appPathInHomeDir = appInHomeDir.getCanonicalPath();
+
+    	TestCommandContext pushctx = new TestCommandContext().withVmForceClient(new MockVMForceClient()).withCommandArguments(appNameInHomeDir, "-p", "~/" + fileName);
+        Command pushCommand = injector.getInstance(PushCommand.class);
+        pushCommand.execute(pushctx);
+
+        String[] output = pushctx.out().split("\\n");
+    	Assert.assertTrue(output[0].contains(appNameInHomeDir), "Did not find " + appNameInHomeDir + "on first output line.");
+    	Assert.assertTrue(output[2].contains("Deployed: " + appNameInHomeDir), "Command did not report successful deploy on line 3: " + output[2]);
+    	Assert.assertNotNull(pushctx.getVmForceClient().getApplication(appNameInHomeDir), "The application was not created in the mock.");
+        appInHomeDir.delete();
+    }
+
+    private File copyFile(String sourcePath, String resultPath) throws IOException {
+        File source = new File(sourcePath);
+        File result = new File(resultPath);
+
+        if (!result.exists())
+            result.createNewFile();
+
+        FileReader s = new FileReader(source);
+        FileWriter r = new FileWriter(result);
+        int i;
+
+        while ((i = s.read()) != -1) {
+            r.write(i);
+        }
+
+        s.close();
+        r.close();
+
+        return result;
+    }
+
     @Test
     public void testAppPushShortName() throws Exception{
     	TestCommandContext pushctx = createCtxWithApp("short", appPath);

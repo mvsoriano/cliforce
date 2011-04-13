@@ -56,7 +56,7 @@ class NewProjectContextWrapper(val ctx: CommandContext, val args: Array[String])
   def getPartnerConnection = ctx.getPartnerConnection
 
   def getMetadataConnection = ctx.getMetadataConnection
-  
+
   def getConnectionName = ctx.getConnectionName
 }
 
@@ -71,7 +71,7 @@ class NewProjectCommand extends JCommand[NewProjectArgs] {
     pkg.split("\\.").reverse.reduceLeft((acc, str) => acc + "." + str) + "." + artifact
   }
 
-  def executeWithArgs(ctx: CommandContext, args: NewProjectArgs) = {
+  def executeWithArgs(ctx: CommandContext, args: NewProjectArgs): Unit = {
 
     if (args.group eq null) {
       if (ctx.getForceEnv ne null) {
@@ -82,7 +82,13 @@ class NewProjectCommand extends JCommand[NewProjectArgs] {
     }
     val shell = new ShellExecutor
     if (args.dir ne null) {
-      shell.setWorkingDir(args.dir)
+      if (args.dir.exists && args.dir.isDirectory) {
+        shell.setWorkingDir(args.dir)
+      } else {
+        ctx.getCommandWriter.printf("%s does not exist or is not a directory\n", args.dir.getAbsolutePath)
+        return
+      }
+
     }
     val cmd = Array("mvn", "archetype:generate", "-DinteractiveMode=false",
       "-DarchetypeCatalog=http://repo.t.salesforce.com/archiva/repository/snapshots/archetype-catalog.xml",
