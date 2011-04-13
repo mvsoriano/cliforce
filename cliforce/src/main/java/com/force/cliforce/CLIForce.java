@@ -1,8 +1,19 @@
 package com.force.cliforce;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
@@ -17,18 +28,18 @@ import jline.console.history.History;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.core.util.StatusPrinter;
+
 import com.force.sdk.connector.ForceServiceConnector;
 import com.google.inject.Guice;
 import com.google.inject.name.Named;
 import com.sforce.async.AsyncApiException;
-import com.sforce.async.RestConnection;
+import com.sforce.async.BulkConnection;
 import com.sforce.soap.metadata.MetadataConnection;
 import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.ws.ConnectionException;
 import com.vmforce.client.VMForceClient;
-
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.core.util.StatusPrinter;
 
 public class CLIForce {
 
@@ -538,9 +549,9 @@ public class CLIForce {
         }
 
         @Override
-        public RestConnection getRestConnection() {
+        public BulkConnection getBulkConnection() {
             try {
-                return connector.getRestConnection();
+                return connector.getBulkConnection();
             } catch (AsyncApiException e) {
                 log.get().error("AsyncApiException exception while getting rest connection", e);
                 throw new RuntimeException(e);
