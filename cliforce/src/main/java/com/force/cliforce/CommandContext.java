@@ -1,7 +1,7 @@
 package com.force.cliforce;
 
 
-import com.sforce.async.RestConnection;
+import com.sforce.async.BulkConnection;
 import com.sforce.soap.metadata.MetadataConnection;
 import com.sforce.soap.partner.PartnerConnection;
 import com.vmforce.client.VMForceClient;
@@ -30,7 +30,7 @@ public interface CommandContext {
      *
      * @return
      */
-    RestConnection getRestConnection();
+    BulkConnection getBulkConnection();
 
     /**
      * can be null

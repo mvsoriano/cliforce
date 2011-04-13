@@ -51,7 +51,7 @@ class NewProjectContextWrapper(val ctx: CommandContext, val args: Array[String])
 
   def getCommandArguments = args
 
-  def getRestConnection = ctx.getRestConnection
+  def getBulkConnection = ctx.getBulkConnection
 
   def getPartnerConnection = ctx.getPartnerConnection
 
