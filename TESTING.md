@@ -14,11 +14,7 @@ So before being able to run tests that use cliforce logins and connections, you 
 From the root of cliforce Run.
 
     mvn clean install -DupdateReleaseInfo -DskipTests
-<<<<<<< HEAD
     java -Duser.home=~/cliforce-test-config/positive -jar boot/target/cliforce-boot-22.0.0-SNAPSHOT-boot.jar
-=======
-    java -Duser.home=~/cliforce-test-config/positive -jar boot/target/cliforce-boot-21.0.1-SNAPSHOT-boot.jar
->>>>>>> 2193c931da717147685d4a460f9f2b48f5c45cd9
 
     #Note that if you will set ${positive.test.user.home} to something other than ~/cliforce-test-config/positive via maven
     #you should use that value in the -Duser.home param above.
