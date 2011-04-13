@@ -31,6 +31,7 @@ public abstract class BaseCliforceCommandTest {
     private Injector injector;
     protected CommandCompletor completor;
     protected TestPluginInstaller testPluginInstaller;
+    private ConnectionManager connectionManager;
     
     @BeforeClass
     public void classSetup() throws InterruptedException, IOException, ConnectionException, ServletException {
@@ -43,6 +44,7 @@ public abstract class BaseCliforceCommandTest {
         setupCLIForce(cliForce);
         completor = getInjector().getInstance(CommandCompletor.class);        
         testPluginInstaller = getInjector().getInstance(TestPluginInstaller.class);
+        connectionManager = getInjector().getInstance(ConnectionManager.class);
     }  
     
     public Injector getInjector() {
@@ -59,6 +61,10 @@ public abstract class BaseCliforceCommandTest {
     
     public CLIForce getCLIForce() {
         return cliForce;
+    }
+    
+    public ConnectionManager getConnectionManager() {
+        return connectionManager;
     }
 
     /**
