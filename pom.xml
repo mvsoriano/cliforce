@@ -1,5 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.force.cliforce</groupId>
     <artifactId>cliforce-parent</artifactId>
@@ -9,6 +9,7 @@
         <module>boot</module>
         <module>cliforce</module>
         <module>plugins</module>
+        <module>ftest</module>
     </modules>
     <name>cliforce-parent</name>
     <description>command line shell for vmforce</description>
@@ -28,7 +29,7 @@
         <built.at>${build.timestamp}</built.at>
         <guice.version>3.0</guice.version>
         <jmockit.version>0.999.6</jmockit.version>
-        <maven.clover.version>3.0.2</maven.clover.version>
+        <maven.cobertura.version>2.4</maven.cobertura.version>
         <positive.test.user.home>${user.home}/cliforce-test-config/positive</positive.test.user.home>
         <negative.test.user.home>${user.home}/cliforce-test-config/negative</negative.test.user.home>
     </properties>
@@ -207,7 +208,7 @@
                     <downloadSources>true</downloadSources>
                     <downloadJavadocs>true</downloadJavadocs>
                     <projectnatures>
-                        <projectnature>ch.epfl.lamp.sdt.core.scalanature</projectnature>
+                        <projectnature>ch.epfl.maven.cobertura.versionlamp.sdt.core.scalanature</projectnature>
                         <projectnature>org.eclipse.jdt.core.javanature</projectnature>
                     </projectnatures>
                     <buildcommands>
@@ -229,15 +230,17 @@
             </plugin>
  
             <plugin>
-                <groupId>com.atlassian.maven.plugins</groupId>
-                <artifactId>maven-clover2-plugin</artifactId>
-                <version>${maven.clover.version}</version>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+                <version>${maven.cobertura.version}</version>
                 <configuration>
-                    <generateHtml>true</generateHtml>
-                    <generateXml>true</generateXml>
-                </configuration>
+                    <formats>
+                        <format>html</format>
+                        <format>xml</format>
+                    </formats>
+                </configuration> 
             </plugin>
-
+            
         </plugins>
     </build>
 </project>

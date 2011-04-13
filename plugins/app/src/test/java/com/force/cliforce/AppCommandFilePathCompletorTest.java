@@ -23,7 +23,7 @@ import com.sforce.ws.ConnectionException;
  * @author jeffrey.lai
  * @since javasdk-21.0.2-BETA
  */
-public class AppCommandFilePathCompletorTest extends BaseCommandCompletorTest {
+public class AppCommandFilePathCompletorTest extends BaseCliforceCommandTest {
     
     private final String testParentDirPath = System.getProperty("basedir") + "/target/testac";
     private final String testDirContainsZeroFilesPath = testParentDirPath + "/zerofiles";
@@ -78,7 +78,7 @@ public class AppCommandFilePathCompletorTest extends BaseCommandCompletorTest {
         String buffer = "app:push -p " + testDirContainsZeroFilesPath + "/";
         int cursor = buffer.length() + 1;
         runCompletorTestCase(buffer, cursor, Arrays.asList(new String[] {" --instances, -i  <Number of instances to deploy (default 1)>",  
-                " --mem, -m        <Memory to allocate to the application, in MB (default 512)>", " <main param>     <Name of the application to push>"}));
+                " --mem, -m        <Memory to allocate to the application, in MB (default 512)(valid values 64, 128, 256, 512 or 1024)>", " <main param>     <Name of the application to push>"}));
     }
     
     @SuppressWarnings("unchecked")
@@ -94,13 +94,12 @@ public class AppCommandFilePathCompletorTest extends BaseCommandCompletorTest {
         runCompletorTestCase("app:push -p " + testDirHasSpaceInName + "/", 0, Arrays.asList(new String[] {"app:push -p " + testDirHasSpaceInName + "/test0.txt "}));        
     }
     
-    // TODO re-enable this test once W-933702 is resolved
     @SuppressWarnings("unchecked")
-    @Test(enabled=false)
+    @Test
     public void testAppPushPathCompletionWithThreeChoices() {
         String buffer = "app:push -p " + testDirContainsThreeFilesPath + "/";
         int cursor = buffer.length();
-        runCompletorTestCase(buffer, cursor, Arrays.asList(new String[] {"test0.txt", "test1.txt", "test2.txt"}));
+        runCompletorTestCase(buffer, cursor, Arrays.asList(new String[] {"test0.txt ", "test1.txt ", "test2.txt "}));
     }
     
     @SuppressWarnings("unchecked")

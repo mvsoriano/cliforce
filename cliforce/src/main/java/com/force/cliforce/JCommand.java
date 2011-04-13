@@ -110,8 +110,13 @@ public abstract class JCommand<T> implements Command {
                     candidates.set(i, dir + candidates.get(i));
                 }
             }
+            Collections.sort(candidates, new Comparator<CharSequence>() {
+                @Override
+                public int compare(CharSequence o1, CharSequence o2) {
+                    return o1.toString().compareTo(o2.toString());
+                }
+            });
             return candidates;
-
         } else {
             return Collections.emptyList();
         }
@@ -205,8 +210,13 @@ public abstract class JCommand<T> implements Command {
             partial = "";
         } else if (descs.containsKey(MAIN_PARAM) && descs.get(MAIN_PARAM).isAssigned()) {
             //we are completing a partial main arg
-            switchForCompletion = MAIN_PARAM;
-            partial = lastArg;
+            if (!origBuff.endsWith(" ")) {
+                switchForCompletion = MAIN_PARAM;
+                partial = lastArg;
+            } else {
+                partial = "";
+                lastArg = "";
+            }
         }
 
         if (switchForCompletion != null && descs.containsKey(switchForCompletion)) {
@@ -273,7 +283,7 @@ public abstract class JCommand<T> implements Command {
                         }
                     });
                 }
-                if(candidates.size() == 1) candidates.add(" ");
+                if (candidates.size() == 1) candidates.add(" ");
             }
             String frag = getUnambiguousCompletions(candidates);
             if (frag.length() > 0 && !lastArgIsValue) {

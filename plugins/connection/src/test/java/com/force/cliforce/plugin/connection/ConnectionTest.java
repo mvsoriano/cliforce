@@ -69,14 +69,35 @@ public class ConnectionTest {
     }
     
     @Test
+    public void testDefaultConnectionWithOneConnection() throws Exception {
+    	TestCommandContext ctx = addConnSetup(new String[][] { {"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"} });
+    	DefaultConnectionCommand connectionCommand = injector.getInjectedCommand(connPlugin, DefaultConnectionCommand.class);
+        ctx.setCommandArguments(new String[]{});
+    	connectionCommand.execute(ctx);
+    	Assert.assertEquals(ctx.getCommandWriter().getOutput(), "The currently selected default connection name is: jeff\n", "unexpected ouput from command: " + ctx.getCommandWriter().getOutput());
+    }
+
+    @Test
+    public void testDefaultConnectionWithTwoConnections() throws Exception {
+    	TestCommandContext ctx = addConnSetup(new String[][] {
+                {"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"}
+              , {"jeff2", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"}
+        });
+    	DefaultConnectionCommand connectionCommand = injector.getInjectedCommand(connPlugin, DefaultConnectionCommand.class);
+        ctx.setCommandArguments(new String[]{});
+    	connectionCommand.execute(ctx);
+    	Assert.assertEquals(ctx.getCommandWriter().getOutput(), "The currently selected default connection name is: jeff\n", "unexpected ouput from command: " + ctx.getCommandWriter().getOutput());
+    }
+
+    @Test
     public void testDefaultConnectionNonExistentConn() throws Exception {
     	TestCommandContext ctx = addConnSetup(new String[][] { {"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"} });
-    	DefaultConnectionCommand rmCmd = injector.getInjectedCommand(connPlugin, DefaultConnectionCommand.class);
+    	DefaultConnectionCommand connectionCommand = injector.getInjectedCommand(connPlugin, DefaultConnectionCommand.class);
     	ctx.setCommandArguments(new String[]{"fake"});
-    	rmCmd.execute(ctx);
+    	connectionCommand.execute(ctx);
     	Assert.assertEquals(ctx.getCommandWriter().getOutput(), "There is no such connection: fake available\n", "unexpected ouput from command");
     }
-    
+
     @Test
     public void testConnectionCurrentNoConnection() {
         CurrentConnectionCommand cmd = injector.getInjectedCommand(connPlugin, CurrentConnectionCommand.class);

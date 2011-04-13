@@ -24,11 +24,16 @@ public class DefaultCommandsUnitTest {
     @BeforeClass
     public void mockLogin() {
         // mock login so it doesn't change credentials or connect to sfdc service
-        Mockit.setUpMock(MainConnectionManager.class, new Object(){
+        Mockit.setUpMock(MainConnectionManager.class, new Object() {
             @Mock
-            void doLogin() {System.out.println("doLogin");}
+            void doLogin() {
+                System.out.println("doLogin");
+            }
+
             @Mock
-            void saveLogin() {System.out.println("saveLogin");}
+            void saveLogin() {
+                System.out.println("saveLogin");
+            }
         });
     }
 
@@ -61,16 +66,16 @@ public class DefaultCommandsUnitTest {
     @DataProvider(name = "expectedData")
     public Object[][] appCommandExpectedInput() {
         return new Object[][]{
-                { "sh: Executing: echo something\n  something", new String[] {"echo", "something"}, true}
-                , { "sh: Executing: abc\nThe command failed to execute. Please check the path to the executable you provided",
-                        new String[] {"abc"}, true}
-                , {"stderr", new String[] {"dir ", "-3", "/3"} /*-3 for unix, /3 for win*/, false /* check that stderr is not in the output */}
+                {"sh: Executing: echo something\n  something", new String[]{"echo", "something"}, true}
+                , {"sh: Executing: abc\nThe command failed to execute. Please check the path to the executable you provided",
+                        new String[]{"abc"}, true}
+                , {"stderr", new String[]{"dir ", "-3", "/3"} /*-3 for unix, /3 for win*/, false /* check that stderr is not in the output */}
         };
     }
 
     @Test(dataProvider = "expectedData")
     public void testShellCommandWithArgs(String expectedOutput, String[] args, boolean testForMatch) throws Exception {
-       DefaultPlugin.ShellCommand cmd = new DefaultPlugin.ShellCommand();
+        DefaultPlugin.ShellCommand cmd = new DefaultPlugin.ShellCommand();
         TestCommandContext ctx = new TestCommandContext().withCommandArguments(args);
         cmd.execute(ctx);
         if (testForMatch) {
@@ -95,13 +100,13 @@ public class DefaultCommandsUnitTest {
         // because we're mocking the actual login, we expect a login success
         Assert.assertEquals(
                 ctx.getCommandWriter().getOutput()
-              , "Please log in\n" +
+                , "Please log in\n" +
                         "Target login server [api.alpha.vmforce.com]:some.random.target.com\n" +
                         "Login server: some.random.target.com\n" +
                         "Username:some.random@user.name.com\n" +
                         "Password:*****************\n" +
                         "Login successful.\n"
-              , "unexpected output: " + ctx.getCommandWriter().getOutput());
+                , "unexpected output: " + ctx.getCommandWriter().getOutput());
 
         Mockit.tearDownMocks();
     }
@@ -128,7 +133,6 @@ public class DefaultCommandsUnitTest {
     }
 
 
-
     @DataProvider(name = "pluginTestData")
     public Object[][] pluginTestData() {
         return new Object[][]{
@@ -139,7 +143,7 @@ public class DefaultCommandsUnitTest {
 
     @Test(dataProvider = "pluginTestData")
     public void testMissingPlugin(Class<? extends Command> commandClass, String expectedOutput, String[] args, boolean exactOutput) throws Exception {
-    	TestCommandContext context = new TestCommandContext().withCommandArguments(args).withVmForceClient(new VMForceClient());
+        TestCommandContext context = new TestCommandContext().withCommandArguments(args).withVmForceClient(new VMForceClient());
         Injector injector = Guice.createInjector(new TestModule());
         injector.getInstance(TestCliforceAccessor.class).setWriter(context.getCommandWriter());
         Command command = injector.getInstance(commandClass);
@@ -154,35 +158,34 @@ public class DefaultCommandsUnitTest {
     }
 
     @Test
-    public  void testDebugCommand() throws Exception {
-        String [] expectedOutput = new String[] {
-                "turns debug output on/off"
-                , "Usage: debug [args]"
-                , "args:"
-                , "--off\tTurns off debug logging to the console"
-                , "--on\tTurns on debug logging to the console"
+    public void testDebugCommand() throws Exception {
+        String[] expectedOutput = new String[]{
+                "Setting logger level to DEBUG"
+                , "Setting logger level to OFF"
         };
 
         TestCommandContext context = new TestCommandContext().withVmForceClient(new VMForceClient());
         Injector injector = Guice.createInjector(new TestModule());
         Command command = injector.getInstance(DebugCommand.class);
+        injector.getInstance(TestCliforceAccessor.class).setWriter(context.getCommandWriter());
         command.execute(context);
+        command.execute(context.withCommandArguments("--off"));
 
-        String [] actualOutput = context.out().split("\n");
+        String[] actualOutput = context.out().split("\n");
 
 
         int j = 0;
-        for(int i=0;i < actualOutput.length; i++) {
+        for (int i = 0; i < actualOutput.length; i++) {
             if (actualOutput[i].trim().equals("")) {
                 continue;
             }
 
-            Assert.assertTrue(j<expectedOutput.length, "Actual output exceeds expected output. Found:" + actualOutput[i]);
-            Assert.assertEquals(actualOutput[i].trim(),expectedOutput[j], "Actual output line:" + actualOutput[i].trim() + "\nExpected output line:" + expectedOutput[j]);
+            Assert.assertTrue(j < expectedOutput.length, "Actual output exceeds expected output. Found:" + actualOutput[i]);
+            Assert.assertEquals(actualOutput[i].trim(), expectedOutput[j], "Actual output line:" + actualOutput[i].trim() + "\nExpected output line:" + expectedOutput[j]);
             j++;
         }
 
-        Assert.assertEquals(j, expectedOutput.length, "Actual output does not contain:" + expectedOutput[j-1]);
+        Assert.assertEquals(j, expectedOutput.length, "Actual output does not contain:" + expectedOutput[j - 1]);
     }
 
 }

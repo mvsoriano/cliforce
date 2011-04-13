@@ -5,6 +5,8 @@ import java.util.*;
 
 import javax.servlet.ServletException;
 
+import mockit.*;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -12,15 +14,14 @@ import com.vmforce.client.VMForceClient;
 import com.vmforce.client.bean.ApplicationInfo;
 import com.vmforce.client.bean.ApplicationInfo.ModelEnum;
 
+@MockClass(realClass = VMForceClient.class, instantiation = Instantiation.PerMockSetup)
 public class MockVMForceClient extends VMForceClient {
+    
+	private HashMap<String, ApplicationInfo> apps = new HashMap<String, ApplicationInfo>();
 
-	private HashMap<String, ApplicationInfo> apps;
-	
-	public MockVMForceClient() {
-		apps = new HashMap<String, ApplicationInfo>();
-	}
-
+	@SuppressWarnings("rawtypes")
 	@Override
+    @Mock
 	public Map createApplication (ApplicationInfo info) {
 		if(apps.containsKey(info.getName())){
 			apps.remove(info.getName());
@@ -30,6 +31,7 @@ public class MockVMForceClient extends VMForceClient {
 	}
 	
 	@Override
+	@Mock
 	public ApplicationInfo getApplication (String appName) {
 		if(apps.containsKey(appName)){
 			return apps.get(appName);
@@ -38,11 +40,13 @@ public class MockVMForceClient extends VMForceClient {
 	}
 	
 	@Override
+	@Mock
 	public List<ApplicationInfo> getApplications() {
-		return new ArrayList<ApplicationInfo>(apps.values());		
+		return new ArrayList<ApplicationInfo>(apps.values());
 	}
 	
 	@Override
+	@Mock
 	public void deployApplication(String appName, String localPathToAppFile) throws IOException, ServletException {
 		if(!apps.containsKey(appName)){
 			apps.put(appName, new ApplicationInfo(appName, 1, 512, Collections.singletonList("dummyURL"), ModelEnum.SPRING));			
@@ -50,6 +54,7 @@ public class MockVMForceClient extends VMForceClient {
 	}
 	
 	@Override
+	@Mock
 	public void deleteApplication(String appName){
 		if(apps.containsKey(appName)){
 			apps.remove(appName);
@@ -59,9 +64,19 @@ public class MockVMForceClient extends VMForceClient {
 	}
 	
 	@Override
+	@Mock
 	public void deleteAllApplications() {
 		if(apps != null){
 			apps.clear();
 		}
-	}	
+	}
+
+	@Override
+    @Mock
+    public void updateApplication(ApplicationInfo info) {
+        if (apps.containsKey(info.getName())) {
+            apps.put(info.getName(), info);
+        }
+    }
+
 }

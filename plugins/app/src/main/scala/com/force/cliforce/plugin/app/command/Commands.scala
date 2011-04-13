@@ -1,14 +1,11 @@
 package com.force.cliforce.plugin.app.command
 
-import com.force.cliforce.LazyLogger
 import com.vmforce.client.bean.ApplicationInfo
 import com.vmforce.client.bean.ApplicationInfo.{StackEnum, ModelEnum, StagingBean, ResourcesBean}
 import java.util.{Collections, ArrayList}
 import collection.JavaConversions._
 import java.io.File
-import com.beust.jcommander.converters.FileConverter
 import collection.mutable.HashMap
-import com.force.cliforce.{ForceEnv, JCommand, CommandContext, Command}
 import com.beust.jcommander.{ParameterDescription, Parameter}
 import java.lang.String
 import jline.console.completer.StringsCompleter
@@ -17,6 +14,7 @@ import org.springframework.web.client.HttpClientErrorException
 import org.springframework.http.HttpStatus
 import collection.Iterable
 import net.liftweb.json.{JsonParser, DefaultFormats}
+import com.force.cliforce._
 
 object AppNameCache {
   lazy val cache = new HashMap[ForceEnv, List[String]];
@@ -134,6 +132,7 @@ class DeleteAppCommand extends AppCommand {
 }
 
 class PushArgs {
+  val validMem = Array(64, 128, 256, 512, 1024)
   @Parameter(
     description = "Name of the application to push",
     required = true)
@@ -143,7 +142,7 @@ class PushArgs {
 
   @Parameter(
     names = Array("-m", "--mem"),
-    description = "Memory to allocate to the application, in MB (default 512)")
+    description = "Memory to allocate to the application, in MB (default 512)(valid values 64, 128, 256, 512 or 1024)")
   var mem: Int = 512
 
   @Parameter(
@@ -155,7 +154,7 @@ class PushArgs {
     names = Array("-p", "--path"),
     description = "Local path to the deployable application",
     required = true,
-    converter = classOf[FileConverter])
+    converter = classOf[TildeAwareFileConverter])
   var path: File = null;
 }
 
@@ -174,6 +173,10 @@ class PushCommand extends JCommand[PushArgs] {
     }
     if (args.name.length < 6) {
       ctx.getCommandWriter.println("Your application name is invalid, it must be 6 or more characters long")
+      return
+    }
+    if (!args.validMem.contains(args.mem)) {
+      ctx.getCommandWriter.println("valid values for app memory are: " + args.validMem.map(_.toString).reduceLeft(_ + ", " + _))
       return
     }
     ctx.getCommandWriter.printf("Pushing Application: %s\n", args.name)

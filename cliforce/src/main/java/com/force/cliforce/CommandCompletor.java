@@ -1,13 +1,12 @@
 package com.force.cliforce;
 
 
-import java.util.List;
+import jline.console.completer.Completer;
+import jline.console.completer.StringsCompleter;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
-
-import jline.console.completer.Completer;
-import jline.console.completer.StringsCompleter;
+import java.util.List;
 
 
 public class CommandCompletor implements Completer {
@@ -24,6 +23,7 @@ public class CommandCompletor implements Completer {
 
     @Override
     public int complete(String buffer, int cursor, List<CharSequence> candidates) {
+        if (buffer.length() != cursor) return 0;//only complete the end of a command
         String[] args = Util.parseCommand(buffer);
         int cmd = new StringsCompleter(pluginManager.getCommandNames().toArray(new String[0])).complete(args[0], cursor, candidates);
         if (candidates.size() == 0 && buffer != null && buffer.length() > 0) {
