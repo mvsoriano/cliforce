@@ -44,8 +44,8 @@ public class TemplateCreateCommandTest extends BaseCliforceCommandTest {
     
     @AfterClass(alwaysRun=true)
     public void classTeardown() throws IOException  {
-        File parentDir = new File(templateParentDir);
-        if (parentDir.exists()) FileUtils.deleteDirectory(parentDir);
+//        File parentDir = new File(templateParentDir);
+//        if (parentDir.exists()) FileUtils.deleteDirectory(parentDir);
     }
 
     @Override
