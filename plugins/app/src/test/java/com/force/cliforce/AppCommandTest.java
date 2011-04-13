@@ -6,14 +6,10 @@ import java.util.Arrays;
 import javax.management.RuntimeErrorException;
 import javax.servlet.ServletException;
 
+import org.testng.Assert;
+import org.testng.annotations.*;
 
 import com.force.cliforce.plugin.app.command.*;
-import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
-
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
@@ -103,7 +99,7 @@ public class AppCommandTest {
         String appNameInHomeDir = appName + "HomeDir";
 
         File appInHomeDir = copyFile(appFileDummy.getCanonicalPath(), System.getProperty("user.home") + "/" + fileName);
-        String appPathInHomeDir = appInHomeDir.getCanonicalPath();
+        appInHomeDir.getCanonicalPath();
 
     	TestCommandContext pushctx = new TestCommandContext().withVmForceClient(new MockVMForceClient()).withCommandArguments(appNameInHomeDir, "-p", "~/" + fileName);
         Command pushCommand = injector.getInstance(PushCommand.class);

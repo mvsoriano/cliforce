@@ -44,6 +44,12 @@
         <artifactId>datanucleus-jpa</artifactId>
         <version>${datanucleus.jpa.version}</version>
       </dependency>
+      <dependency>
+        <groupId>mockit</groupId>
+        <artifactId>jmockit</artifactId>
+        <version>${jmockit.version}</version>
+        <scope>test</scope>
+      </dependency>
     </dependencies>
 
 </project>
