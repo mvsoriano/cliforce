@@ -31,7 +31,7 @@ import java.util.{Map => JMap}
  * @author fhossain
  * @since vmforce.beta1
  */
-abstract class JPACommand[P >: Nothing <: Any] extends JCommand[JPAParam] {
+abstract class JPACommand[P <: JPAParam] extends JCommand[P] {
 
   @Inject
   var resolver: DependencyResolver = null
@@ -45,9 +45,9 @@ abstract class JPACommand[P >: Nothing <: Any] extends JCommand[JPAParam] {
    * @param persistenceUnit - Name of the persistenceUnit
    * @param overrideProps - Any override property to pass on to EntityManagerFactory
    */
-  def executeInternal[P >: Nothing <: Any](ctx: CommandContext, args: P, persistenceProvider: PersistenceProvider, persistenceUnit: String, overrideProps: JMap[String, Object]): Unit
+  def executeInternal(ctx: CommandContext, args: P, persistenceProvider: PersistenceProvider, persistenceUnit: String, overrideProps: JMap[String, Object]): Unit
     
-  override def executeWithArgs(ctx: CommandContext, args: JPAParam): Unit = {
+  override def executeWithArgs(ctx: CommandContext, args: P): Unit = {
     requireMetadataConnection(ctx)
     requirePartnerConnection(ctx)
     requireResolver(resolver)
@@ -106,7 +106,7 @@ abstract class JPACommand[P >: Nothing <: Any] extends JCommand[JPAParam] {
     return null
   }
     
-  protected def executeWithClasspath[P >: Nothing <: Any](ctx: CommandContext, args: JPAParam): Unit = {
+  protected def executeWithClasspath(ctx: CommandContext, args: P): Unit = {
     val curr = Thread.currentThread().getContextClassLoader()
     val oa = new OutputAdapter() {
       override def println(msg: String) = {

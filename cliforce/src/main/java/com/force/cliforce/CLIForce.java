@@ -297,7 +297,7 @@ public class CLIForce {
             writer.println(e.getMessage());
             log.get().debug("ResourceException while executing command", e);
             if (!isDebug()) {
-                writer.println("execute debug --on and retry to see failure information");
+                writer.println("execute debug and retry to see failure information");
             }
         } catch (Exception e) {
             writer.printf("Exception while executing command %s\n", cmdKey);

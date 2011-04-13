@@ -12,8 +12,8 @@ class JPAPopulate extends JPACommand[JPAPopulateParam] {
 
   override def describe = "Populate schema for all writable JPA entities in the current org"
 
-  override def executeInternal[P >: Nothing <: Any](ctx: CommandContext, args: P, persistenceProvider: PersistenceProvider, persistenceUnit: String, overrideProps: JMap[String, Object]): Unit = {
-    if (args.asInstanceOf[JPAPopulateParam].force) {
+  override def executeInternal(ctx: CommandContext, args: JPAPopulateParam, persistenceProvider: PersistenceProvider, persistenceUnit: String, overrideProps: JMap[String, Object]): Unit = {
+    if (args.force) {
       overrideProps.put("datanucleus.autoCreateSchema", java.lang.Boolean.TRUE)
     }
     // All we do is create an EntityManagerFactory. The rest of the magic happens as part of JPA initialization from the Provider
