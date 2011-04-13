@@ -1,22 +1,20 @@
 package com.force.cliforce.defaultplugin;
 
 
+import java.util.Arrays;
+import java.util.List;
+
+import mockit.Mock;
+import mockit.Mockit;
+
+import org.testng.Assert;
+import org.testng.annotations.*;
+
 import com.force.cliforce.*;
 import com.force.cliforce.command.DebugCommand;
 import com.google.inject.Guice;
-import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.vmforce.client.VMForceClient;
-import mockit.Mock;
-import mockit.Mockit;
-import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
-
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Tests commands in the default plugin that dont require any guice injection.
@@ -85,7 +83,7 @@ public class DefaultCommandsUnitTest {
     @Test
     public void testInteractiveLogin() throws Exception {
         Injector testModuleInjector = Guice.createInjector(new TestModule());
-        ConnectionManager connectionManager = testModuleInjector.getInstance(ConnectionManager.class);
+        testModuleInjector.getInstance(ConnectionManager.class);
 
         DefaultPlugin.LoginCommand cmd = testModuleInjector.getInstance(DefaultPlugin.LoginCommand.class);
 

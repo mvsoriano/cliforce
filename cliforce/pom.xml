@@ -13,13 +13,6 @@
   <name>cliforce</name>
   <dependencies>
     <dependency>
-       <groupId>mockit</groupId>
-       <artifactId>jmockit</artifactId>
-       <version>${jmockit.version}</version>
-       <scope>test</scope>
-
-    </dependency>
-    <dependency>
       <groupId>com.force.cliforce</groupId>
       <artifactId>cliforce-boot</artifactId>
       <version>${project.version}</version>
