@@ -23,7 +23,7 @@
         <slf4j.version>1.6.1</slf4j.version>
         <jline.version>0.9.94</jline.version>
         <jcommander.version>1.17</jcommander.version>
-        <force.version>21.0.0</force.version>
+        <force.version>22.0.0</force.version>
         <force.sdk.version>22.0.0-SNAPSHOT</force.sdk.version>
         <force.client.version>1.0.1</force.client.version>
         <built.at>${build.timestamp}</built.at>
