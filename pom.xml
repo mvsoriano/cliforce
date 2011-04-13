@@ -4,7 +4,7 @@
     <groupId>com.force.cliforce</groupId>
     <artifactId>cliforce-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.0.4-SNAPSHOT</version>
+    <version>21.0.1-SNAPSHOT</version>
     <modules>
         <module>boot</module>
         <module>cliforce</module>
@@ -119,6 +119,31 @@
     <build>
 
         <plugins>
+            <plugin>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>1.0</version>
+                <executions>
+                    <execution>
+                        <id>check-sdk-version</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+
+                        <!-- Ensure that the project version and Force.com SDK versions match -->
+                        <configuration>
+                            <rules>
+                                <requireProperty>
+                                    <property>force.sdk.version</property>
+                                    <regex>^${project.version}$</regex>
+                                    <regexMessage>force.sdk.version (${force.sdk.version}) and project.version (${project.version}) mismatch!</regexMessage>
+                                </requireProperty>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
