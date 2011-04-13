@@ -164,11 +164,15 @@ class PushCommand extends JCommand[PushArgs] {
   def executeWithArgs(ctx: CommandContext, args: PushArgs): Unit = {
     requireVMForceClient(ctx)
     if (!args.path.exists) {
-      ctx.getCommandWriter.printf("The path given: %s does not exist\n", args.path.getPath)
+      ctx.getCommandWriter.printf("The path given: %s does not exist\n", args.path.getAbsolutePath)
       return
     }
     if (!args.path.isFile()) {
-      ctx.getCommandWriter.printf("The path is a directory. It should be a war file.\n", args.path.getPath)
+      ctx.getCommandWriter.printf("The path given: %s  is a directory. It should be a war file.\n", args.path.getAbsolutePath)
+      return
+    }
+    if (!args.path.getAbsolutePath.endsWith(".war")) {
+      ctx.getCommandWriter.printf("The path given: %s  does not have a .war extension.\n", args.path.getAbsolutePath)
       return
     }
     if (args.name.length < 6) {

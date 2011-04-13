@@ -84,7 +84,11 @@ Hostname is one of the login servers (test.salesforce.com for sandbox, login.sal
 
 So, for example you can execute the dbclean task on a sandbox org with user scott@acme.com and password tiger by doing the following:
 
+<<<<<<< HEAD
 	$ java -jar boot/target/cliforce-22.0.0-SNAPSHOT-boot.jar
+=======
+	$ java -jar boot/target/cliforce-21.0.1-SNAPSHOT-boot.jar
+>>>>>>> 2193c931da717147685d4a460f9f2b48f5c45cd9
 
 You see the force prompt.
 
