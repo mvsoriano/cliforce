@@ -23,7 +23,7 @@ import com.sforce.ws.ConnectionException;
  * @author jeffrey.lai
  * @since javasdk-21.0.2-BETA
  */
-public class AppCommandFilePathCompletorTest extends BaseCommandCompletorTest {
+public class AppCommandFilePathCompletorTest extends BaseCliforceCommandTest {
     
     private final String testParentDirPath = System.getProperty("basedir") + "/target/testac";
     private final String testDirContainsZeroFilesPath = testParentDirPath + "/zerofiles";
