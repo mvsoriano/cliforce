@@ -1,20 +1,8 @@
 package com.force.cliforce.plugin.connection;
 
-import com.force.cliforce.ConnectionManager;
-import com.force.cliforce.ForceEnv;
-import com.force.cliforce.Plugin;
-import com.force.cliforce.ResourceException;
-import com.force.cliforce.TestCommandContext;
-import com.force.cliforce.TestModule;
-import com.force.cliforce.TestPluginInjector;
-import com.force.cliforce.plugin.connection.command.AddConnectionCommand;
-import com.force.cliforce.plugin.connection.command.CurrentConnectionCommand;
-import com.force.cliforce.plugin.connection.command.DefaultConnectionCommand;
-import com.force.cliforce.plugin.connection.command.ListConnectionsCommand;
-import com.force.cliforce.plugin.connection.command.RemoveConnectionCommand;
-import com.force.cliforce.plugin.connection.command.RenameConnectionCommand;
+import com.force.cliforce.*;
+import com.force.cliforce.plugin.connection.command.*;
 import com.google.inject.Guice;
-
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -45,7 +33,7 @@ public class ConnectionTest {
 
     @Test
     public void testAddConnection() throws Exception {
-        TestCommandContext ctx = addConnSetup(new String[][] { {"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"} });
+        TestCommandContext ctx = addConnSetup(new String[][]{{"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"}});
         ListConnectionsCommand listCmd = injector.getInjectedCommand(connPlugin, ListConnectionsCommand.class);
         ctx.setCommandArguments(new String[0]);
         listCmd.execute(ctx);
@@ -61,41 +49,41 @@ public class ConnectionTest {
 
     @Test
     public void testRemoveConnection() throws Exception {
-        TestCommandContext ctx = addConnSetup(new String[][] { {"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"} });
+        TestCommandContext ctx = addConnSetup(new String[][]{{"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"}});
         RemoveConnectionCommand rmCmd = injector.getInjectedCommand(connPlugin, RemoveConnectionCommand.class);
         ctx.setCommandArguments(new String[]{"jeff"});
         rmCmd.execute(ctx);
         Assert.assertEquals(ctx.getCommandWriter().getOutput(), "Connection: jeff removed\n", "unexpected ouput from command");
     }
-    
+
     @Test
     public void testDefaultConnectionWithOneConnection() throws Exception {
-    	TestCommandContext ctx = addConnSetup(new String[][] { {"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"} });
-    	DefaultConnectionCommand connectionCommand = injector.getInjectedCommand(connPlugin, DefaultConnectionCommand.class);
+        TestCommandContext ctx = addConnSetup(new String[][]{{"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"}});
+        DefaultConnectionCommand connectionCommand = injector.getInjectedCommand(connPlugin, DefaultConnectionCommand.class);
         ctx.setCommandArguments(new String[]{});
-    	connectionCommand.execute(ctx);
-    	Assert.assertEquals(ctx.getCommandWriter().getOutput(), "The currently selected default connection name is: jeff\n", "unexpected ouput from command: " + ctx.getCommandWriter().getOutput());
+        connectionCommand.execute(ctx);
+        Assert.assertEquals(ctx.getCommandWriter().getOutput(), "The currently selected default connection name is: jeff\n", "unexpected ouput from command: " + ctx.getCommandWriter().getOutput());
     }
 
     @Test
     public void testDefaultConnectionWithTwoConnections() throws Exception {
-    	TestCommandContext ctx = addConnSetup(new String[][] {
+        TestCommandContext ctx = addConnSetup(new String[][]{
                 {"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"}
-              , {"jeff2", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"}
+                , {"jeff2", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"}
         });
-    	DefaultConnectionCommand connectionCommand = injector.getInjectedCommand(connPlugin, DefaultConnectionCommand.class);
+        DefaultConnectionCommand connectionCommand = injector.getInjectedCommand(connPlugin, DefaultConnectionCommand.class);
         ctx.setCommandArguments(new String[]{});
-    	connectionCommand.execute(ctx);
-    	Assert.assertEquals(ctx.getCommandWriter().getOutput(), "The currently selected default connection name is: jeff\n", "unexpected ouput from command: " + ctx.getCommandWriter().getOutput());
+        connectionCommand.execute(ctx);
+        Assert.assertEquals(ctx.getCommandWriter().getOutput(), "The currently selected default connection name is: jeff\n", "unexpected ouput from command: " + ctx.getCommandWriter().getOutput());
     }
 
     @Test
     public void testDefaultConnectionNonExistentConn() throws Exception {
-    	TestCommandContext ctx = addConnSetup(new String[][] { {"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"} });
-    	DefaultConnectionCommand connectionCommand = injector.getInjectedCommand(connPlugin, DefaultConnectionCommand.class);
-    	ctx.setCommandArguments(new String[]{"fake"});
-    	connectionCommand.execute(ctx);
-    	Assert.assertEquals(ctx.getCommandWriter().getOutput(), "There is no such connection: fake available\n", "unexpected ouput from command");
+        TestCommandContext ctx = addConnSetup(new String[][]{{"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"}});
+        DefaultConnectionCommand connectionCommand = injector.getInjectedCommand(connPlugin, DefaultConnectionCommand.class);
+        ctx.setCommandArguments(new String[]{"fake"});
+        connectionCommand.execute(ctx);
+        Assert.assertEquals(ctx.getCommandWriter().getOutput(), "There is no such connection: fake available\n", "unexpected ouput from command");
     }
 
     @Test
@@ -110,23 +98,36 @@ public class ConnectionTest {
                     "Please add a valid connection using connection:add", "unexpected error message");
         }
     }
-    
+
     @Test
     public void testConnectionCurrentOneConnection() throws Exception {
-        TestCommandContext ctx = addConnSetup(new String[][] { {"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"} });
+        TestCommandContext ctx = addConnSetup(new String[][]{{"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"}});
         CurrentConnectionCommand cmd = injector.getInjectedCommand(connPlugin, CurrentConnectionCommand.class);
         cmd.execute(ctx);
         Assert.assertEquals(ctx.getCommandWriter().getOutput(), "Current Connection Name: jeff\n" +
                 "Current User: user@user.com\n" +
                 "Current Endpoint: vmf01.t.salesforce.com\n", "unexpected result returned");
     }
-    
+
+    @Test
+    public void testTestConnectionCommand() {
+        TestConnectionCommand cmd = injector.getInjectedCommand(connPlugin, TestConnectionCommand.class);
+        TestCommandContext ctx = new TestCommandContext();
+        cmd.execute(ctx);
+        Assert.assertEquals("connection valid\n", ctx.out());
+        injector = Guice.createInjector(new TestModule(System.getProperty("negative.test.user.home"))).getInstance(TestPluginInjector.class);
+        cmd = injector.getInjectedCommand(connPlugin, TestConnectionCommand.class);
+        ctx = new TestCommandContext();
+        cmd.execute(ctx);
+        Assert.assertEquals("connection invalid\nexecute debug and retry to see failure information\n", ctx.out());
+    }
+
     @Test
     public void testRenameConnection() throws Exception {
-        TestCommandContext ctx = addConnSetup(new String[][] { {"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"} });
+        TestCommandContext ctx = addConnSetup(new String[][]{{"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"}});
         RenameConnectionCommand reCmd = injector.getInjectedCommand(connPlugin, RenameConnectionCommand.class);
         ListConnectionsCommand listCmd = injector.getInjectedCommand(connPlugin, ListConnectionsCommand.class);
-        ctx.setCommandArguments(new String[] { "jeff", "asdf" });
+        ctx.setCommandArguments(new String[]{"jeff", "asdf"});
         reCmd.execute(ctx);
         Assert.assertEquals(ctx.getCommandWriter().getOutput(), "Renamed connection jeff to asdf\n", "unexpected output from command");
         ctx.setCommandArguments(new String[0]);
@@ -141,14 +142,14 @@ public class ConnectionTest {
                 "Message:  None\n" +
                 "===========================\n");
     }
-    
+
     @Test
     public void testRenameConnectionSameName() throws Exception {
-        TestCommandContext ctx = addConnSetup(new String[][] { {"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"},
-                {"asdf", "force://vmf01.t.salesforce.com;user=user@domain.com;password=s3d4gd3"} });
+        TestCommandContext ctx = addConnSetup(new String[][]{{"jeff", "force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4"},
+                {"asdf", "force://vmf01.t.salesforce.com;user=user@domain.com;password=s3d4gd3"}});
         RenameConnectionCommand reCmd = injector.getInjectedCommand(connPlugin, RenameConnectionCommand.class);
         ListConnectionsCommand listCmd = injector.getInjectedCommand(connPlugin, ListConnectionsCommand.class);
-        ctx.setCommandArguments(new String[] { "jeff", "asdf" });
+        ctx.setCommandArguments(new String[]{"jeff", "asdf"});
         reCmd.execute(ctx);
         Assert.assertEquals(ctx.getCommandWriter().getOutput(), "There is already a connection named asdf, please rename or delete it first\n", "unexpected output from command");
         ctx.setCommandArguments(new String[0]);
@@ -172,7 +173,7 @@ public class ConnectionTest {
                 "===========================\n", "unexpected output from command");
     }
 
-    
+
     /**
      * Takes in 2 dim Array, which contain connection names and force urls.
      * column 0 should be connection name and column 1 should be force url

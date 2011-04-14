@@ -5,6 +5,7 @@ import javax.inject.Inject
 import com.force.cliforce.Util._
 import com.beust.jcommander.Parameter
 import com.force.cliforce._
+import com.sforce.soap.partner.GetUserInfoResult
 
 class ListConnectionsCommand extends Command {
   @Inject
@@ -234,5 +235,27 @@ class RemoveConnectionCommand extends Command {
   def describe = "remove a connection from cliforce. Usage connection:remove <connectionName>"
 
   def name = "remove"
+}
+
+class TestConnectionCommand extends Command {
+  val log = new LazyLogger(classOf[TestConnectionCommand])
+
+  def execute(ctx: CommandContext) = {
+    try {
+      requirePartnerConnection(ctx)
+      val info: GetUserInfoResult = ctx.getPartnerConnection.getUserInfo
+      info.toString
+      ctx.getCommandWriter.println("connection valid")
+    } catch {
+      case e: Exception => {
+        ctx.getCommandWriter.println("connection invalid\nexecute debug and retry to see failure information")
+        log.get.debug("connection invalid", e)
+      }
+    }
+  }
+
+  def describe = "test the current connection. Usage connection:test <connectionName>"
+
+  def name = "test"
 }
 

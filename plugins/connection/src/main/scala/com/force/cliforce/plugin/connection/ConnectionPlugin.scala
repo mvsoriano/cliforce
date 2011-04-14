@@ -11,5 +11,6 @@ class ConnectionPlugin extends Plugin {
     classOf[DefaultConnectionCommand],
     classOf[RenameConnectionCommand],
     classOf[SetConnectionCommand],
+    classOf[TestConnectionCommand],
     classOf[RemoveConnectionCommand]))
 }
