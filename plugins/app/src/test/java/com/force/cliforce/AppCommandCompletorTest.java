@@ -150,10 +150,12 @@ public class AppCommandCompletorTest extends BaseCliforceCommandTest {
 
     @Test
     public void testPushTailParamsSpecified() {
-    	runCompletorTestCase("app:push myFakeApp -p " + appPath + " --", 53, 
+    	String pushCommand = "app:push myFakeApp -p " + appPath + " --";
+    	runCompletorTestCase(pushCommand, pushCommand.length() - 2, 
     			Arrays.asList(new String[]{"--instances  <Number of instances to deploy (default 1)>", 
     			"--mem        <Memory to allocate to the application, in MB (default 512)(valid values 64, 128, 256, 512 or 1024)>"}));
-		runCompletorTestCase("app:tail myFakeApp --", 19, 
+		String tailCommand = "app:tail myFakeApp --";
+    	runCompletorTestCase(tailCommand, tailCommand.length() - 2, 
 				Arrays.asList(new String[] {"--instance  <Instance on which to tail a file, default:0>", "--path      <path to file>"}));
     }
 }
