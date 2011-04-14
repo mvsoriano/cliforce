@@ -5,7 +5,7 @@ import com.force.cliforce.TestCommandContext;
 import com.force.cliforce.TestModule;
 import com.force.cliforce.Util;
 import com.google.inject.Guice;
-import com.sforce.async.RestConnection;
+import com.sforce.async.BulkConnection;
 import com.sforce.soap.metadata.MetadataConnection;
 import com.sforce.soap.partner.PartnerConnection;
 import org.testng.Assert;
@@ -69,7 +69,7 @@ public class TemplatePluginUnitTest {
         }
 
         @Override
-        public RestConnection getRestConnection() {
+        public BulkConnection getBulkConnection() {
             throw new RuntimeException();
         }
 

@@ -51,7 +51,7 @@ class NewProjectContextWrapper(val ctx: CommandContext, val args: Array[String])
 
   def getCommandArguments = args
 
-  def getRestConnection = ctx.getRestConnection
+  def getBulkConnection = ctx.getBulkConnection
 
   def getPartnerConnection = ctx.getPartnerConnection
 
@@ -98,7 +98,7 @@ class NewProjectCommand extends JCommand[NewProjectArgs] {
       "-DgroupId=" + args.group,
       "-DartifactId=" + args.artifact,
       "-Dversion=" + args.version,
-      "-DpackageName=" + args.getpkg
+      "-Dpackage=" + args.getpkg
     )
     ctx.getCommandWriter.println("Executing:" + cmd.reduceLeft((acc, str) => acc + " " + str))
     try {

@@ -1,6 +1,6 @@
 package com.force.cliforce;
 
-import com.sforce.async.RestConnection;
+import com.sforce.async.BulkConnection;
 import com.sforce.soap.metadata.MetadataConnection;
 import com.sforce.soap.partner.PartnerConnection;
 import com.vmforce.client.VMForceClient;
@@ -22,7 +22,7 @@ public class TestCommandContext implements CommandContext {
 
     private MetadataConnection metadataConnection;
     private PartnerConnection partnerConnection;
-    private RestConnection restConnection;
+    private BulkConnection bulkConnection;
     private String[] commandArguments = new String[0];
     private CommandReader commandReader;
     private VMForceClient vmForceClient;
@@ -41,8 +41,8 @@ public class TestCommandContext implements CommandContext {
     }
 
     @Override
-    public RestConnection getRestConnection() {
-        return restConnection;
+    public BulkConnection getBulkConnection() {
+        return bulkConnection;
     }
 
     @Override
@@ -87,9 +87,9 @@ public class TestCommandContext implements CommandContext {
         return copy;
     }
 
-    public TestCommandContext withRestConnection(RestConnection restConnection) {
+    public TestCommandContext withBulkConnection(BulkConnection bulkConnection) {
         TestCommandContext copy = copy();
-        copy.restConnection = restConnection;
+        copy.bulkConnection = bulkConnection;
         return copy;
     }
 
@@ -146,7 +146,7 @@ public class TestCommandContext implements CommandContext {
     private TestCommandContext copy() {
         TestCommandContext tcc = new TestCommandContext();
         tcc.metadataConnection = metadataConnection;
-        tcc.restConnection = restConnection;
+        tcc.bulkConnection = bulkConnection;
         tcc.partnerConnection = partnerConnection;
         tcc.commandArguments = commandArguments;
         tcc.commandReader = commandReader;

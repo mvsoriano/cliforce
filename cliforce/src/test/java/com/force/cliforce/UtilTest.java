@@ -14,8 +14,8 @@ public class UtilTest {
 
     @Test
     public void getVersionAsDouble() {
-        Assert.assertEquals(21.0, Util.getApiVersionAsDouble());
-        Assert.assertEquals("21.0", Util.getApiVersion());
+        Assert.assertEquals(22.0, Util.getApiVersionAsDouble());
+        Assert.assertEquals("22.0", Util.getApiVersion());
     }
 
     @Test
