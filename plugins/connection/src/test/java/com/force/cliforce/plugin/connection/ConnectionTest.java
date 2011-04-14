@@ -2,10 +2,16 @@ package com.force.cliforce.plugin.connection;
 
 import com.force.cliforce.*;
 import com.force.cliforce.plugin.connection.command.*;
+import com.force.sdk.connector.ForceServiceConnector;
 import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.sforce.soap.partner.PartnerConnection;
+import com.sforce.ws.ConnectionException;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import java.io.IOException;
 
 /**
  * Tests for commands in the connection plugin
@@ -110,17 +116,43 @@ public class ConnectionTest {
     }
 
     @Test
-    public void testTestConnectionCommand() {
+    public void testTestConnectionCommand() throws ConnectionException, IOException {
+        Injector guiceInjector = Guice.createInjector(new TestModule());
+        injector = guiceInjector.getInstance(TestPluginInjector.class);
+        ConnectionManager cmgr = guiceInjector.getInstance(ConnectionManager.class);
+        cmgr.loadUserConnections();
+        TestCommandContext ctx = new TestContextWithConnector(cmgr.getCurrentConnector());
         TestConnectionCommand cmd = injector.getInjectedCommand(connPlugin, TestConnectionCommand.class);
-        TestCommandContext ctx = new TestCommandContext();
         cmd.execute(ctx);
-        Assert.assertEquals("connection valid\n", ctx.out());
-        injector = Guice.createInjector(new TestModule(System.getProperty("negative.test.user.home"))).getInstance(TestPluginInjector.class);
+        Assert.assertEquals(ctx.out(), "connection valid\n");
+        guiceInjector = Guice.createInjector(new TestModule(System.getProperty("negative.test.user.home")));
+        cmgr = guiceInjector.getInstance(ConnectionManager.class);
+        cmgr.loadUserConnections();
+        ctx = new TestContextWithConnector(cmgr.getCurrentConnector());
+        injector = guiceInjector.getInstance(TestPluginInjector.class);
         cmd = injector.getInjectedCommand(connPlugin, TestConnectionCommand.class);
-        ctx = new TestCommandContext();
         cmd.execute(ctx);
-        Assert.assertEquals("connection invalid\nexecute debug and retry to see failure information\n", ctx.out());
+        Assert.assertEquals(ctx.out(), "connection invalid\nexecute debug and retry to see failure information\n");
     }
+
+    private class TestContextWithConnector extends TestCommandContext {
+        private ForceServiceConnector connector;
+
+        public TestContextWithConnector(ForceServiceConnector c) {
+            super();
+            connector = c;
+        }
+
+        @Override
+        public PartnerConnection getPartnerConnection() {
+            try {
+                return connector.getConnection();
+            } catch (ConnectionException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
 
     @Test
     public void testRenameConnection() throws Exception {
