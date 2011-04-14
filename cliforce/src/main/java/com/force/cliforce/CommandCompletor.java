@@ -33,13 +33,19 @@ public class CommandCompletor implements Completer {
             candidates.remove(0);
             Command command = pluginManager.getCommand(args[0]);
             if (command != null) {
-                if (command instanceof JCommand) {
-                    return ((JCommand<?>) command).complete(buffer, args, cursor, candidates, cliForce.get().getContext(args));
-                } else {
-                    log.get().debug("cliforce completor executing standard completion");
-                    candidates.add(" ");
-                    candidates.add(command.describe());
-                    return cursor;
+                ClassLoader curr = Thread.currentThread().getContextClassLoader();
+                try {
+                    Thread.currentThread().setContextClassLoader(command.getClass().getClassLoader());
+                    if (command instanceof JCommand) {
+                        return ((JCommand<?>) command).complete(buffer, args, cursor, candidates, cliForce.get().getContext(args));
+                    } else {
+                        log.get().debug("cliforce completor executing standard completion");
+                        candidates.add(" ");
+                        candidates.add(command.describe());
+                        return cursor;
+                    }
+                } finally {
+                    Thread.currentThread().setContextClassLoader(curr);
                 }
             } else {
                 log.get().debug("cliforce completor returning {} from command null branch", cmd);

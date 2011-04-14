@@ -3,7 +3,7 @@
     <parent>
         <artifactId>plugins</artifactId>
         <groupId>com.force.cliforce.plugin</groupId>
-        <version>0.0.4-SNAPSHOT</version>
+        <version>22.0.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -26,7 +26,7 @@
       <dependency>
 	    <groupId>com.force.api</groupId>
 	    <artifactId>force-partner-api</artifactId>
-	    <version>${force.api.version}</version>
+	    <version>${force.version}</version>
 	    <scope>provided</scope>
       </dependency>
       <dependency>
@@ -43,6 +43,12 @@
         <groupId>org.datanucleus</groupId>
         <artifactId>datanucleus-jpa</artifactId>
         <version>${datanucleus.jpa.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>mockit</groupId>
+        <artifactId>jmockit</artifactId>
+        <version>${jmockit.version}</version>
+        <scope>test</scope>
       </dependency>
     </dependencies>
 

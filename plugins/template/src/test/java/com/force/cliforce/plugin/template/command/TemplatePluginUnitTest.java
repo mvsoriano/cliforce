@@ -5,7 +5,7 @@ import com.force.cliforce.TestCommandContext;
 import com.force.cliforce.TestModule;
 import com.force.cliforce.Util;
 import com.google.inject.Guice;
-import com.sforce.async.RestConnection;
+import com.sforce.async.BulkConnection;
 import com.sforce.soap.metadata.MetadataConnection;
 import com.sforce.soap.partner.PartnerConnection;
 import org.testng.Assert;
@@ -48,6 +48,14 @@ public class TemplatePluginUnitTest {
         Assert.assertTrue(new File(proj, "pom.xml").exists());
     }
 
+    @Test
+    public void testInvalidDirectoryForTemplateCreate() throws Exception {
+        NewProjectCommand command = Guice.createInjector(new TestModule()).getInstance(NewProjectCommand.class);
+        TestCommandContext commandContext = new TestCommandContext().withCommandArguments("project", "-d", "totally/invalid/path/abc123doeraeme");
+        command.execute(commandContext);
+        Assert.assertTrue(commandContext.out().contains("totally/invalid/path/abc123doeraeme does not exist or is not a directory\n"), "Unexpected output for " + command + " " + commandContext.out());
+    }
+
     private class TestCommandContextConnectionExceptions extends TestCommandContext {
 
         @Override
@@ -61,7 +69,7 @@ public class TemplatePluginUnitTest {
         }
 
         @Override
-        public RestConnection getRestConnection() {
+        public BulkConnection getBulkConnection() {
             throw new RuntimeException();
         }
 

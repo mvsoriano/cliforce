@@ -7,6 +7,5 @@ import command._
 class JPAPlugin extends Plugin {
   override def getCommands = JavaConversions.asJavaList(List(classOf[JPAPopulate],
     classOf[JPAClean],
-    classOf[JPAQuery],
-    classOf[ListCustomObjects]))
+    classOf[JPAQuery]))
 }
