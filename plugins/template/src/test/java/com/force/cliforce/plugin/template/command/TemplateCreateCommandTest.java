@@ -67,6 +67,7 @@ public class TemplateCreateCommandTest extends BaseCliforceCommandTest {
         Assert.assertTrue(output.contains("BUILD SUCCESSFUL"), "mvn install without tests was not successful");
         // execute mvn install with tests enabled
         uncommentEntityAnnotation(templateParentDir + "/springmvc/src/main/java/com/pack/model/MyEntity.java");
+        output = runProcess("mvn install -e", templateParentDir + "/springmvc");
         Assert.assertTrue(output.contains("BUILD SUCCESSFUL"), "mvn install with tests was not successful");
     }
     
