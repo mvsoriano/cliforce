@@ -2,9 +2,9 @@ package com.force.cliforce;
 
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.*;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -230,11 +230,8 @@ public class MainConnectionManager implements ConnectionManager {
         EnvConnections current = connections.get(env);
         if (current == null) {
             try {
-                URL purl = new URL(com.sforce.soap.partner.Connector.END_POINT);
                 ForceConnectorConfig config = new ForceConnectorConfig();
-                config.setAuthEndpoint("https://" + env.getHost() + purl.getPath());
-                config.setUsername(env.getUser());
-                config.setPassword(env.getPassword());
+                config.setConnectionUrl(env.getUrl());
                 config.setTraceMessage(false);
                 config.setPrettyPrintXml(true);
                 ForceServiceConnector connector = new ForceServiceConnector(config);
@@ -244,9 +241,6 @@ public class MainConnectionManager implements ConnectionManager {
                 return prev == null ? current.forceServiceConnector : prev.forceServiceConnector;
             } catch (ConnectionException e) {
                 log.get().error("ConnectionException while creating ForceConfig, returning null", e);
-                return null;
-            } catch (MalformedURLException e) {
-                log.get().error("MalformedURLException while creating ForceConfig, returning null", e);
                 return null;
             }
         } else {
