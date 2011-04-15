@@ -13,7 +13,6 @@ import org.testng.annotations.Test;
 
 import scala.actors.threadpool.Arrays;
 
-import com.force.cliforce.plugin.app.AppPlugin;
 import com.sforce.ws.ConnectionException;
 
 /**
@@ -23,7 +22,7 @@ import com.sforce.ws.ConnectionException;
  * @author jeffrey.lai
  * @since javasdk-21.0.2-BETA
  */
-public class AppCommandFilePathCompletorTest extends BaseCliforceCommandTest {
+public class AppCommandFilePathCompletorTest extends BasePluginsTest {
     
     private final String testParentDirPath = System.getProperty("basedir") + "/target/testac";
     private final String testDirContainsZeroFilesPath = testParentDirPath + "/zerofiles";
@@ -32,15 +31,6 @@ public class AppCommandFilePathCompletorTest extends BaseCliforceCommandTest {
     private final String testDirContainsFiftyFilesPath = testParentDirPath + "/fiftyfiles";
     private final String testDirHasSpaceInName = testParentDirPath + "/space directory";
     
-    @Override
-    public String getPluginArtifact() {
-        return "app";
-    }
-
-    @Override
-    public Plugin getPlugin() {
-        return new AppPlugin();
-    }
     
     @Override
     @BeforeClass
