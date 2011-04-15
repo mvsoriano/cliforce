@@ -64,9 +64,6 @@ class NewProjectCommand extends JCommand[NewProjectArgs] {
 
 
   def getGroupFromEnv(forceEnv: ForceEnv, artifact: String): String = {
-    if (forceEnv == null) {
-      return "com.force"
-    }
     val pkg = forceEnv.getUser.substring(forceEnv.getUser.indexOf("@") + 1)
     pkg.split("\\.").reverse.reduceLeft((acc, str) => acc + "." + str) + "." + artifact
   }
@@ -77,7 +74,7 @@ class NewProjectCommand extends JCommand[NewProjectArgs] {
       if (ctx.getForceEnv ne null) {
         args.group = getGroupFromEnv(ctx.getForceEnv, args.artifact)
       } else {
-        args.group = "org.example"
+        args.group = "org.example." + args.artifact
       }
     }
     val shell = new ShellExecutor
