@@ -7,10 +7,15 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.ws.ConnectionException;
+
+import org.apache.commons.io.FileUtils;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -22,10 +27,25 @@ import java.io.IOException;
 public class ConnectionTest {
     Plugin connPlugin = new ConnectionPlugin();
     TestPluginInjector injector;
+    String tmpUserHome = System.getProperty("basedir") + "/target/tmp-user-home";
+    File parentDir = new File(tmpUserHome);
 
     @BeforeMethod
     public void methodSetup() {
-        injector = Guice.createInjector(new TestModule()).getInstance(TestPluginInjector.class);
+        injector = Guice.createInjector(new TestModule(tmpUserHome)).getInstance(TestPluginInjector.class);
+    }
+    
+    @BeforeClass
+    public void classSetup() throws IOException {
+        // in case a previous test run failed to cleanup, delete any existing directories we use
+        if (parentDir.exists()) FileUtils.deleteDirectory(parentDir); 
+        // create directory used for testing
+        FileUtils.copyDirectory(new File(System.getProperty("positive.test.user.home")), parentDir);
+    }
+    
+    @AfterClass(alwaysRun=true)
+    public void classTeardown() throws IOException {
+        if (parentDir.exists()) FileUtils.deleteDirectory(parentDir);
     }
 
     @Test
