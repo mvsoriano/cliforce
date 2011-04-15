@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.FileOutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -116,7 +117,7 @@ public class CLIForce {
         }
     }
 
-    private static void setupLogging() {
+    /* package */ static void setupLogging() {
         System.setProperty("logback.configurationFile", System.getProperty("logback.configurationFile", "logback.xml"));
         StatusPrinter.setPrintStream(new PrintStream(new OutputStream() {
             @Override
@@ -127,10 +128,9 @@ public class CLIForce {
         //we redirect stderr to a file because slf4j can sometimes decide to write to
         //system.err on startup due to timing issues during init.
         try {
-
             File errors = new File(Util.getCliforceHome() + "/.force/cliforce.errors");
             if (errors.exists() || errors.createNewFile()) {
-                System.setErr(new PrintStream(errors));
+                System.setErr(new PrintStream(new FileOutputStream(errors, true))); // append errors to existing file
             }
         } catch (IOException e) {
             //Swallow, if this happens, there is a possibility we will get SLF4J output during startup on the console.
