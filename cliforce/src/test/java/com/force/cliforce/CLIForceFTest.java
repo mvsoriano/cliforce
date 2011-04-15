@@ -17,7 +17,7 @@ public class CLIForceFTest {
 
     @Test
     public void testStandardErrOutputRedirectedToErrorLogFile() throws FileNotFoundException {
-        CLIForce.setupLogging();
+        CLIForce.setupLogging(); // redirect logging
 
         long timestamp = Calendar.getInstance().getTimeInMillis();
         String timestampString = String.valueOf(timestamp);
