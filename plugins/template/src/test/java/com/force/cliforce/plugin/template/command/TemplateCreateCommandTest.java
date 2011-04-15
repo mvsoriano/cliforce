@@ -58,7 +58,7 @@ public class TemplateCreateCommandTest extends BaseCliforceCommandTest {
         return new TemplatePlugin();
     }
     
-    @Test(timeOut=60000)
+    @Test
     public void testCreateTemplateAndInstall() throws IOException, ConnectionException, ServletException, InterruptedException {
         System.out.println("===================================\nStart testCreateTemplateAndInstall\n===================================\n");
         String output = runCommand("template:create springmvc -d " + templateParentDir + " -p com.pack");
