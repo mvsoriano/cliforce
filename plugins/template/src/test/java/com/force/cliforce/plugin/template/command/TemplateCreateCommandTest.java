@@ -60,7 +60,6 @@ public class TemplateCreateCommandTest extends BaseCliforceCommandTest {
     
     @Test
     public void testCreateTemplateAndInstall() throws IOException, ConnectionException, ServletException, InterruptedException {
-        System.out.println("===================================\nStart testCreateTemplateAndInstall\n===================================\n");
         String output = runCommand("template:create springmvc -d " + templateParentDir + " -p com.pack");
         Assert.assertTrue(output.contains("BUILD SUCCESSFUL"), "creation of template not successful");
         // execute mvn install on the created template to make sure it compiles properly
@@ -69,7 +68,6 @@ public class TemplateCreateCommandTest extends BaseCliforceCommandTest {
         // execute mvn install with tests enabled
         uncommentEntityAnnotation(templateParentDir + "/springmvc/src/main/java/com/pack/model/MyEntity.java");
         Assert.assertTrue(output.contains("BUILD SUCCESSFUL"), "mvn install with tests was not successful");
-        System.out.println("===================================\nEnd testCreateTemplateAndInstall\n===================================\n");
     }
     
     /**
@@ -81,16 +79,13 @@ public class TemplateCreateCommandTest extends BaseCliforceCommandTest {
      * @throws InterruptedException
      */
     private String runProcess(String cmd, String workingDir) throws IOException, InterruptedException {
-        System.out.println("===================================\nStart process" + cmd + "\n===================================\n");
         ProcessBuilder pb = new ProcessBuilder(cmd.split(" "));
         Map<String, String> env = pb.environment();
         // set force url, which is needed to execute tests in generated template
         env.put("FORCE_FORCEDATABASE_URL", getConnectionManager().getCurrentEnv().getUrl());
         pb.directory(new File(workingDir));
         Process p = pb.start();
-        System.out.println("===================================\nprocess started\n===================================\n");
         int retVal = p.waitFor();
-        System.out.println("===================================\nwait for completed\n===================================\n");
         // convert console output into a String
         BufferedReader br = null;
         StringBuilder sb = null;
@@ -99,7 +94,6 @@ public class TemplateCreateCommandTest extends BaseCliforceCommandTest {
             sb = new StringBuilder();
             String line = null;
             while ((line = br.readLine()) != null) {
-                System.out.println("===================================\nwrote" + line + "\n===================================\n");
                 sb.append(line + "\n");
             } 
         } finally {
@@ -112,7 +106,6 @@ public class TemplateCreateCommandTest extends BaseCliforceCommandTest {
                 "===============================================================================\n");
         // kill process
         p.destroy();
-        System.out.println("===================================\nEnd process" + cmd + "\n===================================\n");
         return sb.toString();
     }
     
