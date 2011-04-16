@@ -32,6 +32,7 @@ public class TemplateCreateCommandTest extends BaseCliforceCommandTest {
     
     private final String templateParentDir = System.getProperty("basedir") + "/target/test-template";
     
+    @Override
     @BeforeClass
     public void classSetup() throws InterruptedException, IOException, ConnectionException, ServletException {
         super.classSetup();
