@@ -27,6 +27,9 @@ public class BasePluginsTest extends BaseCliforceCommandTest {
         return null;
     }
     
+    /**
+     * Override this method if only want certain plugins installed
+     */
     @Override
     public void setupCLIForce(CLIForce c) throws IOException {
         c.installPlugin("app", "LATEST", (Plugin)new AppPlugin(), isInternal());

@@ -60,9 +60,11 @@ public class TemplateCreateCommandTest extends BaseCliforceCommandTest {
     
     @Test
     public void testCreateTemplateAndInstall() throws IOException, ConnectionException, ServletException, InterruptedException {
+        System.out.println("creating template.  please wait...");
         String output = runCommand("template:create springmvc -d " + templateParentDir + " -p com.pack");
         Assert.assertTrue(output.contains("BUILD SUCCESSFUL"), "creation of template not successful");
         // execute mvn install on the created template to make sure it compiles properly
+        System.out.println("running maven build on template.  please wait...");
         output = runProcess("mvn install -DskipTests -e", templateParentDir + "/springmvc");
         Assert.assertTrue(output.contains("BUILD SUCCESSFUL"), "mvn install without tests was not successful");
         // execute mvn install with tests enabled

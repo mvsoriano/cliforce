@@ -34,10 +34,10 @@ public abstract class BaseCliforceCommandTest {
         cliForce = injector.getInstance(CLIForce.class);
         baos = new ByteArrayOutputStream();
         InputStream in = new ByteArrayInputStream(new byte[]{});
+        testPluginInstaller = getInjector().getInstance(TestPluginInstaller.class);
         cliForce.init(in, new PrintWriter(baos, true));
         setupCLIForce(cliForce);
         completor = getInjector().getInstance(CommandCompletor.class);
-        testPluginInstaller = getInjector().getInstance(TestPluginInstaller.class);
         connectionManager = getInjector().getInstance(ConnectionManager.class);
     }  
     
