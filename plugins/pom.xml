@@ -16,8 +16,6 @@
     <module>db</module>
     <module>template</module>
     <module>connection</module>
-    <module>jpa</module>
-    <module>codegen</module>
   </modules>
 
   <dependencies>

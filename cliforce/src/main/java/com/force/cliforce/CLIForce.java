@@ -475,9 +475,7 @@ public class CLIForce {
         return connectionManager.getDefaultEnvironment();
     }
 
-    public void removeEnvironment(String name) {
-        connectionManager.removeEnvironment(name);
-    }
+
 
 
     CommandContext getContext(String[] args) {
@@ -575,11 +573,7 @@ public class CLIForce {
         public CommandWriter getCommandWriter() {
             return writer;
         }
-        
-        @Override
-        public String getConnectionName() {
-            return connector.getConnectionName();
-        }
+
     }
 
     /**

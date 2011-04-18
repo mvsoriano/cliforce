@@ -61,10 +61,5 @@ public interface CommandContext {
 
     CommandWriter getCommandWriter();
     
-    /**
-     * can be null
-     * 
-     * @return
-     */
-    String getConnectionName();
+
 }
