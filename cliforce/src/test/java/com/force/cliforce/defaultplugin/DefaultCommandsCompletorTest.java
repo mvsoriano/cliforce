@@ -152,8 +152,4 @@ public class DefaultCommandsCompletorTest extends BaseCliforceCommandTest {
         runCompletorTestCase("version ", 8, Arrays.asList(new String[]{" ", "Show the current running version of cliforce"}));
     }
     
-    @Test
-    public void testCompletionNotEndOfLine() {
-    	runCompletorTestCase("ee", 1, 0, Arrays.asList(new String[]{}));
-    }
 }
