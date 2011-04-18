@@ -3,6 +3,7 @@ package com.force.cliforce.plugin.codegen.command;
 import static org.testng.Assert.assertEquals;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.testng.annotations.AfterMethod;
@@ -17,6 +18,9 @@ import com.force.cliforce.plugin.codegen.command.Describe.DescribeArgs;
 import com.google.common.collect.Lists;
 import com.sforce.soap.partner.DescribeGlobalResult;
 import com.sforce.soap.partner.DescribeGlobalSObjectResult;
+import com.sforce.soap.partner.DescribeSObjectResult;
+import com.sforce.soap.partner.Field;
+import com.sforce.soap.partner.FieldType;
 import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.ws.ConnectionException;
 import com.sforce.ws.ConnectorConfig;
@@ -31,13 +35,20 @@ public class DescribeTest {
     static class MockDescribeGlobalPartnerConnection extends PartnerConnection {
         
         private final DescribeGlobalResult returnedDescribeGlobalResult = new DescribeGlobalResult();
+        private final List<DescribeSObjectResult> returnedDescribeSObjectResults = new ArrayList<DescribeSObjectResult>();
         
         public MockDescribeGlobalPartnerConnection(ConnectorConfig config) throws ConnectionException {
             super(config);
         }
         
+        @Override
         public DescribeGlobalResult describeGlobal() {
             return returnedDescribeGlobalResult;
+        }
+        
+        @Override
+        public DescribeSObjectResult[] describeSObjects(String[] sObjectType) {
+            return returnedDescribeSObjectResults.toArray(new DescribeSObjectResult[returnedDescribeSObjectResults.size()]);
         }
         
         // Convenience method that allows a test to construct
@@ -46,8 +57,13 @@ public class DescribeTest {
             returnedDescribeGlobalResult.setSobjects(descSObjects.toArray(new DescribeGlobalSObjectResult[descSObjects.size()]));
         }
         
+        public void setDescribeSObjectResults(List<DescribeSObjectResult> descSObjects) {
+            returnedDescribeSObjectResults.addAll(descSObjects);
+        }
+        
         public void reset() {
         	returnedDescribeGlobalResult.setSobjects(new DescribeGlobalSObjectResult[0]);
+        	returnedDescribeSObjectResults.clear();
         }
     }
     
@@ -75,30 +91,85 @@ public class DescribeTest {
     	cmdWriter.reset();
     }
     
-    @Test
-    public void testDescribeAllSchema() {
-    	DescribeGlobalSObjectResult standardObj = new DescribeGlobalSObjectResult();
-    	standardObj.setName("StandardObject");
-    	standardObj.setLabel("Standard Object");
+    @DataProvider
+    public Object[][] describeArgsProvider() {
+
+        return new Object[][]{
+                {true/*all*/, false/*custom*/, false/*standard*/, Collections.<String>emptyList(), 
+                    "  CustomObject (Custom Object)                                           [                                                           ]\n" +
+                    "  StandardObject1 (Standard Object1)                                     [                                                           ]\n" +
+                    "  StandardObject2 (Standard Object2)                                     [                                                           ]\n"},
+                {false/*all*/, true/*custom*/, false/*standard*/, Collections.<String>emptyList(), 
+                    "  CustomObject (Custom Object)                                           [                                                           ]\n"},
+                {false/*all*/, false/*custom*/, true/*standard*/, Collections.<String>emptyList(), 
+                    "  StandardObject1 (Standard Object1)                                     [                                                           ]\n" +
+                    "  StandardObject2 (Standard Object2)                                     [                                                           ]\n"},
+                {false/*all*/, false/*custom*/, false/*standard*/, Lists.<String>newArrayList("StandardObject1"), 
+                    "  StandardObject1 (Standard Object1)                                     [                                                           ]\n"},
+                {false/*all*/, true/*custom*/, false/*standard*/, Lists.<String>newArrayList("StandardObject2"),
+                    "  CustomObject (Custom Object)                                           [                                                           ]\n" +
+                    "  StandardObject2 (Standard Object2)                                     [                                                           ]\n"},
+        };
+    }
+    
+    @Test(dataProvider = "describeArgsProvider")
+    public void testDescribeSchema(boolean all, boolean custom, boolean standard, List<String> names, 
+            String expectedDescribeString) {
+        
+    	DescribeGlobalSObjectResult standardObj1 = new DescribeGlobalSObjectResult();
+    	standardObj1.setName("StandardObject1");
+    	standardObj1.setLabel("Standard Object1");
+    	
+        DescribeGlobalSObjectResult standardObj2 = new DescribeGlobalSObjectResult();
+        standardObj2.setName("StandardObject2");
+        standardObj2.setLabel("Standard Object2");
     	
     	DescribeGlobalSObjectResult customObj = new DescribeGlobalSObjectResult();
     	customObj.setName("CustomObject");
     	customObj.setLabel("Custom Object");
     	customObj.setCustom(true);
     	
-    	mockConn.setSObjectsForDescribeGlobalResult(Lists.newArrayList(standardObj, customObj));
+    	mockConn.setSObjectsForDescribeGlobalResult(Lists.newArrayList(standardObj1, standardObj2, customObj));
     	
     	DescribeArgs args = new DescribeArgs();
-    	args.all = true;
+    	args.all = all;
+    	args.custom = custom;
+    	args.standard = standard;
+    	args.names = names;
     	describe.executeWithArgs(ctx, args);
     	
-    	assertEquals(cmdWriter.getOutput(), 
-    			"Custom Schema:\n" +
-    			"  CustomObject (Custom Object)                                           [                                                           ]\n" +
-    			"\n" +
-    			"Standard Schema:\n" +
-    		    "  StandardObject (Standard Object)                                       [                                                           ]\n",
-    			"Unexpected describe output");
+    	assertEquals(cmdWriter.getOutput(), expectedDescribeString, "Unexpected describe output");
+    }
+    
+    @Test
+    public void testDescribeSchemaVerbose() {
+        DescribeGlobalSObjectResult dgsr = new DescribeGlobalSObjectResult();
+        dgsr.setName("VerboseObject");
+        dgsr.setLabel("Verbose Object");
+        
+        DescribeSObjectResult dsr = new DescribeSObjectResult();
+        dsr.setName("VerboseObject");
+        dsr.setLabel("Verbose Object");
+        
+        Field field = new Field();
+        field.setName("VerboseField");
+        field.setLabel("Verbose Field");
+        field.setType(FieldType.string);
+        field.setNillable(true);
+        dsr.setFields(new Field[] { field });
+        
+        mockConn.setSObjectsForDescribeGlobalResult(Collections.<DescribeGlobalSObjectResult>singletonList(dgsr));
+        mockConn.setDescribeSObjectResults(Collections.<DescribeSObjectResult>singletonList(dsr));
+        
+        DescribeArgs args = new DescribeArgs();
+        args.all = true;
+        args.verbose = true;
+        describe.executeWithArgs(ctx, args);
+        
+        assertEquals(cmdWriter.getOutput(),
+                "  VerboseObject (Verbose Object)                                         [                                                           ]\n" +
+                "    VerboseField (Verbose Field)                                           [ string                                               ]\n",
+                "Unexpected describe output");
     }
     
     @Test
@@ -108,46 +179,7 @@ public class DescribeTest {
     	describe.executeWithArgs(ctx, args);
     	
     	assertEquals(cmdWriter.getOutput(), 
-    			"Custom Schema:\n" +
-    			"  There is no custom schema in your org\n" +
-    			"\n" +
-    			"Standard Schema:\n" +
-    		    "  There is no standard schema in your org\n",
-    			"Unexpected describe output");
-    }
-    
-    @Test
-    public void testDescribeNamedSchema() {
-    	DescribeGlobalSObjectResult namedObj = new DescribeGlobalSObjectResult();
-    	namedObj.setName("NamedObject");
-    	namedObj.setLabel("Named Object");
-    	
-    	mockConn.setSObjectsForDescribeGlobalResult(Lists.newArrayList(namedObj));
-    	describe.executeWithArgs(ctx, constructDescribeArgs(namedObj));
-    	
-    	assertEquals(cmdWriter.getOutput(), 
-    			"  NamedObject (Named Object)                                             [                                                           ]\n",
-    			"Unexpected describe output");
-    }
-    
-    @Test
-    public void testDescribeNamedSchemaOrder() {
-    	DescribeGlobalSObjectResult namedObj1 = new DescribeGlobalSObjectResult();
-    	namedObj1.setName("NamedObject1");
-    	namedObj1.setLabel("Named Object 1");
-    	
-    	DescribeGlobalSObjectResult namedObj2 = new DescribeGlobalSObjectResult();
-    	namedObj2.setName("NamedObject2");
-    	namedObj2.setLabel("Named Object 2");
-    	
-    	// We'll reverse the order of the named objects in the args
-    	mockConn.setSObjectsForDescribeGlobalResult(Lists.newArrayList(namedObj1, namedObj2));
-    	describe.executeWithArgs(ctx, constructDescribeArgs(namedObj2, namedObj1));
-    	
-    	// Assert that the describe results are in the same order as they went into the args
-    	assertEquals(cmdWriter.getOutput(), 
-    			"  NamedObject2 (Named Object 2)                                          [                                                           ]\n" +
-    			"  NamedObject1 (Named Object 1)                                          [                                                           ]\n",
+    			"No schema describe results\n",
     			"Unexpected describe output");
     }
     
@@ -168,7 +200,7 @@ public class DescribeTest {
     @Test
     public void testDescribeWithNoSchemaNamed() {
     	describe.executeWithArgs(ctx, new DescribeArgs());
-    	assertEquals(cmdWriter.getOutput(), "No schema described. Please specify the schema object names or use -a\n",
+    	assertEquals(cmdWriter.getOutput(), "No schema described. Please specify the schema object names or use -a, -c, -s\n",
     			"Unexpected describe output");
     }
     
@@ -196,22 +228,58 @@ public class DescribeTest {
     	dgsr.setDeletable(deletable);
     	
     	mockConn.setSObjectsForDescribeGlobalResult(Lists.newArrayList(dgsr));
-    	describe.executeWithArgs(ctx, constructDescribeArgs(dgsr));
+    	DescribeArgs args = new DescribeArgs();
+    	args.names = Collections.<String>singletonList("testCRUDPrintFormat");
+    	describe.executeWithArgs(ctx, args);
     	
     	// Get the CRUD string from the describe results
     	String crudString = cmdWriter.getOutput().substring(cmdWriter.getOutput().indexOf('['), cmdWriter.getOutput().lastIndexOf('\n'));
     	assertEquals(crudString, expectedCRUDString, "Unexpected CRUD string");
     }
+
+    @DataProvider
+    public Object[][] fieldInfoProvider() {
+
+        return new Object[][]{
+                {FieldType.string, true , false, 
+                    "[ string                                               ]"},
+                {FieldType.string, false, false, 
+                    "[ string                         NOT NULL              ]"},
+                {FieldType.string, false, true , 
+                    "[ string                         NOT NULL   DEFAULTED  ]"},
+                {FieldType.datacategorygroupreference, false, true,
+                    "[ datacategorygroupreference     NOT NULL   DEFAULTED  ]"},
+        };
+    }
     
-    private DescribeArgs constructDescribeArgs(DescribeGlobalSObjectResult... dgsrs) {
-    	DescribeArgs args = new DescribeArgs();
-    	List<String> names = new ArrayList<String>(dgsrs.length);
-    	
-    	for (DescribeGlobalSObjectResult dgsr : dgsrs) {
-    		names.add(dgsr.getName());
-    	}
-    	
-    	args.names = names;
-    	return args;
+    @Test(dataProvider = "fieldInfoProvider")
+    public void testFieldPrintFormat(FieldType fieldType, boolean nillable, boolean defaultedOnCreate,
+            String expectedFieldString) {
+        DescribeGlobalSObjectResult dgsr = new DescribeGlobalSObjectResult();
+        dgsr.setName("VerboseObject");
+        dgsr.setLabel("Verbose Object");
+        
+        DescribeSObjectResult dsr = new DescribeSObjectResult();
+        dsr.setName("VerboseObject");
+        dsr.setLabel("Verbose Object");
+        
+        Field field = new Field();
+        field.setName("VerboseField");
+        field.setLabel("Verbose Field");
+        field.setType(fieldType);
+        field.setNillable(nillable);
+        field.setDefaultedOnCreate(defaultedOnCreate);
+        dsr.setFields(new Field[] { field });
+        
+        mockConn.setSObjectsForDescribeGlobalResult(Collections.<DescribeGlobalSObjectResult>singletonList(dgsr));
+        mockConn.setDescribeSObjectResults(Collections.<DescribeSObjectResult>singletonList(dsr));
+
+        DescribeArgs args = new DescribeArgs();
+        args.all = true;
+        args.verbose = true;
+        describe.executeWithArgs(ctx, args);
+        
+        String fieldString = cmdWriter.getOutput().substring(cmdWriter.getOutput().lastIndexOf('['), cmdWriter.getOutput().lastIndexOf('\n'));
+        assertEquals(fieldString, expectedFieldString, "Unexpected describe output");
     }
 }

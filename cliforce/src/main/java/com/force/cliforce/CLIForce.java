@@ -39,6 +39,7 @@ import com.sforce.async.AsyncApiException;
 import com.sforce.async.BulkConnection;
 import com.sforce.soap.metadata.MetadataConnection;
 import com.sforce.soap.partner.PartnerConnection;
+import com.sforce.soap.partner.fault.ApiFault;
 import com.sforce.ws.ConnectionException;
 import com.vmforce.client.VMForceClient;
 
@@ -609,6 +610,23 @@ public class CLIForce {
             out.println(msg);
         }
 
+        @Override
+        public void printExceptionMessage(Exception e, boolean newLine) {
+            String exceptionMessage;
+            if (e instanceof ApiFault) {
+                ApiFault af = (ApiFault)e;
+                exceptionMessage = af.getExceptionMessage();
+            } else {
+                exceptionMessage = e.getMessage();
+            }
+            
+            if (newLine) {
+                println(exceptionMessage);
+            } else {
+                print(exceptionMessage);
+            }
+        }
+        
         @Override
         public void printStackTrace(Exception e) {
             e.printStackTrace(out);
