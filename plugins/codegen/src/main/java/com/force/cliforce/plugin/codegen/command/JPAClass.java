@@ -12,6 +12,7 @@ import com.force.cliforce.LazyLogger;
 import com.force.cliforce.Util;
 import com.force.cliforce.plugin.codegen.command.JPAClass.JPAClassArgs;
 import com.force.sdk.codegen.ForceJPAClassGenerator;
+import com.sforce.soap.partner.fault.ApiFault;
 
 /**
  * Code Generater for Force.com JPA enabled Java Classes. 
@@ -57,6 +58,13 @@ public class JPAClass extends JCommand<JPAClassArgs> {
                 return;
             }
         } catch (Exception e) {
+            if (e instanceof ApiFault) {
+                ApiFault af = (ApiFault)e;
+                ctx.getCommandWriter().println("Unable to generate JPA classes: " + af.getExceptionMessage());
+            } else {
+                ctx.getCommandWriter().println("Unable to generate JPA classes: " + e.getMessage());
+            }
+            
             log.get().debug("Unable to generate JPA classes", e);
             return;
         }
