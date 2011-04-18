@@ -157,7 +157,7 @@ public abstract class JCommand<T> implements Command {
         }
 
         //take the result of parsing and create a map of the
-        //unassigned parameters that will then be eligibie for completion
+        //unassigned parameters that will then be eligible for completion
         //largestSwitch is used to pad the output of eligible completions
         int largestSwitch = 0;
         Map<String, ParameterDescription> descs = new HashMap<String, ParameterDescription>();
