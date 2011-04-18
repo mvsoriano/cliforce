@@ -134,7 +134,7 @@ public abstract class BaseCliforceCommandTest {
     public void verifyCandidateList(List<CharSequence> actualCandidates, List<String> expectedCandidates) {
         Assert.assertEquals(actualCandidates.size(), expectedCandidates.size(), "unexpected number of candidates");
         for (int i = 0; i < actualCandidates.size(); i++) {
-            Assert.assertEquals(actualCandidates.get(i).toString(), expectedCandidates.get(i), "unexpected candidate");
+            Assert.assertEquals(actualCandidates.get(i).toString().replaceAll("[\\s]+", " "), expectedCandidates.get(i).replaceAll("[\\s]+", " "), "unexpected candidate");
         }
     }
 
