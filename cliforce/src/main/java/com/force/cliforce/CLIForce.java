@@ -475,6 +475,9 @@ public class CLIForce {
         return connectionManager.getDefaultEnvironment();
     }
 
+    public void removeEnvironment(String name) {
+        connectionManager.removeEnvironment(name);
+    }
 
 
 
