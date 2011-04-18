@@ -2,7 +2,7 @@ package com.force.cliforce;
 
 
 import com.force.cliforce.dependency.DependencyResolver;
-import com.sforce.async.BulkConnection;
+import com.sforce.async.RestConnection;
 import com.sforce.soap.metadata.MetadataConnection;
 import com.sforce.soap.partner.PartnerConnection;
 import org.apache.commons.exec.CommandLine;
@@ -141,16 +141,16 @@ public class Util {
         }
     }
 
-    public static void requireBulkConnection(CommandContext context) throws ResourceException {
+    public static void requireRestConnection(CommandContext context) throws ResourceException {
         String msg = "Unable to execute the command, since the bulk connection is ";
-        BulkConnection bulkConnection = null;
+        RestConnection restConnection = null;
         try {
-            bulkConnection = context.getBulkConnection();
+            restConnection = context.getRestConnection();
         } catch (Exception e) {
             log.get().debug("Exception getting rest conenction", e);
             throw new ResourceException(msg + "invalid.\nPlease add a valid connection using connection:add", e);
         }
-        if (bulkConnection == null) {
+        if (restConnection == null) {
             throw new ResourceException(msg + "null.\nPlease add a valid connection using connection:add");
         }
     }

@@ -36,7 +36,7 @@ import com.force.sdk.connector.ForceServiceConnector;
 import com.google.inject.Guice;
 import com.google.inject.name.Named;
 import com.sforce.async.AsyncApiException;
-import com.sforce.async.BulkConnection;
+import com.sforce.async.RestConnection;
 import com.sforce.soap.metadata.MetadataConnection;
 import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.ws.ConnectionException;
@@ -479,8 +479,6 @@ public class CLIForce {
         connectionManager.removeEnvironment(name);
     }
 
-
-
     CommandContext getContext(String[] args) {
         ForceEnv currentEnv = connectionManager.getCurrentEnv();
         VMForceClient vmForceClient = connectionManager.getVmForceClient();
@@ -550,9 +548,9 @@ public class CLIForce {
         }
 
         @Override
-        public BulkConnection getBulkConnection() {
+        public RestConnection getRestConnection() {
             try {
-                return connector.getBulkConnection();
+                return connector.getRestConnection();
             } catch (AsyncApiException e) {
                 log.get().error("AsyncApiException exception while getting rest connection", e);
                 throw new RuntimeException(e);
