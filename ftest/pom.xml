@@ -32,6 +32,11 @@
     </dependency>
     <dependency>
       <groupId>com.force.cliforce.plugin</groupId>
+      <artifactId>codegen</artifactId>    
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.force.cliforce.plugin</groupId>
       <artifactId>connection</artifactId>
       <version>${project.version}</version>
     </dependency>

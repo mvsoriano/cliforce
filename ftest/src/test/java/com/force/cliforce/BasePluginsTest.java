@@ -3,6 +3,7 @@ package com.force.cliforce;
 import java.io.IOException;
 
 import com.force.cliforce.plugin.app.AppPlugin;
+import com.force.cliforce.plugin.codegen.CodeGenPlugin;
 import com.force.cliforce.plugin.connection.ConnectionPlugin;
 import com.force.cliforce.plugin.db.DBPlugin;
 import com.force.cliforce.plugin.jpa.JPAPlugin;
@@ -37,6 +38,7 @@ public class BasePluginsTest extends BaseCliforceCommandTest {
         c.installPlugin("connection", "LATEST", new ConnectionPlugin(), isInternal());
         c.installPlugin("template", "LATEST", new TemplatePlugin(), isInternal());
         c.installPlugin("jpa", "LATEST", new JPAPlugin(), isInternal());
+        c.installPlugin("codegen", "LATEST", new CodeGenPlugin(), isInternal());
     }
     
 
