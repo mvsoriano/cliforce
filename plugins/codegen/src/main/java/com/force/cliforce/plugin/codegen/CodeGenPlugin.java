@@ -6,7 +6,6 @@ import java.util.List;
 import com.force.cliforce.Command;
 import com.force.cliforce.Plugin;
 import com.force.cliforce.plugin.codegen.command.JPAClass;
-import com.force.cliforce.plugin.codegen.command.Describe;
 
 /**
  * CLIForce plugin for automatic code generation.
@@ -18,6 +17,6 @@ public class CodeGenPlugin implements Plugin {
     @SuppressWarnings("unchecked")
     @Override
     public List<Class<? extends Command>> getCommands() {
-        return Arrays.<Class<? extends Command>>asList(Describe.class, JPAClass.class);
+        return Arrays.<Class<? extends Command>>asList(JPAClass.class);
     }
 }

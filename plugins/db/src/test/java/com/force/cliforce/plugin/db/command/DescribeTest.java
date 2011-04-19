@@ -1,4 +1,4 @@
-package com.force.cliforce.plugin.codegen.command;
+package com.force.cliforce.plugin.db.command;
 
 import static org.testng.Assert.assertEquals;
 
@@ -14,7 +14,7 @@ import org.testng.annotations.Test;
 import com.force.cliforce.CommandContext;
 import com.force.cliforce.TestCommandContext;
 import com.force.cliforce.TestCommandWriter;
-import com.force.cliforce.plugin.codegen.command.Describe.DescribeArgs;
+import com.force.cliforce.plugin.db.command.Describe.DescribeArgs;
 import com.google.common.collect.Lists;
 import com.sforce.soap.partner.DescribeGlobalResult;
 import com.sforce.soap.partner.DescribeGlobalSObjectResult;

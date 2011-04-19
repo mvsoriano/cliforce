@@ -1,4 +1,4 @@
-package com.force.cliforce.plugin.codegen.command;
+package com.force.cliforce.plugin.db.command;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,7 +11,7 @@ import com.force.cliforce.CommandContext;
 import com.force.cliforce.JCommand;
 import com.force.cliforce.LazyLogger;
 import com.force.cliforce.Util;
-import com.force.cliforce.plugin.codegen.command.Describe.DescribeArgs;
+import com.force.cliforce.plugin.db.command.Describe.DescribeArgs;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -29,11 +29,12 @@ import com.sforce.ws.ConnectionException;
 /**
  * Describes Force.com schema for a given org.
  * 
- * This may be useful during code generation
- * as it will allow a user to see what can be 
- * or will be generated.
- * 
- * Usage: describe <names of Force.com schema objects to describe>
+ * Usage: describe [args] <names of Force.com schema objects to describe>
+ *      args:
+ *      -a, --all       describe all Force.com schema objects
+ *      -c, --custom    describe custom Force.com schema objects
+ *      -s, --standard  describe standard Force.com schema objects
+ *      -v, --verbose   verbosely describe Force.com schema objects
  * 
  * @author Tim Kral
  */
