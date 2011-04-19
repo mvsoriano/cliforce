@@ -14,7 +14,7 @@ import com.force.cliforce.plugin.codegen.command.JPAClass.JPAClassArgs;
 import com.force.sdk.codegen.ForceJPAClassGenerator;
 
 /**
- * Code Generater for Force.com JPA enabled Java Classes. 
+ * Code Generator for Force.com JPA enabled Java Classes. 
  * 
  * @author Tim Kral
  */
@@ -74,12 +74,12 @@ public class JPAClass extends JCommand<JPAClassArgs> {
         public boolean all = false;
         
         @Parameter(names = {"-d", "--destDir"}, description = "destination directory for generated JPA classes (within project)")
-        public String destDir = DEFAULT_DEST_DIR;
+        public File destDir = new File(DEFAULT_DEST_DIR);
         
         @Parameter(names = {"-p", "--package"}, description = "java package name for generated JPA classes")
         public String packageName = null;
         
         @Parameter(names = {"--projectDir"}, description = "root directory for project")
-        public String projectDir = System.getProperty("user.dir"); // Current working directory
+        public File projectDir = new File(System.getProperty("user.dir")); // Current working directory
     }
 }

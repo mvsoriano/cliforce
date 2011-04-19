@@ -123,11 +123,11 @@ public class JPAClassTest {
         
         JPAClassArgs args = new JPAClassArgs();
         if (projectDir != null) {
-            args.projectDir = projectDir;
+            args.projectDir = new File(projectDir);
         }
         
         if (destDir != null) {
-            args.destDir = destDir;
+            args.destDir = new File(destDir);
         }
         
         jpaClass.executeWithArgs(ctx, args);
