@@ -19,7 +19,6 @@ import scala.actors.threadpool.Arrays;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterDescription;
-import com.force.cliforce.plugin.app.command.PushCommand;
 import com.force.cliforce.plugin.codegen.command.JPAClass;
 import com.force.cliforce.plugin.template.command.NewProjectCommand;
 import com.sforce.ws.ConnectionException;
@@ -74,7 +73,6 @@ public class FilePathCompletorTest extends BasePluginsTest {
     @DataProvider(name = "commandStubWithClass")
     public Object[][] commandStubWithClass() {
         return new Object[][] {
-                new Object[] {"app:push -p ", PushCommand.class},
                 new Object[] {"template:create -d ", NewProjectCommand.class},
                 new Object[] {"codegen:jpaClass --destDir ", JPAClass.class},
                 new Object[] {"codegen:jpaClass --projectDir ", JPAClass.class}
@@ -84,7 +82,6 @@ public class FilePathCompletorTest extends BasePluginsTest {
     @DataProvider(name = "commandStub")
     public Object[][] commandStub() {
         return new Object[][] {
-                new Object[] {"app:push -p "},
                 new Object[] {"template:create -d "},
                 new Object[] {"codegen:jpaClass --destDir "},
                 new Object[] {"codegen:jpaClass --projectDir "}

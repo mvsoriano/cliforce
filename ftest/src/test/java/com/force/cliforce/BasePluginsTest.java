@@ -2,7 +2,6 @@ package com.force.cliforce;
 
 import java.io.IOException;
 
-import com.force.cliforce.plugin.app.AppPlugin;
 import com.force.cliforce.plugin.codegen.CodeGenPlugin;
 import com.force.cliforce.plugin.connection.ConnectionPlugin;
 import com.force.cliforce.plugin.db.DBPlugin;
@@ -33,7 +32,6 @@ public class BasePluginsTest extends BaseCliforceCommandTest {
      */
     @Override
     public void setupCLIForce(CLIForce c) throws IOException {
-        c.installPlugin("app", "LATEST", (Plugin)new AppPlugin(), isInternal());
         c.installPlugin("db", "LATEST", new DBPlugin(), isInternal());
         c.installPlugin("connection", "LATEST", new ConnectionPlugin(), isInternal());
         c.installPlugin("template", "LATEST", new TemplatePlugin(), isInternal());
