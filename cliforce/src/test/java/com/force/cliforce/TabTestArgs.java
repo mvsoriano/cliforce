@@ -5,6 +5,10 @@
  */
 package com.force.cliforce;
 
+import java.io.File;
+import java.io.FilenameFilter;
+import java.net.URISyntaxException;
+
 import com.beust.jcommander.Parameter;
 
 /**
@@ -25,10 +29,26 @@ public class TabTestArgs {
     public static final String[] iSwitches = new String[]{iLong, iShort};
     public static final String iDesc = "description for switch:i";
 
-
-    @Parameter(names = {sLong, sShort}, description = sDesc)
+    public static final String pLong = "--path";
+    public static final String pShort = "-p";
+    public static final String[] pSwitches = new String[]{pLong, pShort};
+    public static final String pDesc = "description for path switch";
+    public final String[] pCompletions;
+    
+    
+    public TabTestArgs() throws URISyntaxException{
+    	File sourceDir = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
+    	pCompletions = sourceDir.getParentFile().getParentFile().list();// /.../cliforce/cliforce/
+    }
+    
+    
+    @Parameter(names = {sLong, sShort}, description = sDesc, required = true)
     public String s;
 
     @Parameter(names = {iLong, iShort}, description = iDesc)
     public int i;
+    
+    @Parameter(names = {pLong, pShort}, description = pDesc, arity = 1, hidden = true)
+    public File p;
+    
 }

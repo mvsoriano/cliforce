@@ -5,12 +5,14 @@
  */
 package com.force.cliforce;
 
-import org.testng.Assert;
-import org.testng.annotations.Test;
-
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 /**
  * JCommandTabCompletionTest
@@ -44,5 +46,19 @@ public class JCommandTabCompletionTest {
         Assert.assertTrue(testTabCompletion("-i 4 -s ").containsAll(Arrays.asList(TabTestArgs.sCompletions)));
     }
 
-
+    @Test
+    public void testMoreCompletions() throws URISyntaxException {
+    	List<CharSequence> completions = testTabCompletion("-p ");
+    	List<String> expected = Arrays.asList(new TabTestArgs().pCompletions);
+    	Assert.assertTrue(compareTrimmedStrings(completions, expected));
+    }
+    
+    private boolean compareTrimmedStrings(List<CharSequence> actual, List<String> expected) {
+    	if(actual.size() != expected.size()) return false;
+    	Iterator<CharSequence> actualIter = actual.iterator();
+    	while(actualIter.hasNext()){
+    		if(! expected.contains(actualIter.next().toString().trim())) return false;
+    	}
+    	return true;
+    }
 }
