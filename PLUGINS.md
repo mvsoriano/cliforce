@@ -11,6 +11,13 @@ that your plugin provides.
 The two important Java interfaces involved in creating a plugin are com.force.cliforce.Plugin
 (testing new syntax highlighting)
 ```java
+package com.force.cliforce;
+import java.util.List;
+
+public interface Plugin {
+    List<Class<? extends Command>> getCommands();
+}
+```
         package com.force.cliforce;
 
 
@@ -21,7 +28,6 @@ The two important Java interfaces involved in creating a plugin are com.force.cl
             List<Class<? extends Command>> getCommands();
 
         }
-```
 
 and com.force.cliforce.Command.
 
