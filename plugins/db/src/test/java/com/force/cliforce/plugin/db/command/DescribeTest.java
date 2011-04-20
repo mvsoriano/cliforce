@@ -14,7 +14,6 @@ import org.testng.annotations.Test;
 import com.force.cliforce.CommandContext;
 import com.force.cliforce.TestCommandContext;
 import com.force.cliforce.TestCommandWriter;
-import com.force.cliforce.plugin.db.command.Describe.DescribeArgs;
 import com.google.common.collect.Lists;
 import com.sforce.soap.partner.DescribeGlobalResult;
 import com.sforce.soap.partner.DescribeGlobalSObjectResult;
@@ -109,6 +108,15 @@ public class DescribeTest {
                 {false/*all*/, true/*custom*/, false/*standard*/, Lists.<String>newArrayList("StandardObject2"),
                     "  CustomObject (Custom Object)                                           [                                                           ]\n" +
                     "  StandardObject2 (Standard Object2)                                     [                                                           ]\n"},
+                {false/*all*/, true/*custom*/, false/*standard*/, Lists.<String>newArrayList("CustomObject"),
+                    "  CustomObject (Custom Object)                                           [                                                           ]\n"},
+                {false/*all*/, true/*custom*/, false/*standard*/, Lists.<String>newArrayList("StandardObject1", "StandardObject1"),
+                    "  CustomObject (Custom Object)                                           [                                                           ]\n" +
+                    "  StandardObject1 (Standard Object1)                                     [                                                           ]\n"},
+                {false/*all*/, true/*custom*/, false/*standard*/, Lists.<String>newArrayList("deadbeef", "StandardObject1"),
+                    "  CustomObject (Custom Object)                                           [                                                           ]\n" +
+                    "  StandardObject1 (Standard Object1)                                     [                                                           ]\n" +
+                    "  UNABLE TO FIND (deadbeef)                                              [                                                           ]\n"},
         };
     }
     
@@ -132,10 +140,10 @@ public class DescribeTest {
     	mockConn.setSObjectsForDescribeGlobalResult(Lists.newArrayList(standardObj1, standardObj2, customObj));
     	
     	DescribeArgs args = new DescribeArgs();
-    	args.all = all;
-    	args.custom = custom;
-    	args.standard = standard;
-    	args.names = names;
+    	args.all_$eq(all);
+    	args.custom_$eq(custom);
+    	args.standard_$eq(standard);
+    	args.names_$eq(names);
     	describe.executeWithArgs(ctx, args);
     	
     	assertEquals(cmdWriter.getOutput(), expectedDescribeString, "Unexpected describe output");
@@ -162,8 +170,8 @@ public class DescribeTest {
         mockConn.setDescribeSObjectResults(Collections.<DescribeSObjectResult>singletonList(dsr));
         
         DescribeArgs args = new DescribeArgs();
-        args.all = true;
-        args.verbose = true;
+        args.all_$eq(true);
+        args.verbose_$eq(true);
         describe.executeWithArgs(ctx, args);
         
         assertEquals(cmdWriter.getOutput(),
@@ -175,7 +183,7 @@ public class DescribeTest {
     @Test
     public void testDescribeAllSchemaWithNoSchema() {
     	DescribeArgs args = new DescribeArgs();
-    	args.all = true;
+    	args.all_$eq(true);
     	describe.executeWithArgs(ctx, args);
     	
     	assertEquals(cmdWriter.getOutput(), 
@@ -189,7 +197,7 @@ public class DescribeTest {
 		// Simulate the case where we can't find the schema
 		// that the user has named
 		DescribeArgs args = new DescribeArgs();
-		args.names = Lists.newArrayList("MisnamedSchema");
+		args.names_$eq(Lists.newArrayList("MisnamedSchema"));
 		describe.executeWithArgs(ctx, args);
 		
 		assertEquals(cmdWriter.getOutput(),
@@ -229,7 +237,7 @@ public class DescribeTest {
     	
     	mockConn.setSObjectsForDescribeGlobalResult(Lists.newArrayList(dgsr));
     	DescribeArgs args = new DescribeArgs();
-    	args.names = Collections.<String>singletonList("testCRUDPrintFormat");
+    	args.names_$eq(Collections.<String>singletonList("testCRUDPrintFormat"));
     	describe.executeWithArgs(ctx, args);
     	
     	// Get the CRUD string from the describe results
@@ -275,8 +283,8 @@ public class DescribeTest {
         mockConn.setDescribeSObjectResults(Collections.<DescribeSObjectResult>singletonList(dsr));
 
         DescribeArgs args = new DescribeArgs();
-        args.all = true;
-        args.verbose = true;
+        args.all_$eq(true);
+        args.verbose_$eq(true);
         describe.executeWithArgs(ctx, args);
         
         String fieldString = cmdWriter.getOutput().substring(cmdWriter.getOutput().lastIndexOf('['), cmdWriter.getOutput().lastIndexOf('\n'));

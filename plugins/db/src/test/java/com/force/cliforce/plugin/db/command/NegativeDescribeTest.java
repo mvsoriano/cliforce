@@ -5,7 +5,6 @@ import org.testng.annotations.Test;
 
 import com.force.cliforce.ResourceException;
 import com.force.cliforce.TestCommandContext;
-import com.force.cliforce.plugin.db.command.Describe.DescribeArgs;
 import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.ws.ConnectionException;
 
@@ -23,7 +22,7 @@ public class NegativeDescribeTest {
         TestCommandContext ctx = new TestCommandContextPartnerException();
         try {
             DescribeArgs args = new DescribeArgs();
-            args.all = true;
+            args.all_$eq(true);
         	describe.executeWithArgs(ctx, args);
             Assert.fail("Exception should have been thrown when executing describe command");		
         } catch(ResourceException e) {
