@@ -9,7 +9,8 @@ convention for CLIForce plugins is that the Maven groupId must be com.force.clif
 that your plugin provides.
 
 The two important Java interfaces involved in creating a plugin are com.force.cliforce.Plugin
-
+(testing new syntax highlighting)
+'''
         package com.force.cliforce;
 
 
@@ -20,7 +21,7 @@ The two important Java interfaces involved in creating a plugin are com.force.cl
             List<Class<? extends Command>> getCommands();
 
         }
-
+'''
 
 and com.force.cliforce.Command.
 
