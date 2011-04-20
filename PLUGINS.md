@@ -10,7 +10,7 @@ that your plugin provides.
 
 The two important Java interfaces involved in creating a plugin are com.force.cliforce.Plugin
 (testing new syntax highlighting)
-```
+``` java
         package com.force.cliforce;
 
 
