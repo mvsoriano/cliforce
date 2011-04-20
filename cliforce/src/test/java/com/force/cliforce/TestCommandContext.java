@@ -3,7 +3,7 @@ package com.force.cliforce;
 import com.sforce.async.BulkConnection;
 import com.sforce.soap.metadata.MetadataConnection;
 import com.sforce.soap.partner.PartnerConnection;
-import com.vmforce.client.VMForceClient;
+
 
 
 /**
@@ -25,7 +25,6 @@ public class TestCommandContext implements CommandContext {
     private BulkConnection bulkConnection;
     private String[] commandArguments = new String[0];
     private CommandReader commandReader;
-    private VMForceClient vmForceClient;
     private TestCommandWriter commandWriter = new TestCommandWriter();
     private ForceEnv forceEnv;
     private String connectionName;
@@ -55,10 +54,6 @@ public class TestCommandContext implements CommandContext {
         return commandReader;
     }
 
-    @Override
-    public VMForceClient getVmForceClient() {
-        return vmForceClient;
-    }
 
     @Override
     public TestCommandWriter getCommandWriter() {
@@ -119,12 +114,6 @@ public class TestCommandContext implements CommandContext {
         return copy;
     }
 
-    public TestCommandContext withVmForceClient(VMForceClient vmForceClient) {
-        TestCommandContext copy = copy();
-        copy.vmForceClient = vmForceClient;
-        return copy;
-    }
-
     public TestCommandContext withCommandWriter(TestCommandWriter commandWriter) {
         TestCommandContext copy = copy();
         copy.commandWriter = commandWriter;
@@ -150,7 +139,6 @@ public class TestCommandContext implements CommandContext {
         tcc.partnerConnection = partnerConnection;
         tcc.commandArguments = commandArguments;
         tcc.commandReader = commandReader;
-        tcc.vmForceClient = vmForceClient;
         tcc.forceEnv = forceEnv;
         tcc.connectionName = connectionName;
         return tcc;

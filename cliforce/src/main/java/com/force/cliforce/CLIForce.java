@@ -41,7 +41,7 @@ import com.sforce.soap.metadata.MetadataConnection;
 import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.soap.partner.fault.ApiFault;
 import com.sforce.ws.ConnectionException;
-import com.vmforce.client.VMForceClient;
+
 
 public class CLIForce {
 
@@ -161,19 +161,6 @@ public class CLIForce {
 
         reader.setBellEnabled(false);
         commandReader = new Reader();
-
-
-        addSetupTask(new SetupTask() {
-            @Override
-            public void setup() {
-                try {
-                    connectionManager.loadLogin();
-                    connectionManager.doLogin();
-                } catch (Exception e) {
-                    log.get().debug("Exception caught while logging in", e);
-                }
-            }
-        });
 
 
         addSetupTask(new SetupTask() {
@@ -429,25 +416,6 @@ public class CLIForce {
         rootLogger.setLevel(level);
     }
 
-
-    public synchronized boolean setLogin(String user, String password, String target) {
-        try {
-            connectionManager.setLogin(user, password, target);
-            connectionManager.doLogin();
-        } catch (Exception e) {
-            log.get().debug("Unable to log in", e);
-            return false;
-        }
-
-        try {
-            connectionManager.saveLogin();
-        } catch (IOException e) {
-            log.get().error("Exception persisting new login settings, the login will not persist over restarts.", e);
-        }
-        return true;
-    }
-
-
     public Map<String, ForceEnv> getAvailableEnvironments() {
         return connectionManager.getAvailableEnvironments();
     }
@@ -483,16 +451,15 @@ public class CLIForce {
 
     CommandContext getContext(String[] args) {
         ForceEnv currentEnv = connectionManager.getCurrentEnv();
-        VMForceClient vmForceClient = connectionManager.getVmForceClient();
         ForceServiceConnector connector = connectionManager.getCurrentConnector();
 
         if (connector != null) {
-            return new Context(currentEnv, connector, vmForceClient, args, commandReader, writer);
+            return new Context(currentEnv, connector,  args, commandReader, writer);
         } else {
             if (initLatch.getCount() == 0) {
                 log.get().warn("Couldn't get a valid connection for the current force url. Executing the command without force service connector or VMforce client");
             }
-            return new Context(currentEnv, null, vmForceClient, args, commandReader, writer);
+            return new Context(currentEnv, null, args, commandReader, writer);
         }
     }
 
@@ -505,13 +472,11 @@ public class CLIForce {
         ForceServiceConnector connector;
         String[] args;
         CommandReader reader;
-        VMForceClient client;
         CommandWriter writer;
         ForceEnv forceEnv;
 
 
-        private Context(ForceEnv env, ForceServiceConnector conn, VMForceClient cl, String[] args, CommandReader reader, CommandWriter writer) {
-            this.client = cl;
+        private Context(ForceEnv env, ForceServiceConnector conn, String[] args, CommandReader reader, CommandWriter writer) {
             this.args = args;
             this.reader = reader;
             this.writer = writer;
@@ -522,11 +487,6 @@ public class CLIForce {
         @Override
         public ForceEnv getForceEnv() {
             return forceEnv;
-        }
-
-        @Override
-        public VMForceClient getVmForceClient() {
-            return client;
         }
 
         @Override

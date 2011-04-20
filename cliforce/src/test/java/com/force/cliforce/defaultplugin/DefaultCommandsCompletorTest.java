@@ -48,7 +48,7 @@ public class DefaultCommandsCompletorTest extends BaseCliforceCommandTest {
 
     @Test
     public void testEmptyStringBuffer() {
-        runCompletorTestCase("", 0, Arrays.asList(new String[]{"banner", "classpath", "debug", "env", "exit", "help", "history", "login", "plugin", "require", "sh", "sysprops", "unplug", "version"}));
+        runCompletorTestCase("", 0, Arrays.asList(new String[]{"banner", "classpath", "debug", "env", "exit", "help", "history", "plugin", "require", "sh", "sysprops", "unplug", "version"}));
     }
 
     @Test
@@ -105,12 +105,6 @@ public class DefaultCommandsCompletorTest extends BaseCliforceCommandTest {
     @Test
     public void testHistoryHelpText() {
         runCompletorTestCase("history ", 8, Arrays.asList(new String[]{" ", "Show history of previous commands"}));
-    }
-
-    @Test
-    public void testLogin() {
-        runCompletorTestCase("login ", 0, Arrays.asList(new String[]{"login --target "}));
-        runCompletorTestCase("login --target ", 0, Arrays.asList(new String[]{"login --target "}));
     }
 
     @Test

@@ -40,11 +40,6 @@
       <artifactId>force-connector</artifactId>
       <version>${force.sdk.version}</version>
     </dependency>
-    <dependency>
-      <groupId>com.vmforce</groupId>
-      <artifactId>vmforce-client</artifactId>
-      <version>${force.client.version}</version>
-    </dependency>
     <!-- <dependency>
       <groupId>jline</groupId>
       <artifactId>jline</artifactId>

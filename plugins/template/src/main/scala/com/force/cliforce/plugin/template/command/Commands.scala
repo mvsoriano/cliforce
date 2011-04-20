@@ -43,8 +43,6 @@ class NewProjectArgs {
 class NewProjectContextWrapper(val ctx: CommandContext, val args: Array[String]) extends CommandContext {
   def getCommandWriter = ctx.getCommandWriter
 
-  def getVmForceClient = ctx.getVmForceClient
-
   def getCommandReader = ctx.getCommandReader
 
   def getForceEnv = ctx.getForceEnv

@@ -1,7 +1,7 @@
 package com.force.cliforce;
 
 import com.force.sdk.connector.ForceServiceConnector;
-import com.vmforce.client.VMForceClient;
+
 
 import java.io.IOException;
 import java.util.Map;
@@ -13,21 +13,7 @@ public interface ConnectionManager {
     String USER = "user";
     String DEFAULT_URL_PROP_NAME = "__default__";
 
-    VMForceClient getVmForceClient();
-
     ForceEnv getCurrentEnv();
-
-    void loadLogin() throws IOException;
-
-    void saveLogin() throws IOException;
-
-    void setLogin(String user, String password, String target);
-
-    String getUser();
-    String getPassword();
-    String getTarget();
-
-    void doLogin();
 
     Map<String, ForceEnv> getAvailableEnvironments();
 

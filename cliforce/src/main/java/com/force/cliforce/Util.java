@@ -97,13 +97,6 @@ public class Util {
         return all;
     }
 
-    public static void requireVMForceClient(CommandContext context) throws ResourceException {
-        if (context.getVmForceClient() == null) {
-            String msg = "Unable to execute the command, since the current login is null. Please execute login";
-            throw new ResourceException(msg);
-        }
-    }
-
     public static void requireForceEnv(CommandContext context) throws ResourceException {
         if (context.getForceEnv() == null) {
             String msg = "Unable to execute the command, since the current force connection is null.\nPlease add a valid connection using connection:add";

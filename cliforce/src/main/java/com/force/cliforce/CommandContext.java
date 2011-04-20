@@ -4,7 +4,7 @@ package com.force.cliforce;
 import com.sforce.async.BulkConnection;
 import com.sforce.soap.metadata.MetadataConnection;
 import com.sforce.soap.partner.PartnerConnection;
-import com.vmforce.client.VMForceClient;
+
 
 /**
  * Command execution context.
@@ -51,13 +51,6 @@ public interface CommandContext {
     String[] getCommandArguments();
 
     CommandReader getCommandReader();
-
-    /**
-     * can be null
-     *
-     * @return
-     */
-    VMForceClient getVmForceClient();
 
     CommandWriter getCommandWriter();
     

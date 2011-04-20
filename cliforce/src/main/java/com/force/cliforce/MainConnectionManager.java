@@ -8,15 +8,10 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import javax.servlet.ServletException;
-
-import org.apache.commons.httpclient.HttpHost;
 
 import com.force.sdk.connector.ForceConnectorConfig;
 import com.force.sdk.connector.ForceServiceConnector;
 import com.sforce.ws.ConnectionException;
-import com.vmforce.client.VMForceClient;
-import com.vmforce.client.connector.RestTemplateConnector;
 
 public class MainConnectionManager implements ConnectionManager {
 
@@ -26,85 +21,16 @@ public class MainConnectionManager implements ConnectionManager {
     /*key=envName,value=forceUrl*/
     protected Properties envProperties = new Properties();
     protected Properties loginProperties = new Properties();
-    private volatile VMForceClient vmForceClient;
     private volatile ForceEnv currentEnv;
     private volatile String currentEnvName;
-    private String user;
-    private String password;
-    private String target;
 
-
-    @Override
-    public VMForceClient getVmForceClient() {
-        return vmForceClient;
-    }
 
     @Override
     public ForceEnv getCurrentEnv() {
         return currentEnv;
     }
 
-
-    @Override
-    public void setLogin(String user, String password, String target) {
-        this.user = user;
-        this.password = password;
-        this.target = target;
-    }
-
-    @Override
-    public String getUser() {
-        return this.user;
-    }
-
-    @Override
-    public String getPassword() {
-        return this.password;
-    }
-
-    @Override
-    public String getTarget() {
-        return this.target;
-    }
-
-    @Override
-    public void saveLogin() throws IOException {
-        loginProperties.setProperty(USER, user);
-        loginProperties.setProperty(PASSWORD, password);
-        loginProperties.setProperty(TARGET, target);
-        Util.writeProperties("login", loginProperties);
-    }
-
-    @Override
-    public void doLogin() {
-        VMForceClient forceClient = new VMForceClient();
-        RestTemplateConnector restConnector = new RestTemplateConnector();
-        restConnector.setTarget(new HttpHost(target));
-        restConnector.debug(true);
-        forceClient.setHttpConnector(restConnector);
-        try {
-            forceClient.login(user, password);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to login", e);
-        } catch (ServletException e) {
-            throw new RuntimeException("Failed to login", e);
-        }
-        vmForceClient = forceClient;
-    }
-
-    @Override
-    public void loadLogin() throws IOException {
-        Util.readProperties("login", loginProperties);
-        if (!(loginProperties.containsKey(USER) && loginProperties.containsKey(PASSWORD) && loginProperties.containsKey(TARGET))) {
-            throw new IOException("login properties did not contain user, password, and target");
-        }
-        user = loginProperties.getProperty(USER);
-        password = loginProperties.getProperty(PASSWORD);
-        target = loginProperties.getProperty(TARGET);
-    }
-
-
-    @Override
+     @Override
     public Map<String, ForceEnv> getAvailableEnvironments() {
         return Collections.unmodifiableMap(envs);
     }
