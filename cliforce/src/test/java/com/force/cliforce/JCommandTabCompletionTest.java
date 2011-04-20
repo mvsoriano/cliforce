@@ -47,12 +47,14 @@ public class JCommandTabCompletionTest {
     }
 
     @Test
-    public void testMoreCompletions() throws URISyntaxException {
-    	List<CharSequence> completions = testTabCompletion("-p ");
-    	List<String> expected = Arrays.asList(new TabTestArgs().pCompletions);
-    	Assert.assertTrue(compareTrimmedStrings(completions, expected));
+    public void testFileCompletions() throws URISyntaxException {
+    	Assert.assertTrue(compareTrimmedStrings(testTabCompletion("-p "), Arrays.asList(new TabTestArgs().pCompletions)));
     }
     
+    /**
+     * JCommander puts a command separator (in our case a space) at the end of each argument it finds
+     * so we need to trim completion candidates before comparing.
+     */
     private boolean compareTrimmedStrings(List<CharSequence> actual, List<String> expected) {
     	if(actual.size() != expected.size()) return false;
     	Iterator<CharSequence> actualIter = actual.iterator();
