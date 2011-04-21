@@ -44,7 +44,7 @@ public class Boot {
     }
 
 
-    static Properties getCLIForceProperties() throws IOException {
+    public static Properties getCLIForceProperties() throws IOException {
         if (cliforce == null) {
             cliforce = new Properties();
             cliforce.load(Boot.class.getClassLoader().getResourceAsStream("cliforce.properties"));
@@ -52,7 +52,7 @@ public class Boot {
         return cliforce;
     }
 
-    static Properties getRepositories() throws IOException {
+    public static Properties getRepositories() throws IOException {
         if (repositories == null) {
             repositories = new Properties();
             if (getCLIForceProperties().getProperty("version").contains("SNAPSHOT")) {

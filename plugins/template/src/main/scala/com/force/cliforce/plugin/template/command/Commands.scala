@@ -86,8 +86,13 @@ class NewProjectCommand extends JCommand[NewProjectArgs] {
       }
 
     }
+    val repos = Boot.getRepositories
+    //forcesnap only defined if we are in a SNAPSHOT
+    val repo = repos.getProperty("forcesnap", repos.getProperty("force"))
+    val catalog = repo + "/archetype-catalog.xml"
+
     val cmd = Array("mvn", "archetype:generate", "-DinteractiveMode=false",
-      "-DarchetypeCatalog=http://repo.t.salesforce.com/archiva/repository/snapshots/archetype-catalog.xml",
+      "-DarchetypeCatalog=" + catalog,
       "-DarchetypeGroupId=" + args.getGroupArtifact._1,
       "-DarchetypeArtifactId=" + args.getGroupArtifact._2,
       "-DarchetypeVersion=LATEST",
