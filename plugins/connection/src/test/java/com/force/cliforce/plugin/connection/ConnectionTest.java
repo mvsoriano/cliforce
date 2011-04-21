@@ -17,6 +17,8 @@ import org.testng.annotations.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Tests for commands in the connection plugin
@@ -71,6 +73,29 @@ public class ConnectionTest {
                 "Valid:    true\n" +
                 "Message:  None\n" +
                 "===========================\n", "unexpected output from command");
+    }
+
+    @Test
+    public void testInteractiveAddConnection() throws Exception {
+        Injector testModuleInjector = Guice.createInjector(new TestModule(tmpUserHome));
+        ConnectionManager connection = testModuleInjector.getInstance(ConnectionManager.class);
+
+        AddConnectionCommand cmd = testModuleInjector.getInstance(AddConnectionCommand.class);
+
+        List<String> orderedInputs = Arrays.asList("testInteractiveAddConnection", "some.random@user.name.com", "Imagin@ryPa$$w3rd", "apiKey", "some.random.target.com");
+        TestCommandContext ctx = new TestCommandContext().withForceEnv(new ForceEnv("some.random.target.com", "some.random@user.name.com", "Imagin@ryPa$$w3rd")).withTestCommandReader(new TestCommandReader(orderedInputs));
+
+        cmd.execute(ctx);
+
+        Assert.assertEquals(
+                ctx.getCommandWriter().getOutput()
+                , "connection name: testInteractiveAddConnection\n" +
+                        "user: some.random@user.name.com\n" +
+                        "password: *****************\n" +
+                        "security token: apiKey\n" +
+                        "host (defaults to vmf01.t.salesforce.com): some.random.target.com\n" +
+                        "Connection: testInteractiveAddConnection added\n"
+                , "unexpected output: " + ctx.getCommandWriter().getOutput());
     }
 
     @Test

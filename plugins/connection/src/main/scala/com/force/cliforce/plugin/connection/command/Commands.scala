@@ -114,6 +114,13 @@ class AddConnectionCommand extends JCommand[AddConnectionArgs] {
       args.token = ctx.getCommandReader.readLine("security token: ")
     }
 
+    if (args.host == null || (args.host eq "vmf01.t.salesforce.com")) {
+      args.host = ctx.getCommandReader.readLine("host (defaults to vmf01.t.salesforce.com): ")
+      if (args.host == "") {
+        args.host = new AddConnectionArgs().host
+      }
+    }
+
     val env = new ForceEnv(args.url, "cliforce");
     if (env.isValid) {
       cliforce.setAvailableEnvironment(args.name, env)
@@ -244,6 +251,7 @@ class TestConnectionCommand extends Command {
     try {
       requirePartnerConnection(ctx)
       val info: GetUserInfoResult = ctx.getPartnerConnection.getUserInfo
+      log.get.debug("UserInfoResult" + info, info)
       info.toString
       ctx.getCommandWriter.println("connection valid")
     } catch {
