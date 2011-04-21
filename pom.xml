@@ -4,7 +4,7 @@
     <groupId>com.force.cliforce</groupId>
     <artifactId>cliforce-parent</artifactId>
     <packaging>pom</packaging>
-    <version>21.0.1-BETA</version>
+    <version>21.0.2-BETA</version>
     <modules>
         <module>boot</module>
         <module>cliforce</module>
