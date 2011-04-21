@@ -85,17 +85,26 @@ class NewProjectCommand extends JCommand[NewProjectArgs] {
       }
 
     }
+    val repos = Boot.getRepositories
+    //forcesnap only defined if we are in a SNAPSHOT
+    val repo = repos.getProperty("forcesnap", repos.getProperty("force"))
+    val catalog = repo + "/archetype-catalog.xml"
+    val rev = Boot.getCLIForceProperties.getProperty("version") match {
+      case s if s.contains("SNAPSHOT") => "LATEST"
+      case _ => "RELEASE"
+    }
+
     val cmd = Array("mvn", "archetype:generate", "-DinteractiveMode=false",
-      "-DarchetypeCatalog=http://repo.t.salesforce.com/archiva/repository/snapshots/archetype-catalog.xml",
+      "-DarchetypeCatalog=" + catalog,
       "-DarchetypeGroupId=" + args.getGroupArtifact._1,
       "-DarchetypeArtifactId=" + args.getGroupArtifact._2,
-      "-DarchetypeVersion=LATEST",
+      "-DarchetypeVersion=" + rev,
       "-DgroupId=" + args.group,
       "-DartifactId=" + args.artifact,
       "-Dversion=" + args.version,
       "-Dpackage=" + args.getpkg
     )
-    ctx.getCommandWriter.println("Executing:" + cmd.reduceLeft((acc, str) => acc + " " + str))
+    //printed by sh => ctx.getCommandWriter.println("Executing:" + cmd.reduceLeft((acc, str) => acc + " " + str))
     try {
       shell.execute(cmd, ctx.getCommandWriter);
     } catch {
