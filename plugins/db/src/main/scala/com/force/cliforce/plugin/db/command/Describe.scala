@@ -13,7 +13,7 @@ import scala.collection.JavaConversions._
  * @author Tim Kral
  */
 class DescribeArgs {
-  
+
     @Parameter(description = "names of Force.com schema objects to describe")
     var names: JList[String] = new ArrayList()
     
@@ -205,7 +205,7 @@ class Schema private (name: String, label: String,
                 sb.append("\n")
                 sb.append("    %-70s" format (field.getName + " (" + field.getLabel + ")"))
                 sb.append(" [ ")
-                sb.append("%-30s" format (field.getType)).append(' ')
+                sb.append("%-30s" format (field.getType.toString.replace("_", ""))).append(' ')
                 sb.append("%-10s" format (if (field.isNillable) "" else "NOT NULL")).append(' ')
                 sb.append("%-10s" format (if (field.isDefaultedOnCreate) "DEFAULTED" else ""))
                 sb.append(" ]")
