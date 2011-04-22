@@ -1,5 +1,14 @@
 package com.force.cliforce.plugin.connection;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.commons.io.FileUtils;
+import org.testng.Assert;
+import org.testng.annotations.*;
+
 import com.force.cliforce.*;
 import com.force.cliforce.plugin.connection.command.*;
 import com.force.sdk.connector.ForceServiceConnector;
@@ -7,18 +16,6 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.ws.ConnectionException;
-
-import org.apache.commons.io.FileUtils;
-import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Tests for commands in the connection plugin
@@ -78,7 +75,7 @@ public class ConnectionTest {
     @Test
     public void testInteractiveAddConnection() throws Exception {
         Injector testModuleInjector = Guice.createInjector(new TestModule(tmpUserHome));
-        ConnectionManager connection = testModuleInjector.getInstance(ConnectionManager.class);
+        testModuleInjector.getInstance(ConnectionManager.class);
 
         AddConnectionCommand cmd = testModuleInjector.getInstance(AddConnectionCommand.class);
 
