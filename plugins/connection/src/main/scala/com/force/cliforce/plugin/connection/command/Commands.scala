@@ -5,6 +5,7 @@ import javax.inject.Inject
 import com.force.cliforce.Util._
 import com.beust.jcommander.Parameter
 import com.force.cliforce._
+import com.sforce.soap.partner.GetUserInfoResult
 
 class ListConnectionsCommand extends Command {
   @Inject
@@ -111,6 +112,13 @@ class AddConnectionCommand extends JCommand[AddConnectionArgs] {
 
     if (args.token == "" && !args.notoken) {
       args.token = ctx.getCommandReader.readLine("security token: ")
+    }
+
+    if (args.host == null || (args.host eq "vmf01.t.salesforce.com")) {
+      args.host = ctx.getCommandReader.readLine("host (defaults to vmf01.t.salesforce.com): ")
+      if (args.host == "") {
+        args.host = new AddConnectionArgs().host
+      }
     }
 
     val env = new ForceEnv(args.url, "cliforce");
@@ -234,5 +242,28 @@ class RemoveConnectionCommand extends Command {
   def describe = "remove a connection from cliforce. Usage connection:remove <connectionName>"
 
   def name = "remove"
+}
+
+class TestConnectionCommand extends Command {
+  val log = new LazyLogger(classOf[TestConnectionCommand])
+
+  def execute(ctx: CommandContext) = {
+    try {
+      requirePartnerConnection(ctx)
+      val info: GetUserInfoResult = ctx.getPartnerConnection.getUserInfo
+      log.get.debug("UserInfoResult" + info, info)
+      info.toString
+      ctx.getCommandWriter.println("connection valid")
+    } catch {
+      case e: Exception => {
+        ctx.getCommandWriter.println("connection invalid\nexecute debug and retry to see failure information")
+        log.get.debug("connection invalid", e)
+      }
+    }
+  }
+
+  def describe = "test the current connection. Usage connection:test <connectionName>"
+
+  def name = "test"
 }
 

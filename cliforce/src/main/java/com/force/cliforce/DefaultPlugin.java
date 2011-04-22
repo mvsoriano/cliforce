@@ -39,7 +39,6 @@ public class DefaultPlugin implements Plugin {
                 EnvCommand.class,
                 SyspropsCommand.class,
                 ClasspathCommand.class,
-                LoginCommand.class,
                 ExitCommand.class
         );
 
@@ -64,54 +63,6 @@ public class DefaultPlugin implements Plugin {
         }
     }
 
-    public static class LoginArgs {
-        @Parameter(names = "--target", description = "The controller endpoint to authenticate against")
-        public String target = "api.alpha.vmforce.com";
-    }
-
-    public static class LoginCommand extends JCommand<LoginArgs> {
-
-        @Inject
-        private CLIForce cliForce;
-
-        @Override
-        public void executeWithArgs(CommandContext ctx, LoginArgs args) {
-            String go = "Y";
-            while (!login(ctx, args)) {
-                go = ctx.getCommandReader().readLine("Enter Y to try again, anything else to cancel.");
-                if (!go.toUpperCase().startsWith("Y")) {
-                    return;
-                }
-            }
-        }
-
-        private boolean login(CommandContext ctx, LoginArgs args) {
-            requireCliforce(cliForce);
-            ctx.getCommandWriter().println("Please log in");
-            String target = ctx.getCommandReader().readLine(String.format("Target login server [%s]:", args.target));
-            if ("".equals(target)) target = args.target;
-            ctx.getCommandWriter().printf("Login server: %s\n", target);
-            String user = ctx.getCommandReader().readLine("Username:");
-            String password = ctx.getCommandReader().readLine("Password:", '*');
-            if (cliForce.setLogin(user, password, target)) {
-                ctx.getCommandWriter().println("Login successful.");
-                return true;
-            } else {
-                ctx.getCommandWriter().println("Unable to log in with provided credentials");
-                return false;
-            }
-        }
-
-        @Override
-        public String name() {
-            return CLIForce.LOGIN_CMD;
-        }
-
-        @Override
-        public String describe() {
-            return usage("login to a controller endpoint and save the login info for future use");
-        }
-    }
 
 
     public static class HelpCommand implements Command {

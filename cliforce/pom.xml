@@ -4,7 +4,7 @@
   <parent>
     <artifactId>cliforce-parent</artifactId>
     <groupId>com.force.cliforce</groupId>
-    <version>0.0.4-SNAPSHOT</version>
+    <version>22.0.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
@@ -39,11 +39,6 @@
       <groupId>com.force.sdk</groupId>
       <artifactId>force-connector</artifactId>
       <version>${force.sdk.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.vmforce</groupId>
-      <artifactId>vmforce-client</artifactId>
-      <version>${force.client.version}</version>
     </dependency>
     <!-- <dependency>
       <groupId>jline</groupId>

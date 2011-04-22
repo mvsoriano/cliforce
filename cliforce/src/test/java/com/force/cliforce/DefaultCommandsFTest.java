@@ -20,23 +20,14 @@ import java.io.IOException;
 public class DefaultCommandsFTest extends BaseCliforceCommandTest {
 
     Injector injector;
-    ConnectionManager connection;
     TestCommandContext context;
 
-    // ensure the client can connect to an org
-    // TODO: Refactor to use new setup for connectionmanager
-    @BeforeClass
+     @BeforeClass
     public void setupTestContext() throws IOException, ServletException {
         injector = Guice.createInjector(new TestModule());
-
-        connection = injector.getInstance(ConnectionManager.class);
-        connection.loadLogin();
-        connection.doLogin();
-
-        context = new TestCommandContext().withVmForceClient(connection.getVmForceClient());
-
-        context.getVmForceClient().deleteAllApplications();
+        context = new TestCommandContext();
     }
+
 
     @DataProvider(name = "commandExecutionWithArgs")
     public Object[][] providecommandExecutionWithArgs() {

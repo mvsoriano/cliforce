@@ -83,6 +83,6 @@ public class MainModule extends PrivateModule {
      * Hook for subclasses to customize the internal plugins, mostly for testing
      */
     public Set<String> provideInternalPlugins() {
-        return Collections.unmodifiableSet(new HashSet<String>(Arrays.asList("connection", "app", "db", "template")));
+        return Collections.unmodifiableSet(new HashSet<String>(Arrays.asList("codegen", "connection", "db", "template", "jpa")));
     }
 }

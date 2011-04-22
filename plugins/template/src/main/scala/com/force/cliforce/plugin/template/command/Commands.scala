@@ -43,15 +43,13 @@ class NewProjectArgs {
 class NewProjectContextWrapper(val ctx: CommandContext, val args: Array[String]) extends CommandContext {
   def getCommandWriter = ctx.getCommandWriter
 
-  def getVmForceClient = ctx.getVmForceClient
-
   def getCommandReader = ctx.getCommandReader
 
   def getForceEnv = ctx.getForceEnv
 
   def getCommandArguments = args
 
-  def getRestConnection = ctx.getRestConnection
+  def getBulkConnection = ctx.getBulkConnection
 
   def getPartnerConnection = ctx.getPartnerConnection
 
@@ -64,9 +62,6 @@ class NewProjectCommand extends JCommand[NewProjectArgs] {
 
 
   def getGroupFromEnv(forceEnv: ForceEnv, artifact: String): String = {
-    if (forceEnv == null) {
-      return "com.force"
-    }
     val pkg = forceEnv.getUser.substring(forceEnv.getUser.indexOf("@") + 1)
     pkg.split("\\.").reverse.reduceLeft((acc, str) => acc + "." + str) + "." + artifact
   }
@@ -77,7 +72,7 @@ class NewProjectCommand extends JCommand[NewProjectArgs] {
       if (ctx.getForceEnv ne null) {
         args.group = getGroupFromEnv(ctx.getForceEnv, args.artifact)
       } else {
-        args.group = "org.example"
+        args.group = "org.example." + args.artifact
       }
     }
     val shell = new ShellExecutor
@@ -90,17 +85,26 @@ class NewProjectCommand extends JCommand[NewProjectArgs] {
       }
 
     }
+    val repos = Boot.getRepositories
+    //forcesnap only defined if we are in a SNAPSHOT
+    val repo = repos.getProperty("forcesnap", repos.getProperty("force"))
+    val catalog = repo + "/archetype-catalog.xml"
+    val rev = Boot.getCLIForceProperties.getProperty("version") match {
+      case s if s.contains("SNAPSHOT") => "LATEST"
+      case _ => "RELEASE"
+    }
+
     val cmd = Array("mvn", "archetype:generate", "-DinteractiveMode=false",
-      "-DarchetypeCatalog=http://repo.t.salesforce.com/archiva/repository/snapshots/archetype-catalog.xml",
+      "-DarchetypeCatalog=" + catalog,
       "-DarchetypeGroupId=" + args.getGroupArtifact._1,
       "-DarchetypeArtifactId=" + args.getGroupArtifact._2,
-      "-DarchetypeVersion=LATEST",
+      "-DarchetypeVersion=" + rev,
       "-DgroupId=" + args.group,
       "-DartifactId=" + args.artifact,
       "-Dversion=" + args.version,
-      "-Dpackagename=" + args.getpkg
+      "-Dpackage=" + args.getpkg
     )
-    ctx.getCommandWriter.println("Executing:" + cmd.reduceLeft((acc, str) => acc + " " + str))
+    //printed by sh => ctx.getCommandWriter.println("Executing:" + cmd.reduceLeft((acc, str) => acc + " " + str))
     try {
       shell.execute(cmd, ctx.getCommandWriter);
     } catch {

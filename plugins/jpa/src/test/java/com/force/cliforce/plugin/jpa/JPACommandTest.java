@@ -41,13 +41,13 @@ public class JPACommandTest extends JPAPluginBaseTest {
     public void testJPAPluginCommandParams() throws Exception {
         // Check all base params
         TestCommandContext ctx = createCtxWithJPA(JPAPopulate.class, new TestCommandReader(Lists.newArrayList("3")), null, null,
-                "-g", "com.force.sdk", "-a", "force-jpa-test", "-v", "21.0.1-SNAPSHOT", "-t");
+                "-g", "com.force.sdk", "-a", "force-jpa-test", "-v", "22.0.0-SNAPSHOT", "-t");
         validateConnectToOrg(ctx);
         validatePUSelection(ctx);
         
         // try the 'q' quit command
         ctx = createCtxWithJPA(JPAPopulate.class, new TestCommandReader(Lists.newArrayList("q")), null, null,
-                "-g", "com.force.sdk", "-a", "force-jpa-test", "-v", "21.0.1-SNAPSHOT", "-t");
+                "-g", "com.force.sdk", "-a", "force-jpa-test", "-v", "22.0.0-SNAPSHOT", "-t");
         validateConnectToOrg(ctx);
         Assert.assertTrue(ctx.getCommandWriter().getOutput().endsWith(
                 "Select PersistenceUnit:\n" +
@@ -60,7 +60,7 @@ public class JPACommandTest extends JPAPluginBaseTest {
         
         // Pass in persistenceunit and expect no selection
         ctx = createCtxWithJPA(JPAPopulate.class, null, null, null,
-                "-g", "com.force.sdk", "-a", "force-jpa-test", "-v", "21.0.1-SNAPSHOT", "-t", "-u", "testDNJpaPersistence");
+                "-g", "com.force.sdk", "-a", "force-jpa-test", "-v", "22.0.0-SNAPSHOT", "-t", "-u", "testDNJpaPersistence");
         validateConnectToOrg(ctx);
         Assert.assertTrue(ctx.getCommandWriter().getOutput().endsWith(
                 "Running with selected PersistenceUnit: testDNJpaPersistence\n"), ctx.getCommandWriter().getOutput());
@@ -70,13 +70,13 @@ public class JPACommandTest extends JPAPluginBaseTest {
     public void testJPAPluginNegativeParams() throws Exception {
         // Check a missing base param
         TestCommandContext ctx = createCtxWithJPA(JPAPopulate.class, new TestCommandReader(Lists.newArrayList("3")), null, null,
-                "-g", "-a", "force-jpa-test", "-v", "21.0.1-SNAPSHOT", "-t");
+                "-g", "-a", "force-jpa-test", "-v", "22.0.0-SNAPSHOT", "-t");
         Assert.assertTrue(ctx.getCommandWriter().getOutput().startsWith(
         "Exception while executing command: populate"), ctx.getCommandWriter().getOutput());
         
         // try no selection followed by invalid selection
         ctx = createCtxWithJPA(JPAPopulate.class, new TestCommandReader(Lists.newArrayList("", "0", "q")), null, null,
-                "-g", "com.force.sdk", "-a", "force-jpa-test", "-v", "21.0.1-SNAPSHOT", "-t");
+                "-g", "com.force.sdk", "-a", "force-jpa-test", "-v", "22.0.0-SNAPSHOT", "-t");
         validateConnectToOrg(ctx);
         Assert.assertTrue(ctx.getCommandWriter().getOutput().endsWith(
                 "Select PersistenceUnit:\n" +
@@ -93,7 +93,7 @@ public class JPACommandTest extends JPAPluginBaseTest {
     @Test
     public void testJPAPluginPopulate() throws Exception {
         TestCommandContext ctx = createCtxWithJPA(JPAPopulate.class, new TestCommandReader(Lists.newArrayList("3")), null, null,
-                "-g", "com.force.sdk", "-a", "force-jpa-test", "-v", "21.0.1-SNAPSHOT", "-t");
+                "-g", "com.force.sdk", "-a", "force-jpa-test", "-v", "22.0.0-SNAPSHOT", "-t");
         validateConnectToOrg(ctx);
         validatePUSelection(ctx);
     }
@@ -112,7 +112,7 @@ public class JPACommandTest extends JPAPluginBaseTest {
         TestCommandContext ctx = createCtxWithJPA(JPAQuery.class, new TestCommandReader(Lists.newArrayList("3", "select o from Account o", "q")),
                 "select o from Account o",
                 Lists.newArrayList(),
-                "-g", "com.force.sdk", "-a", "force-jpa-test", "-v", "21.0.1-SNAPSHOT", "-t");
+                "-g", "com.force.sdk", "-a", "force-jpa-test", "-v", "22.0.0-SNAPSHOT", "-t");
         validateConnectToOrg(ctx);
         validatePUSelection(ctx);
     }

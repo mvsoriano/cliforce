@@ -1,8 +1,20 @@
 package com.force.cliforce;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.FileOutputStream;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
@@ -17,18 +29,19 @@ import jline.console.history.History;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.core.util.StatusPrinter;
+
 import com.force.sdk.connector.ForceServiceConnector;
 import com.google.inject.Guice;
 import com.google.inject.name.Named;
 import com.sforce.async.AsyncApiException;
-import com.sforce.async.RestConnection;
+import com.sforce.async.BulkConnection;
 import com.sforce.soap.metadata.MetadataConnection;
 import com.sforce.soap.partner.PartnerConnection;
+import com.sforce.soap.partner.fault.ApiFault;
 import com.sforce.ws.ConnectionException;
-import com.vmforce.client.VMForceClient;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.core.util.StatusPrinter;
 
 public class CLIForce {
 
@@ -105,7 +118,7 @@ public class CLIForce {
         }
     }
 
-    private static void setupLogging() {
+    /* package */ static void setupLogging() {
         System.setProperty("logback.configurationFile", System.getProperty("logback.configurationFile", "logback.xml"));
         StatusPrinter.setPrintStream(new PrintStream(new OutputStream() {
             @Override
@@ -116,10 +129,9 @@ public class CLIForce {
         //we redirect stderr to a file because slf4j can sometimes decide to write to
         //system.err on startup due to timing issues during init.
         try {
-
             File errors = new File(Util.getCliforceHome() + "/.force/cliforce.errors");
             if (errors.exists() || errors.createNewFile()) {
-                System.setErr(new PrintStream(errors));
+                System.setErr(new PrintStream(new FileOutputStream(errors, true))); // append errors to existing file
             }
         } catch (IOException e) {
             //Swallow, if this happens, there is a possibility we will get SLF4J output during startup on the console.
@@ -149,19 +161,6 @@ public class CLIForce {
 
         reader.setBellEnabled(false);
         commandReader = new Reader();
-
-
-        addSetupTask(new SetupTask() {
-            @Override
-            public void setup() {
-                try {
-                    connectionManager.loadLogin();
-                    connectionManager.doLogin();
-                } catch (Exception e) {
-                    log.get().debug("Exception caught while logging in", e);
-                }
-            }
-        });
 
 
         addSetupTask(new SetupTask() {
@@ -417,25 +416,6 @@ public class CLIForce {
         rootLogger.setLevel(level);
     }
 
-
-    public synchronized boolean setLogin(String user, String password, String target) {
-        try {
-            connectionManager.setLogin(user, password, target);
-            connectionManager.doLogin();
-        } catch (Exception e) {
-            log.get().debug("Unable to log in", e);
-            return false;
-        }
-
-        try {
-            connectionManager.saveLogin();
-        } catch (IOException e) {
-            log.get().error("Exception persisting new login settings, the login will not persist over restarts.", e);
-        }
-        return true;
-    }
-
-
     public Map<String, ForceEnv> getAvailableEnvironments() {
         return connectionManager.getAvailableEnvironments();
     }
@@ -471,16 +451,15 @@ public class CLIForce {
 
     CommandContext getContext(String[] args) {
         ForceEnv currentEnv = connectionManager.getCurrentEnv();
-        VMForceClient vmForceClient = connectionManager.getVmForceClient();
         ForceServiceConnector connector = connectionManager.getCurrentConnector();
 
         if (connector != null) {
-            return new Context(currentEnv, connector, vmForceClient, args, commandReader, writer);
+            return new Context(currentEnv, connector,  args, commandReader, writer);
         } else {
             if (initLatch.getCount() == 0) {
                 log.get().warn("Couldn't get a valid connection for the current force url. Executing the command without force service connector or VMforce client");
             }
-            return new Context(currentEnv, null, vmForceClient, args, commandReader, writer);
+            return new Context(currentEnv, null, args, commandReader, writer);
         }
     }
 
@@ -493,13 +472,11 @@ public class CLIForce {
         ForceServiceConnector connector;
         String[] args;
         CommandReader reader;
-        VMForceClient client;
         CommandWriter writer;
         ForceEnv forceEnv;
 
 
-        private Context(ForceEnv env, ForceServiceConnector conn, VMForceClient cl, String[] args, CommandReader reader, CommandWriter writer) {
-            this.client = cl;
+        private Context(ForceEnv env, ForceServiceConnector conn, String[] args, CommandReader reader, CommandWriter writer) {
             this.args = args;
             this.reader = reader;
             this.writer = writer;
@@ -510,11 +487,6 @@ public class CLIForce {
         @Override
         public ForceEnv getForceEnv() {
             return forceEnv;
-        }
-
-        @Override
-        public VMForceClient getVmForceClient() {
-            return client;
         }
 
         @Override
@@ -538,9 +510,9 @@ public class CLIForce {
         }
 
         @Override
-        public RestConnection getRestConnection() {
+        public BulkConnection getBulkConnection() {
             try {
-                return connector.getRestConnection();
+                return connector.getBulkConnection();
             } catch (AsyncApiException e) {
                 log.get().error("AsyncApiException exception while getting rest connection", e);
                 throw new RuntimeException(e);
@@ -598,6 +570,23 @@ public class CLIForce {
             out.println(msg);
         }
 
+        @Override
+        public void printExceptionMessage(Exception e, boolean newLine) {
+            String exceptionMessage;
+            if (e instanceof ApiFault) {
+                ApiFault af = (ApiFault)e;
+                exceptionMessage = af.getExceptionMessage();
+            } else {
+                exceptionMessage = e.getMessage();
+            }
+            
+            if (newLine) {
+                println(exceptionMessage);
+            } else {
+                print(exceptionMessage);
+            }
+        }
+        
         @Override
         public void printStackTrace(Exception e) {
             e.printStackTrace(out);
