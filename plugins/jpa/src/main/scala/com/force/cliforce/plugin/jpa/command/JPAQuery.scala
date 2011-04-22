@@ -32,6 +32,7 @@ class JPAQuery extends JPACommand[JPAParam] {
           }
         }
       } catch {
+        case ie: IllegalStateException => throw ie
         case e: Exception => ctx.getCommandWriter.println("" + e)
       }
     }

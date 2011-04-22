@@ -1,11 +1,14 @@
 package com.force.cliforce.plugin.jpa.command;
 
+import java.util.List;
 import java.util.Map;
 
+import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
 import mockit.*;
 
+import org.datanucleus.jpa.EntityManagerFactoryImpl;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
@@ -33,6 +36,8 @@ public class JPAPluginBaseTest {
 	
     Plugin jpaPlugin = new JPAPlugin();
     TestPluginInjector injector;
+    String query;
+    List<?> result;
     
     @MockClass(realClass = PartnerConnection.class, instantiation = Instantiation.PerMockInvocation)
     public static class MockPartnerConnection {
@@ -83,11 +88,20 @@ public class JPAPluginBaseTest {
         }
     }
 
+    @MockClass(realClass = EntityManagerFactoryImpl.class, instantiation = Instantiation.PerMockInvocation)
+    public static class MockEntityManagerFactory {
+        @Mock
+        public EntityManager createEntityManager() {
+            return new DummyEntityManager(current.query, current.result);
+        }
+    }
+    
     @BeforeClass
     public void classSetup() throws Exception {
         Mockit.setUpMocks(MockPartnerConnection.class,
         MockMetadataConnection.class,
-        MockPersistenceProviderImpl.class);
+        MockPersistenceProviderImpl.class,
+        MockEntityManagerFactory.class);
     }
     
     @BeforeMethod
@@ -95,7 +109,7 @@ public class JPAPluginBaseTest {
         injector = Guice.createInjector(new TestModule()).getInstance(TestPluginInjector.class);
     }
     
-    protected TestCommandContext createCtxWithJPA (Class<? extends Command> commandClazz, TestCommandReader reader, String... args) throws Exception {
+    protected TestCommandContext createCtxWithJPA (Class<? extends Command> commandClazz, TestCommandReader reader, String query, List<?> result, String... args) throws Exception {
         Command cmd = injector.getInjectedCommand(jpaPlugin, commandClazz);
         ForceConnectorConfig cfg = new ForceConnectorConfig();
         cfg.setUsername("foobar@a.com");
@@ -116,6 +130,8 @@ public class JPAPluginBaseTest {
         }
         try {
             current = this;
+            current.query = query;
+            current.result = result;
             cmd.execute(ctx);
         } finally {
             current = null;
