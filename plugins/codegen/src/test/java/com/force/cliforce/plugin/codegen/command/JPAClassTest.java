@@ -1,33 +1,25 @@
 package com.force.cliforce.plugin.codegen.command;
 
-import static org.testng.Assert.assertEquals;
+import com.force.cliforce.TestCommandContext;
+import com.force.cliforce.TestCommandWriter;
+import com.force.cliforce.TestModule;
+import com.force.cliforce.plugin.codegen.command.JPAClass.JPAClassArgs;
+import com.force.sdk.codegen.ForceJPAClassGenerator;
+import com.google.common.collect.Lists;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.sforce.soap.partner.PartnerConnection;
+import com.sforce.ws.ConnectionException;
+import com.sforce.ws.ConnectorConfig;
+import mockit.*;
+import org.testng.annotations.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import mockit.Instantiation;
-import mockit.Mock;
-import mockit.MockClass;
-import mockit.MockUp;
-import mockit.Mockit;
-
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
-
-import com.force.cliforce.CommandContext;
-import com.force.cliforce.TestCommandContext;
-import com.force.cliforce.TestCommandWriter;
-import com.force.cliforce.plugin.codegen.command.JPAClass.JPAClassArgs;
-import com.force.sdk.codegen.ForceJPAClassGenerator;
-import com.google.common.collect.Lists;
-import com.sforce.soap.partner.PartnerConnection;
-import com.sforce.ws.ConnectionException;
-import com.sforce.ws.ConnectorConfig;
+import static org.testng.Assert.assertEquals;
 
 /**
  * Unit tests for the describe command.
@@ -67,10 +59,12 @@ public class JPAClassTest {
     
     private MockForceJPAClassGenerator mockGenerator;
     private TestCommandWriter cmdWriter;
-    private CommandContext ctx;
+    private TestCommandContext ctx;
+    private Injector injector;
     
     @BeforeClass
     public void classSetUp() throws ConnectionException {
+        injector = Guice.createInjector(new TestModule());
         // This config will require no validation
         ConnectorConfig config = new ConnectorConfig();
         config.setManualLogin(true);
@@ -91,6 +85,7 @@ public class JPAClassTest {
     @AfterMethod
     public void methodTearDown() {
         cmdWriter.reset();
+        ctx.setCommandArguments(new String[]{});
         
         // Since we use a local MockUp class (see testDestDirFilePath)
         // We need to setup and tear down the mocks for each test
@@ -103,13 +98,14 @@ public class JPAClassTest {
         return new Object[][]{
                 {null, null, System.getProperty("user.dir") + "/./src/main/java"},
                 {"/projectDir", null, "/projectDir/./src/main/java"},
-                {null, "destDir/", System.getProperty("user.dir") + "/destDir"},
-                {"/projectDir/", "/destDir/", "/projectDir/destDir"},
+                {null, "destDir", System.getProperty("user.dir") + "/destDir"},
+                {"/projectDir", "/destDir", "/projectDir/destDir"},
+                {"~/projectDir", "/destDir", System.getProperty("user.home") + "/projectDir/destDir"}
         };
     }
     
     @Test(dataProvider = "filePathProvider")
-    public void testDestDirFilePath(String projectDir, String destDir, final String expectedFilePath) {
+    public void testDestDirFilePath(String projectDir, String destDir, final String expectedFilePath) throws Exception {
         new MockUp<ForceJPAClassGenerator>() {
             
             @SuppressWarnings("unused")
@@ -120,17 +116,22 @@ public class JPAClassTest {
                         "Unexpected file path in generator");
             }
         };
-        
-        JPAClassArgs args = new JPAClassArgs();
+
+        JPAClass jpaClassCommand = injector.getInstance(JPAClass.class);
+        List<String> args = new ArrayList<String>();
+
         if (projectDir != null) {
-            args.projectDir = new File(projectDir);
+            args.add("--projectDir");
+            args.add(projectDir);
         }
-        
+
         if (destDir != null) {
-            args.destDir = new File(destDir);
+            args.add("-d");
+            args.add(destDir);
         }
-        
-        jpaClass.executeWithArgs(ctx, args);
+
+        ctx.setCommandArguments((String[]) args.toArray(new String[0]));
+        jpaClassCommand.execute(ctx);
     }
     
     @Test

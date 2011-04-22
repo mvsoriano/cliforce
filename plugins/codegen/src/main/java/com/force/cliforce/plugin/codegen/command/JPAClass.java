@@ -6,10 +6,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.beust.jcommander.Parameter;
-import com.force.cliforce.CommandContext;
-import com.force.cliforce.JCommand;
-import com.force.cliforce.LazyLogger;
-import com.force.cliforce.Util;
+import com.force.cliforce.*;
 import com.force.cliforce.plugin.codegen.command.JPAClass.JPAClassArgs;
 import com.force.sdk.codegen.ForceJPAClassGenerator;
 
@@ -72,14 +69,15 @@ public class JPAClass extends JCommand<JPAClassArgs> {
         
         @Parameter(names = {"-a", "--all"}, description="generate all Force.com schema objects as JPA classes")
         public boolean all = false;
-        
+
+        // don't use TildeAwareFileConverter because this is concatenated later -- TildeAwareFileConverter will create an absolute path, which we don't want
         @Parameter(names = {"-d", "--destDir"}, description = "destination directory for generated JPA classes (within project)")
         public File destDir = new File(DEFAULT_DEST_DIR);
         
         @Parameter(names = {"-p", "--package"}, description = "java package name for generated JPA classes")
         public String packageName = null;
         
-        @Parameter(names = {"--projectDir"}, description = "root directory for project")
+        @Parameter(names = {"--projectDir"}, description = "root directory for project", converter = TildeAwareFileConverter.class)
         public File projectDir = new File(System.getProperty("user.dir")); // Current working directory
     }
 }
