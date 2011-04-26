@@ -6,13 +6,15 @@
 package com.force.cliforce;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.net.URISyntaxException;
 
 import com.beust.jcommander.Parameter;
 
 /**
- * TabTestArgs
+ * TabTestArgs is an arguments class for tab completion tests. The arguments defined 
+ * are used e.g. by {@link JCommandTabCompletionTest} for testing the tab completion 
+ * functionality. New CLIForce argument types should be refelcted with a new test 
+ * parameter here.
  *
  * @author sclasen
  */
@@ -35,6 +37,10 @@ public class TabTestArgs {
     public static final String pDesc = "description for path switch";
     public final String[] pCompletions;
     
+    public static final String bLong = "--bLong";
+    public static final String bShort = "-b";
+    public static final String bDesc = "description for boolean switch";
+    public static final String[] bCompletions = new String[]{"-b"};
     
     public TabTestArgs() throws URISyntaxException{
     	File sourceDir = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
@@ -51,4 +57,6 @@ public class TabTestArgs {
     @Parameter(names = {pLong, pShort}, description = pDesc, arity = 1, hidden = true)
     public File p;
     
+    @Parameter(names = {bLong, bShort}, description = bDesc)
+    public boolean b = false;
 }
