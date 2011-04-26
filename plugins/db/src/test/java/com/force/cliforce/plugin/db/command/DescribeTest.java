@@ -257,6 +257,8 @@ public class DescribeTest {
                     "[ string                         NOT NULL   DEFAULTED  ]"},
                 {FieldType.datacategorygroupreference, false, true,
                     "[ datacategorygroupreference     NOT NULL   DEFAULTED  ]"},
+                {FieldType._double, false, true,
+                    "[ double                         NOT NULL   DEFAULTED  ]"}
         };
     }
     
