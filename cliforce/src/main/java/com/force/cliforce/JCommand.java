@@ -283,7 +283,7 @@ public abstract class JCommand<T> implements Command {
                         }
                     });
                 }
-                if (candidates.size() == 1) candidates.add(" ");
+                if (candidates.size() == 1 && candidates.get(0).toString().contains(MAIN_PARAM)) candidates.add(" ");
             }
             String frag = getUnambiguousCompletions(candidates);
             if (frag.length() > 0 && !lastArgIsValue) {
@@ -347,6 +347,16 @@ public abstract class JCommand<T> implements Command {
                 builder.append(", ").append(subCandidate);
             }
             largestSwitch = Math.max(largestSwitch, builder.length());
+        }
+
+        if (reversed.size() == 1) {
+            ParameterDescription only = reversed.keySet().iterator().next();
+            for (Map.Entry<String, ParameterDescription> entry : descs.entrySet()) {
+                if (entry.getValue().equals(only)) {
+                    return Collections.<CharSequence>singletonList(entry.getKey().trim());
+                }
+            }
+
         }
 
         List<CharSequence> dedupedAndDescribed = new ArrayList<CharSequence>();
