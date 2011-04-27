@@ -68,7 +68,7 @@ public class DefaultCommandsCompletorTest extends BaseCliforceCommandTest {
 
     @Test
     public void testClasspathCommandOneHyphen() {
-        runCompletorTestCase("classpath -", 12, Arrays.asList(new String[]{"--sort, -s  <sort the returned list of files on the classpath alphabetically>", " "}));
+        runCompletorTestCase("classpath -", 10, Arrays.asList(new String[]{"-s"}));
     }
 
     @Test
