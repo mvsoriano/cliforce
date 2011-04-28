@@ -51,8 +51,14 @@ public class JCommandTabCompletionTest {
     	Assert.assertTrue(compareTrimmedStrings(testTabCompletion("-p "), Arrays.asList(new TabTestArgs().pCompletions)));
     }
     
-  @Test
-    public void testBooleanValueCompletion() throws URISyntaxException {
+    @Test
+    public void testBooleanValueCompletion() {
+    	List<CharSequence> completions = testTabCompletion("--b");
+    	Assert.assertTrue(completions.get(0).toString().contains(TabTestArgs.bLong));
+    }
+    
+    @Test
+    public void testBooleanValueLastParameterCompletion() throws URISyntaxException {
     	List<CharSequence> completions = testTabCompletion("-i 4 -s " + TabTestArgs.sCompletions[0] + " -p " + new TabTestArgs().pCompletions[0] + " ");
     	Assert.assertTrue(completions.contains(TabTestArgs.bCompletionsAfterValue[0]), "Boolean switch value " +TabTestArgs.bCompletionsAfterValue[0]+ " was not completed.");
     }

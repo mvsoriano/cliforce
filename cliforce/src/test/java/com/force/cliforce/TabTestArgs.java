@@ -40,7 +40,6 @@ public class TabTestArgs {
     public static final String bLong = "--bLong";
     public static final String bShort = "-b";
     public static final String bDesc = "description for boolean switch";
-    public static final String[] bCompletions = new String[]{"-b"};
     public static final String[] bCompletionsAfterValue = new String[]{" -b"};
 
     public TabTestArgs() throws URISyntaxException {
