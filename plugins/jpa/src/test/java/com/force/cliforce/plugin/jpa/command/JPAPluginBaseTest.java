@@ -84,7 +84,7 @@ public class JPAPluginBaseTest {
         public EntityManagerFactory createEntityManagerFactory(String unitName, Map properties) {
             // Could not implement this with an anonymous class. Had to make it static.
             current.validateCreateEntityManagerFactory(unitName, properties);
-            return new ForceEntityManagerFactory();
+            return new ForceEntityManagerFactory(unitName, properties);
         }
     }
 
