@@ -75,7 +75,7 @@ public class ConnectionTest {
     }
 
     @Test
-    public void testInteractiveAddConnection() throws Exception {
+    public void testInteractiveAddConnectionWithoutOAuth() throws Exception {
         Injector testModuleInjector = Guice.createInjector(new TestModule(tmpUserHome));
         testModuleInjector.getInstance(ConnectionManager.class);
 
@@ -94,6 +94,32 @@ public class ConnectionTest {
                         "security token: apiKey\n" +
                         "host (defaults to vmf01.t.salesforce.com): some.random.target.com\n" +
                         "Enter oauth key and secret? (Y to enter, anything else to skip): N\n" +
+                        "Connection: testInteractiveAddConnection added\n"
+                , "unexpected output: " + ctx.getCommandWriter().getOutput());
+    }
+
+    @Test
+    public void testInteractiveAddConnectionWithOAuth() throws Exception {
+        Injector testModuleInjector = Guice.createInjector(new TestModule(tmpUserHome));
+        testModuleInjector.getInstance(ConnectionManager.class);
+
+        AddConnectionCommand cmd = testModuleInjector.getInstance(AddConnectionCommand.class);
+
+        List<String> orderedInputs = Arrays.asList("testInteractiveAddConnection", "some.random@user.name.com", "Imagin@ryPa$$w3rd", "apiKey", "some.random.target.com", "Y", "secret", "key");
+        TestCommandContext ctx = new TestCommandContext().withForceEnv(new ForceEnv("some.random.target.com", "some.random@user.name.com", "Imagin@ryPa$$w3rd")).withTestCommandReader(new TestCommandReader(orderedInputs));
+
+        cmd.execute(ctx);
+
+        Assert.assertEquals(
+                ctx.getCommandWriter().getOutput()
+                , "connection name: testInteractiveAddConnection\n" +
+                        "user: some.random@user.name.com\n" +
+                        "password: *****************\n" +
+                        "security token: apiKey\n" +
+                        "host (defaults to vmf01.t.salesforce.com): some.random.target.com\n" +
+                        "Enter oauth key and secret? (Y to enter, anything else to skip): Y\n" +
+                        "oauth key:secret\n" +
+                        "oauth secret:key\n" +
                         "Connection: testInteractiveAddConnection added\n"
                 , "unexpected output: " + ctx.getCommandWriter().getOutput());
     }
