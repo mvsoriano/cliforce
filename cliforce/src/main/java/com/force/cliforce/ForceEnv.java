@@ -1,12 +1,19 @@
 package com.force.cliforce;
 
-import java.util.*;
+import com.force.sdk.connector.ForceConnectionProperty;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.StringTokenizer;
 
 public class ForceEnv {
 
     private String user;
     private String password;
     private String host;
+    private String oauthKey;
+    private String oauthSecret;
     private boolean valid = true;
     private String message;
     private String configSource;
@@ -52,24 +59,41 @@ public class ForceEnv {
                 map.put(key, value);
             }
 
-            user = map.get("user");
+            user = map.get(ForceConnectionProperty.USER.getPropertyName());
             if (user == null || user.length() == 0) {
                 valid = false;
                 message = "User could not be found in URL";
                 return false;
             }
-            password = map.get("password");
+            password = map.get(ForceConnectionProperty.PASSWORD.getPropertyName());
             if (password == null || password.length() == 0) {
                 valid = false;
                 message = "Password could not be found in URL";
                 return false;
             }
+
+            oauthKey = map.get(ForceConnectionProperty.OAUTH_KEY.getPropertyName());
+            oauthSecret = map.get(ForceConnectionProperty.OAUTH_SECRET.getPropertyName());
+            if (oauthKey == null ^ oauthSecret == null) {
+                valid = false;
+                message = "Both oauth_key and oauth_secret are required";
+                return false;
+            }
+
             return true;
         } catch (NoSuchElementException e) {
-           valid = false;
-           message = "Unable to successfully parse the URL";
-           return false;
+            valid = false;
+            message = "Unable to successfully parse the URL";
+            return false;
         }
+    }
+
+    public String getOauthKey() {
+        return oauthKey;
+    }
+
+    public String getOauthSecret() {
+        return oauthSecret;
     }
 
     public String getUser() {
@@ -107,6 +131,7 @@ public class ForceEnv {
 
     /**
      * Equals and hashcode are relied upon so we can use these as a map key to lookup cached connections.
+     *
      * @param o
      * @return
      */
@@ -121,6 +146,10 @@ public class ForceEnv {
         if (!password.equals(forceEnv.password)) return false;
         if (!protocol.equals(forceEnv.protocol)) return false;
         if (!user.equals(forceEnv.user)) return false;
+        if(oauthKey == null ^ forceEnv.oauthKey == null) return false;
+        if(oauthSecret == null ^ forceEnv.oauthSecret == null) return false;
+        if(oauthKey != null && !oauthKey.equals(forceEnv.oauthKey)) return false;
+        if(oauthSecret != null && !oauthSecret.equals(forceEnv.oauthSecret)) return false;
 
         return true;
     }

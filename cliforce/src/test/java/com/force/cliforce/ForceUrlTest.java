@@ -15,12 +15,13 @@ public class ForceUrlTest {
 	@DataProvider(name="validForceUrls")
 	public String[][] getValidForceUrls() {
 		return new String[][] {
-				new String[] {"force://loginserver.salesforce.com;user=santa@northpole.com;password=claus123", "loginserver.salesforce.com", "santa@northpole.com", "claus123"},
-				new String[] {"force://loginserver.salesforce.com/;user=santa@northpole.com;password=claus123", "loginserver.salesforce.com/", "santa@northpole.com", "claus123"},
-				new String[] {"force://vmf01.t.salesforce.com;user=email@address.com;password=asdf", "vmf01.t.salesforce.com", "email@address.com", "asdf"},
-				new String[] {"force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4", "vmf01.t.salesforce.com", "user@user.com", "mountains4"},
-				new String[] {"force://vmf01.t.salesforce.com;user=cal@bears.com;password=password", "vmf01.t.salesforce.com", "cal@bears.com", "password"},
-				new String[] {"force://vmf01.t.salesforce.com;user=force@magic.com;password=force://", "vmf01.t.salesforce.com", "force@magic.com", "force://"},
+				new String[] {"force://loginserver.salesforce.com;user=santa@northpole.com;password=claus123", "loginserver.salesforce.com", "santa@northpole.com", "claus123", null, null},
+				new String[] {"force://loginserver.salesforce.com;user=santa@northpole.com;password=claus123;oauth_key=foo;oauth_secret=bar", "loginserver.salesforce.com", "santa@northpole.com", "claus123", "foo", "bar"},
+				new String[] {"force://loginserver.salesforce.com/;user=santa@northpole.com;password=claus123", "loginserver.salesforce.com/", "santa@northpole.com", "claus123", null, null},
+				new String[] {"force://vmf01.t.salesforce.com;user=email@address.com;password=asdf", "vmf01.t.salesforce.com", "email@address.com", "asdf", null, null},
+				new String[] {"force://vmf01.t.salesforce.com;user=user@user.com;password=mountains4", "vmf01.t.salesforce.com", "user@user.com", "mountains4", null, null},
+				new String[] {"force://vmf01.t.salesforce.com;user=cal@bears.com;password=password", "vmf01.t.salesforce.com", "cal@bears.com", "password", null, null},
+				new String[] {"force://vmf01.t.salesforce.com;user=force@magic.com;password=force://", "vmf01.t.salesforce.com", "force@magic.com", "force://", null, null},
 //				uncomment line below once W-919227 is resolved
 //				new String[] {"force://login.salesforce.com;user=email@address.com;password=password=", "login.salesforce.com", "password="},
 //				uncomment line below once W-919232 is resolved
@@ -29,7 +30,7 @@ public class ForceUrlTest {
 		}
 
 	@Test(dataProvider="validForceUrls")
-	public void testValidForceUrls(String forceUrl, String sfdcEndpoint, String user, String password) {
+	public void testValidForceUrls(String forceUrl, String sfdcEndpoint, String user, String password, String oauthKey, String oauthSecret) {
 		ForceEnv env = new ForceEnv(forceUrl, "unit test");
 		assertTrue(env.isValid(), "we expected " + forceUrl + " to be valid, but it is invalid with error " + env.getMessage());
 		assertEquals(env.getHost(), sfdcEndpoint, "unexpected host");
@@ -38,6 +39,8 @@ public class ForceUrlTest {
 		assertEquals(env.getUrl(), forceUrl, "unexpected url");
 		assertEquals(env.getProtocol(), "force", "unexpected protocol");
 		assertEquals(env.getConfigSource(), "unit test", "unexpected configSource");
+		assertEquals(env.getOauthKey(), oauthKey, "unexpected oauthKey");
+		assertEquals(env.getOauthSecret(), oauthSecret, "unexpected oauthSecret");
 	}
 	
 	// order of values in each String[] is: force url, error message
@@ -45,6 +48,7 @@ public class ForceUrlTest {
 	public String[][] getInvalidForceUrls() {
 		return new String[][] {
 				new String[] {"force://loginserver.salesforce.com;user=santa@northpole.com;password=", "Password could not be found in URL"},
+				new String[] {"force://loginserver.salesforce.com;user=santa@northpole.com;password=pass;oauth_key=foo", "Both oauth_key and oauth_secret are required"},
 				new String[] {"force://loginserver.salesforce.com;user=;password=claus123", "User could not be found in URL"},
 				new String[] {"force://vmf02.t.salesforce.com;jeff@test.com;123456", "Unable to successfully parse the URL"},
 				new String[] {"http://vmf01.t.salesforce.com;user=email@address.com;password=hamlet", "Unsupported protocol: http. Only 'force' is supported as protocol."},
