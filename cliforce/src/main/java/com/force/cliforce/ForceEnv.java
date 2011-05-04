@@ -1,11 +1,11 @@
 package com.force.cliforce;
 
 import com.force.sdk.connector.ForceConnectionProperty;
+import com.force.sdk.connector.ForceConnectorUtils;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
+
 
 public class ForceEnv {
 
@@ -34,46 +34,45 @@ public class ForceEnv {
     }
 
     public boolean parseAndValidate() {
-        //expects force://<host>;user=<user>;password=<password>
+
 
         try {
-            StringTokenizer t = new StringTokenizer(url);
-            Map<String, String> map = new HashMap<String, String>();
-            protocol = t.nextToken("://");
-            if (!protocol.equalsIgnoreCase("force")) {
+            if (!url.startsWith("force://")) {
+                StringTokenizer t = new StringTokenizer(url);
+                protocol = t.nextToken("://");
                 valid = false;
                 message = "Unsupported protocol: " + protocol + ". Only 'force' is supported as protocol.";
                 return false;
+            } else {
+                protocol = "force";
             }
 
-            host = t.nextToken(";").substring(3);
+            Map<ForceConnectionProperty, String> parsed = ForceConnectorUtils.loadConnectorPropsFromUrl(url);
+
+
+            host = parsed.get(ForceConnectionProperty.ENDPOINT);
             if (host.length() == 0) {
                 valid = false;
                 message = "Endpoint could not be found in URL";
                 return false;
             }
 
-            while (t.hasMoreTokens()) {
-                String key = t.nextToken("=").substring(1);
-                String value = t.nextToken(";").substring(1);
-                map.put(key, value);
-            }
-
-            user = map.get(ForceConnectionProperty.USER.getPropertyName());
+            user = parsed.get(ForceConnectionProperty.USER);
             if (user == null || user.length() == 0) {
                 valid = false;
                 message = "User could not be found in URL";
                 return false;
             }
-            password = map.get(ForceConnectionProperty.PASSWORD.getPropertyName());
+
+            password = parsed.get(ForceConnectionProperty.PASSWORD);
             if (password == null || password.length() == 0) {
                 valid = false;
                 message = "Password could not be found in URL";
                 return false;
             }
 
-            oauthKey = map.get(ForceConnectionProperty.OAUTH_KEY.getPropertyName());
-            oauthSecret = map.get(ForceConnectionProperty.OAUTH_SECRET.getPropertyName());
+            oauthKey = parsed.get(ForceConnectionProperty.OAUTH_KEY);
+            oauthSecret = parsed.get(ForceConnectionProperty.OAUTH_SECRET);
             if (oauthKey == null ^ oauthSecret == null) {
                 valid = false;
                 message = "Both oauth_key and oauth_secret are required";
@@ -81,7 +80,7 @@ public class ForceEnv {
             }
 
             return true;
-        } catch (NoSuchElementException e) {
+        } catch (Exception e) {
             valid = false;
             message = "Unable to successfully parse the URL";
             return false;
@@ -146,10 +145,10 @@ public class ForceEnv {
         if (!password.equals(forceEnv.password)) return false;
         if (!protocol.equals(forceEnv.protocol)) return false;
         if (!user.equals(forceEnv.user)) return false;
-        if(oauthKey == null ^ forceEnv.oauthKey == null) return false;
-        if(oauthSecret == null ^ forceEnv.oauthSecret == null) return false;
-        if(oauthKey != null && !oauthKey.equals(forceEnv.oauthKey)) return false;
-        if(oauthSecret != null && !oauthSecret.equals(forceEnv.oauthSecret)) return false;
+        if (oauthKey == null ^ forceEnv.oauthKey == null) return false;
+        if (oauthSecret == null ^ forceEnv.oauthSecret == null) return false;
+        if (oauthKey != null && !oauthKey.equals(forceEnv.oauthKey)) return false;
+        if (oauthSecret != null && !oauthSecret.equals(forceEnv.oauthSecret)) return false;
 
         return true;
     }

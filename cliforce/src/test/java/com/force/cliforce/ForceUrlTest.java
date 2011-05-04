@@ -50,7 +50,7 @@ public class ForceUrlTest {
 				new String[] {"force://loginserver.salesforce.com;user=santa@northpole.com;password=", "Password could not be found in URL"},
 				new String[] {"force://loginserver.salesforce.com;user=santa@northpole.com;password=pass;oauth_key=foo", "Both oauth_key and oauth_secret are required"},
 				new String[] {"force://loginserver.salesforce.com;user=;password=claus123", "User could not be found in URL"},
-				new String[] {"force://vmf02.t.salesforce.com;jeff@test.com;123456", "Unable to successfully parse the URL"},
+				new String[] {"force://vmf02.t.salesforce.com;jeff@test.com;123456", "User could not be found in URL"},
 				new String[] {"http://vmf01.t.salesforce.com;user=email@address.com;password=hamlet", "Unsupported protocol: http. Only 'force' is supported as protocol."},
 				new String[] {"", "Unable to successfully parse the URL"},
 		};
