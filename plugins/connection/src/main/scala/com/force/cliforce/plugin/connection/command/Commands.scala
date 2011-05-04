@@ -19,14 +19,16 @@ class ListConnectionsCommand extends Command {
         kv => kv match {
           case (name, env) => ctx.getCommandWriter.println("""
 ===========================
-Name:     %s
-Host:     %s
-User:     %s
-Password: %s
-Valid:    %s
-Message:  %s
+Name:         %s
+Host:         %s
+User:         %s
+Password:     %s
+OAuth Key:    %s
+OAuth Secret: %s
+Valid:        %s
+Message:      %s
 ==========================="""
-            .format(name, env.getHost, env.getUser, mask(env.getPassword), env.isValid.toString, Option(env.getMessage).toString))
+            .format(name, env.getHost, env.getUser, mask(env.getPassword), Option(env.getOauthKey).getOrElse("None"), Option(env.getOauthSecret).getOrElse("None"), env.isValid.toString, Option(env.getMessage).toString))
         }
       }
     }
@@ -81,7 +83,23 @@ class AddConnectionArgs {
   @Parameter(names = Array("--notoken"), description = "set this flag if security tokens are turned off in your org")
   var notoken = false
 
-  def url = "force://" + host + ";user=" + user + ";password=" + password + token
+  @Parameter(names = Array("-k", "--oauth-key"), description = "oauth key (optional, if defined oauth secret is required too)")
+  var oauthKey: String = null
+
+  @Parameter(names = Array("-s", "--oauth-secret"), description = "oauth secret (optional, if defined oauth key is required too)")
+  var oauthSecret: String = null
+
+
+  def url = {
+    var u = "force://" + host + ";user=" + user + ";password=" + password + token
+    if (oauthKey != null) {
+      u = u + ";oauth_key=" + oauthKey
+    }
+    if (oauthSecret != null) {
+      u = u + ";oauth_secret=" + oauthSecret
+    }
+    u
+  }
 
 }
 
@@ -91,6 +109,7 @@ class AddConnectionCommand extends JCommand[AddConnectionArgs] {
   var cliforce: CLIForce = null
 
   def executeWithArgs(ctx: CommandContext, args: AddConnectionArgs) = {
+    var interactive = false
     requireCliforce(cliforce)
     if (args.name != null && (cliforce.getAvailableEnvironments.containsKey(args.name))) {
       ctx.getCommandWriter.printf("There is already a connection named %s, please rename or remove it first\n", name)
@@ -105,21 +124,40 @@ class AddConnectionCommand extends JCommand[AddConnectionArgs] {
     }
     while (args.user == null || (args.user eq "")) {
       args.user = ctx.getCommandReader.readLine("user: ")
+      interactive = true
     }
     while (args.password == null || (args.password eq "")) {
       args.password = ctx.getCommandReader.readLine("password: ", '*')
+      interactive = true
     }
 
     if (args.token == "" && !args.notoken) {
       args.token = ctx.getCommandReader.readLine("security token: ")
+      interactive = true
     }
 
     if (args.host == null || (args.host eq "vmf01.t.salesforce.com")) {
       args.host = ctx.getCommandReader.readLine("host (defaults to vmf01.t.salesforce.com): ")
+      interactive = true
       if (args.host == "") {
         args.host = new AddConnectionArgs().host
       }
     }
+
+    if (interactive && args.oauthKey == null && args.oauthSecret == null) {
+       val go = ctx.getCommandReader.readLine("Enter oauth key and secret? (Y to enter, anything else to skip): ")
+      if ("Y".equalsIgnoreCase(go)) {
+        val key = ctx.getCommandReader.readLine("oauth key:")
+        if (key != null && (key ne "")) {
+          args.oauthKey = key
+        }
+        val secret = ctx.getCommandReader.readLine("oauth secret:")
+        if (secret != null && (secret ne "")) {
+          args.oauthSecret = secret
+        }
+      }
+    }
+
 
     val env = new ForceEnv(args.url, "cliforce");
     if (env.isValid) {

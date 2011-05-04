@@ -63,12 +63,14 @@ public class ConnectionTest {
         ctx.setCommandArguments(new String[0]);
         listCmd.execute(ctx);
         Assert.assertEquals(ctx.getCommandWriter().getOutput(), "\n===========================\n" +
-                "Name:     jeff\n" +
-                "Host:     vmf01.t.salesforce.com\n" +
-                "User:     user@user.com\n" +
-                "Password: **********\n" +
-                "Valid:    true\n" +
-                "Message:  None\n" +
+                "Name:         jeff\n" +
+                "Host:         vmf01.t.salesforce.com\n" +
+                "User:         user@user.com\n" +
+                "Password:     **********\n" +
+                "OAuth Key:    None\n"+
+                "OAuth Secret: None\n"+
+                "Valid:        true\n" +
+                "Message:      None\n" +
                 "===========================\n", "unexpected output from command");
     }
 
@@ -79,7 +81,7 @@ public class ConnectionTest {
 
         AddConnectionCommand cmd = testModuleInjector.getInstance(AddConnectionCommand.class);
 
-        List<String> orderedInputs = Arrays.asList("testInteractiveAddConnection", "some.random@user.name.com", "Imagin@ryPa$$w3rd", "apiKey", "some.random.target.com");
+        List<String> orderedInputs = Arrays.asList("testInteractiveAddConnection", "some.random@user.name.com", "Imagin@ryPa$$w3rd", "apiKey", "some.random.target.com", "N");
         TestCommandContext ctx = new TestCommandContext().withForceEnv(new ForceEnv("some.random.target.com", "some.random@user.name.com", "Imagin@ryPa$$w3rd")).withTestCommandReader(new TestCommandReader(orderedInputs));
 
         cmd.execute(ctx);
@@ -91,6 +93,7 @@ public class ConnectionTest {
                         "password: *****************\n" +
                         "security token: apiKey\n" +
                         "host (defaults to vmf01.t.salesforce.com): some.random.target.com\n" +
+                        "Enter oauth key and secret? (Y to enter, anything else to skip): N\n" +
                         "Connection: testInteractiveAddConnection added\n"
                 , "unexpected output: " + ctx.getCommandWriter().getOutput());
     }
@@ -208,12 +211,14 @@ public class ConnectionTest {
         ctx.getCommandWriter().reset();
         listCmd.execute(ctx);
         Assert.assertEquals(ctx.getCommandWriter().getOutput(), "\n===========================\n" +
-                "Name:     asdf\n" +
-                "Host:     vmf01.t.salesforce.com\n" +
-                "User:     user@user.com\n" +
-                "Password: **********\n" +
-                "Valid:    true\n" +
-                "Message:  None\n" +
+                "Name:         asdf\n" +
+                "Host:         vmf01.t.salesforce.com\n" +
+                "User:         user@user.com\n" +
+                "Password:     **********\n" +
+                "OAuth Key:    None\n"+
+                "OAuth Secret: None\n"+
+                "Valid:        true\n" +
+                "Message:      None\n" +
                 "===========================\n");
     }
 
@@ -230,20 +235,24 @@ public class ConnectionTest {
         ctx.getCommandWriter().reset();
         listCmd.execute(ctx);
         Assert.assertEquals(ctx.getCommandWriter().getOutput(), "\n===========================\n" +
-                "Name:     asdf\n" +
-                "Host:     vmf01.t.salesforce.com\n" +
-                "User:     user@domain.com\n" +
-                "Password: *******\n" +
-                "Valid:    true\n" +
-                "Message:  None\n" +
+                "Name:         asdf\n" +
+                "Host:         vmf01.t.salesforce.com\n" +
+                "User:         user@domain.com\n" +
+                "Password:     *******\n" +
+                "OAuth Key:    None\n"+
+                "OAuth Secret: None\n"+
+                "Valid:        true\n" +
+                "Message:      None\n" +
                 "===========================\n\n" +
                 "===========================\n" +
-                "Name:     jeff\n" +
-                "Host:     vmf01.t.salesforce.com\n" +
-                "User:     user@user.com\n" +
-                "Password: **********\n" +
-                "Valid:    true\n" +
-                "Message:  None\n" +
+                "Name:         jeff\n" +
+                "Host:         vmf01.t.salesforce.com\n" +
+                "User:         user@user.com\n" +
+                "Password:     **********\n" +
+                "OAuth Key:    None\n"+
+                "OAuth Secret: None\n"+
+                "Valid:        true\n" +
+                "Message:      None\n" +
                 "===========================\n", "unexpected output from command");
     }
 
