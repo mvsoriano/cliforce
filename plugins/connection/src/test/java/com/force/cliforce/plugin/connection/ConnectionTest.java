@@ -12,6 +12,7 @@ import org.testng.annotations.*;
 import com.force.cliforce.*;
 import com.force.cliforce.plugin.connection.command.*;
 import com.force.sdk.connector.ForceServiceConnector;
+import com.google.common.collect.Lists;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.sforce.soap.partner.PartnerConnection;
@@ -20,8 +21,8 @@ import com.sforce.ws.ConnectionException;
 /**
  * Tests for commands in the connection plugin
  *
- * @author jeffrey.lai
- * @since javasdk-21.0.2-BETA
+ * @author Jeff Lai
+ * 
  */
 public class ConnectionTest {
     Plugin connPlugin = new ConnectionPlugin();
@@ -282,6 +283,16 @@ public class ConnectionTest {
                 "===========================\n", "unexpected output from command");
     }
 
+    @Test
+    public void testAddDuplicateConnection() throws Exception {
+        TestCommandContext ctx = addConnSetup(new String[][]{{"jeff", "force://login.salesforce.com;user=user@user.com;password=mountains4"}});
+        ctx = ctx.withCommandArguments("--notoken", "-n", "jeff", "-h", "login.salesforce.com", "-u", "user@user.com", "-p", "mountains4");
+        ctx = ctx.withCommandReader(new TestCommandReader(Lists.newArrayList("9")));
+        AddConnectionCommand addCmd = injector.getInjectedCommand(connPlugin, AddConnectionCommand.class);
+        addCmd.execute(ctx);
+        Assert.assertEquals(ctx.getCommandWriter().getOutput(), "There is already a connection named jeff, please rename or remove it first\n");
+    }
+    
 
     /**
      * Takes in 2 dim Array, which contain connection names and force urls.

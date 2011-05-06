@@ -108,17 +108,18 @@ class AddConnectionCommand extends JCommand[AddConnectionArgs] {
   @Inject
   var cliforce: CLIForce = null
 
-  def executeWithArgs(ctx: CommandContext, args: AddConnectionArgs) = {
+  def executeWithArgs(ctx: CommandContext, args: AddConnectionArgs) : Unit = {
     var interactive = false
     requireCliforce(cliforce)
     if (args.name != null && (cliforce.getAvailableEnvironments.containsKey(args.name))) {
-      ctx.getCommandWriter.printf("There is already a connection named %s, please rename or remove it first\n", name)
+      ctx.getCommandWriter.printf("There is already a connection named %s, please rename or remove it first\n", args.name)
       args.name = null
+      return
     }
     while (args.name == null || (args.name eq "")) {
       args.name = ctx.getCommandReader.readLine("connection name: ")
       if (args.name != null && (cliforce.getAvailableEnvironments.containsKey(args.name))) {
-        ctx.getCommandWriter.printf("There is already a connection named %s, please rename or remove it first\n", name)
+        ctx.getCommandWriter.printf("There is already a connection named %s, please rename or remove it first\n", args.name)
         args.name = null
       }
     }
