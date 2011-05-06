@@ -50,7 +50,12 @@ public class CommandCompletor implements Completer {
     @Override
     public int complete(String buffer, int cursor, List<CharSequence> candidates) {
         if (buffer.length() != cursor) return 0;//only complete the end of a command
-        String[] args = Util.parseCommand(buffer);
+        String[] args = null;
+        if (buffer.trim().length() > 0) {
+            args = Util.parseCommand(buffer);
+        } else {
+            args = new String[]{""};
+        }
         int cmd = new StringsCompleter(pluginManager.getCommandNames().toArray(new String[0])).complete(args[0], cursor, candidates);
         if (candidates.size() == 0 && buffer != null && buffer.length() > 0) {
             log.get().debug("cliforce completor returning 0, from first if branch");

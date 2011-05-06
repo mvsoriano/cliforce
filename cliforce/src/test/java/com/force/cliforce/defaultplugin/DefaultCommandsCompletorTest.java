@@ -75,6 +75,7 @@ public class DefaultCommandsCompletorTest extends BaseCliforceCommandTest {
     @Test
     public void testEmptyStringBuffer() {
         runCompletorTestCase("", 0, Arrays.asList(new String[]{"banner", "classpath", "debug", "env", "exit", "help", "history", "plugin", "require", "sh", "sysprops", "unplug", "version"}));
+        runCompletorTestCase(" ", 0, Arrays.asList(new String[]{"banner", "classpath", "debug", "env", "exit", "help", "history", "plugin", "require", "sh", "sysprops", "unplug", "version"}));
     }
 
     @Test
@@ -171,5 +172,7 @@ public class DefaultCommandsCompletorTest extends BaseCliforceCommandTest {
         runCompletorTestCase("v", 0, Arrays.asList(new String[]{"version "}));
         runCompletorTestCase("version ", 8, Arrays.asList(new String[]{" ", "Show the current running version of cliforce"}));
     }
+
+
     
 }
