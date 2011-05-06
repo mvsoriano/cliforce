@@ -63,12 +63,6 @@
             <version>${jcommander.version}</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>com.vmforce</groupId>
-            <artifactId>vmforce-client</artifactId>
-            <version>${force.client.version}</version>
-            <scope>provided</scope>
-        </dependency>
         <!-- Test -->
         <dependency>
             <groupId>org.testng</groupId>

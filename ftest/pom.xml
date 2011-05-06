@@ -74,11 +74,6 @@
       <version>${force.sdk.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.vmforce</groupId>
-      <artifactId>vmforce-client</artifactId>
-      <version>${force.client.version}</version>
-    </dependency>
-    <dependency>
       <groupId>com.google.inject</groupId>
       <artifactId>guice</artifactId>
       <version>${guice.version}</version>

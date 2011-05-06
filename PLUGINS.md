@@ -1,6 +1,6 @@
 #Writing plugins for the CLIForce shell
 
-Writing a plugin enables you to add commands that execute your own Java code that is passed a CommandContext as a parameter. This context gives you access to MetadataConnection, PartnerConnection, RestConnection, and VMForceClient connections.
+Writing a plugin enables you to add commands that execute your own Java code that is passed a CommandContext as a parameter. This context gives you access to MetadataConnection, PartnerConnection, and BulkConnection connections.
 
 The simplest example of a CLIForce plugin is available on github at [http://github.com/sclasen/cliplugin](http://github.com/sclasen/cliplugin).
 

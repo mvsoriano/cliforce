@@ -29,7 +29,6 @@ import java.util.{Map => JMap}
  * All JPA commands inherit from here. The class provides basic ability to select a persistenceunit and then apply command to that PU
  *
  * @author fhossain
- * @since vmforce.beta1
  */
 abstract class JPACommand[P <: JPAParam] extends JCommand[P] {
 

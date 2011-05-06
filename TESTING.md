@@ -21,16 +21,10 @@ From the root of cliforce Run.
 
 This will bring up cliforce, running against the (currently empty) set of files in ${positive.test.user.home}.
 
-Run the following commands, and create a valid login, and a valid connection named test that hit the servers you are going to want to
+Run the following commands to create a valid connection named test that hit the servers you are going to want to
 test against.
 
-    force> login
-    Please log in
-    Target login server [api.alpha.vmforce.com]:
-    Login server: api.alpha.vmforce.com
-    Username:<youruser@your.org>
-    Password:**********************************
-    Login successful.
+
     force> connection:add
     connection name: test
     user: user@domain.com

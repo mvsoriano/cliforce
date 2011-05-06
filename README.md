@@ -2,68 +2,83 @@
 
 This tool supports the following commands.
 
-	app:apps:           list deployed applications
-	app:delete:         delete an application from VMforce
-		Usage: delete <name of the application>
+       banner:                print the banner
+       classpath:             show the classpath for a cliforce plugin, or for cliforce itself.
+        Note that the classloader of cliforce is the parent classloader of plugin classloaders
+        Usage: classpath [args] <name of the plugin to get the classpath for, or none for the cliforce classpath>
+        args:
+        -s, --sort	sort the returned list of files on the classpath alphabetically
 
-	app:push:           push an application to VMforce.
-		Usage: push [args] <name of the application to push>
-		args:
-		-i, --instances	number of instances to deploy (default 1)
-		-m, --mem	memory to allocate to the application, in MB (default 512)
-		-p, --path	local path to the deployable application(required)
+       codegen:jpaClass:      Generates Force.com JPA enabled Java classes
+        Usage: jpaClass [args] <names of Force.com schema objects to generate as JPA classes>
+        args:
+            --projectDir	root directory for project
+        -a, --all	generate all Force.com schema objects as JPA classes
+        -d, --destDir	destination directory for generated JPA classes (within project)
+        -p, --package	java package name for generated JPA classes
 
-	app:restart:        restart an application
-		Usage: restart <name of the application>
+       connection:add:        add a database connection
+        Usage: add [args]
+        args:
+            --notoken	set this flag if security tokens are turned off in your org
+        -h, --host	Host to connect to, defaults to vmf01.t.salesforce.com
+        -n, --name	name of the connection
+        -p, --password	password with which to connect
+        -t, --token	security token with which to connect
+        -u, --user	username with which to connect, youruser@your.org
 
-	app:start:          start an application
-		Usage: start <name of the application>
+       connection:current:    show the currently selected connection
+       connection:default:    set the current and default connection for cliforce. Usage connection:default <connectionName>
+       connection:list:       list the currently available connections
+       connection:remove:     remove a connection from cliforce. Usage connection:remove <connectionName>
+       connection:rename:     rename a connection for cliforce. Usage connection:rename <currentName> <newName>
+       connection:set:        set the current connection for cliforce. Usage connection:set <connectionName>
+       connection:test:       test the current connection. Usage connection:test <connectionName>
+       db:describe:           Describes Force.com schema in the current org
+        Usage: describe [args] <names of Force.com schema objects to describe>
+        args:
+        -a, --all	describe all Force.com schema objects
+        -c, --custom	describe custom Force.com schema objects
+        -s, --standard	describe standard Force.com schema objects
+        -v, --verbose	verbosely describe Force.com schema objects
 
-	app:stop:           stop an application
-		Usage: stop <name of the application>
+       debug:                 Turns debug output on. Or off with the --off switch
+        Usage: debug [args]
+        args:
+            --off	Turns off debug logging to the console
 
-	app:tail:           tail a file within a given application's instance
-		Usage: tail [args] <name of the application>
-		args:
-		-i, --instance	instance on which to tail a file, default:0
-		-p, --path	path to file(required)
+       env:                   Display the current environment variables
+       exit:                  Exit this shell
+       help:                  Display this help message, or help for a specific command
+        Usage: help <command>
+       history:               Show history of previous commands
+       jpa:clean:             Deletes schema for all writable JPA entities in the current org
+       jpa:populate:          Populate schema for all writable JPA entities in the current org
+       jpa:query:             Run JPQL (or SOQL) against the current org
+       plugin:                adds a plugin to the shell
+        Usage: plugin [args] <maven artifact id for an artifact in group com.force.cliforce.plugin>
+        args:
+        -v, --version	maven artifact version for the specified artifact, if unspecified RELEASE meta-version is used
 
-	banner:             print the banner
-	connection:         show the current connection info
-	db:clean:           delete all custom objects in the current org
-	db:list:            list custom objects
-	debug:              turn debug output on/off
-		Usage: debug [args] 
-		args:
-		--off	turn off debug logging to the console
-		--on	turn on debug logging to the console
+       require:               exit the shell if a specified version of a plugin is not installed
+        Usage: require [args] <maven artifact id for an artifact in group com.force.cliforce.plugin>
+        args:
+        -v, --version	maven artifact version for the specified artifact, if unspecified RELEASE meta-version is used
 
-	exit:               exit this shell
-	help:               display this help message, or help for a specific command
-		Usage: help <command>
-	history:            show history of previous commands
-	plugin:             add a plugin to the shell
-		Usage: plugin [args] <maven artifact id for an artifact in group com.force.cliforce.plugin>
-		args:
-		-v, --version	maven artifact version for the specified artifact; if unspecified, RELEASE meta-version is used
+       sh:                    Execute the rest of the command on the OS
+       sysprops:              Display the current Java system properties
+       template:create:       creates a new forcesdk maven project from a maven archetype
+        Usage: create [args] <artifactId/name of the project to create>
+        args:
+        -d, --dir	directory to create the project in, defaults to current dir.
+        -g, --group	groupId of the project to create, defaults to org name(reversed, ie my.org = org.my).artifactId
+        -p, --package	root package for classes in project, defaults to groupId
+        -v, --version	version of the project to create, default 1.0-SNAPSHOT
 
-	require:            exit the shell if a specified version of a plugin is not installed
-		Usage: require [args] <maven artifact id for an artifact in group com.force.cliforce.plugin>
-		args:
-		-v, --version	maven artifact version for the specified artifact; if unspecified, RELEASE meta-version is used
+       template:list:         list the available project templates
+       unplug:                removes a plugin and its commands from the shell
+       version:               Show the current running version of cliforce
 
-	sh:                 execute the rest of the command on the OS
-	template:create:    create a new VMforce maven project from a maven archetype
-		Usage: create [args] <artifactId/name of the project to create>
-		args:
-		-g, --group	groupId of the project to create, defaults to org name(reversed, ie my.org = org.my).artifactId
-		-p, --package	root package for classes in project, defaults to groupId
-		-t, type	type of project {single|multi}; defaults to single
-		-v, --version	version of the project to create, default 1.0-SNAPSHOT
-
-	template:list:      list the available project templates
-	unplug:             remove a plugin and it's commands from the shell
-	version:            show the current running version of cliforce
 
 # How to use
 

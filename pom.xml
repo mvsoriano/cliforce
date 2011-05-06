@@ -12,7 +12,7 @@
         <module>ftest</module>
     </modules>
     <name>cliforce-parent</name>
-    <description>command line shell for vmforce</description>
+    <description>command line shell for force.com</description>
     <properties>
         <scala.version>2.8.1</scala.version>
         <aether.version>1.11</aether.version>
