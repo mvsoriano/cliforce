@@ -14,7 +14,7 @@
         <module>build</module>
     </modules>
     <name>cliforce-parent</name>
-    <description>command line shell for force.com</description>
+    <description>command line shell for Database.com</description>
     <properties>
         <scala.version>2.8.1</scala.version>
         <aether.version>1.11</aether.version>
@@ -136,7 +136,7 @@
                             <goal>enforce</goal>
                         </goals>
 
-                        <!-- Ensure that the project version and Force.com SDK versions match -->
+                        <!-- Ensure that the project version and Database.com SDK versions match -->
                         <configuration>
                             <rules>
                                 <requireProperty>

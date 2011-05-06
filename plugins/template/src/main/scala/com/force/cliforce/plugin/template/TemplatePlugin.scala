@@ -31,6 +31,5 @@ import collection.JavaConversions
 import command.{ListTemplatesCommand, NewProjectCommand}
 
 class TemplatePlugin extends Plugin {
-  def getCommands = JavaConversions.asJavaList(List(classOf[NewProjectCommand],
-    classOf[ListTemplatesCommand]))
+  def getCommands = JavaConversions.asJavaList(List(classOf[NewProjectCommand]))
 }
