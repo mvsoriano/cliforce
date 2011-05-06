@@ -37,7 +37,7 @@ import com.force.cliforce.plugin.codegen.command.JPAClass.JPAClassArgs;
 import com.force.sdk.codegen.ForceJPAClassGenerator;
 
 /**
- * Code Generator for Force.com JPA enabled Java Classes. 
+ * Code Generator for Database.com JPA enabled Java Classes.
  * 
  * @author Tim Kral
  */
@@ -56,7 +56,7 @@ public class JPAClass extends JCommand<JPAClassArgs> {
 
     @Override
     public String describe() {
-        return usage("Generates Force.com JPA enabled Java classes");
+        return usage("Generates Database.com JPA enabled Java classes");
     }
 
     @Override
@@ -90,10 +90,10 @@ public class JPAClass extends JCommand<JPAClassArgs> {
     }
 
     public static class JPAClassArgs {
-        @Parameter(description = "names of Force.com schema objects to generate as JPA classes")
+        @Parameter(description = "names of Database.com schema objects to generate as JPA classes")
         public List<String> names = new ArrayList<String>();
         
-        @Parameter(names = {"-a", "--all"}, description="generate all Force.com schema objects as JPA classes")
+        @Parameter(names = {"-a", "--all"}, description="generate all Database.com schema objects as JPA classes")
         public boolean all = false;
 
         // don't use TildeAwareFileConverter because this is concatenated later -- TildeAwareFileConverter will create an absolute path, which we don't want

@@ -40,31 +40,31 @@ import scala.collection.JavaConversions._
  */
 class DescribeArgs {
 
-    @Parameter(description = "names of Force.com schema objects to describe")
+    @Parameter(description = "names of Database.com schema objects to describe")
     var names: JList[String] = new ArrayList()
     
-    @Parameter(names = Array("-a", "--all"), description = "describe all Force.com schema objects")
+    @Parameter(names = Array("-a", "--all"), description = "describe all Database.com schema objects")
     var all = false
     
-    @Parameter(names = Array("-c", "--custom"), description = "describe custom Force.com schema objects")
+    @Parameter(names = Array("-c", "--custom"), description = "describe custom Database.com schema objects")
     var custom = false
     
-    @Parameter(names = Array("-s", "--standard"), description = "describe standard Force.com schema objects")
+    @Parameter(names = Array("-s", "--standard"), description = "describe standard Database.com schema objects")
     var standard = false
     
-    @Parameter(names = Array("-v", "--verbose"), description = "verbosely describe Force.com schema objects")
+    @Parameter(names = Array("-v", "--verbose"), description = "verbosely describe Database.com schema objects")
     var verbose = false
 }
 
 /**
- * Describes Force.com schema for a given org.
+ * Describes Database.com schema for a given org.
  * 
- * Usage: describe [args] <names of Force.com schema objects to describe>
+ * Usage: describe [args] <names of Database.com schema objects to describe>
  *      args:
- *      -a, --all       describe all Force.com schema objects
- *      -c, --custom    describe custom Force.com schema objects
- *      -s, --standard  describe standard Force.com schema objects
- *      -v, --verbose   verbosely describe Force.com schema objects
+ *      -a, --all       describe all Database.com schema objects
+ *      -c, --custom    describe custom Database.com schema objects
+ *      -s, --standard  describe standard Database.com schema objects
+ *      -v, --verbose   verbosely describe Database.com schema objects
  * 
  * @author Tim Kral
  */
@@ -75,7 +75,7 @@ class Describe extends JCommand[DescribeArgs] {
     
     def name = "describe"
         
-    def describe = usage("Describes Force.com schema in the current org")
+    def describe = usage("Describes Database.com schema in the current org")
 
     def executeWithArgs(ctx: CommandContext, args: DescribeArgs): Unit = {
         
@@ -182,7 +182,7 @@ class Describe extends JCommand[DescribeArgs] {
 }
 
 /**
- * Printable attributes for a Force.com schema object.
+ * Printable attributes for a Database.com schema object.
  * 
  * @author Tim Kral
  */

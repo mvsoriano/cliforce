@@ -1,4 +1,4 @@
-# Command line tool for Force.com - BETA
+# Command line tool for Database.com - BETA
 
 This tool supports the following commands.
 
@@ -9,11 +9,11 @@ This tool supports the following commands.
         args:
         -s, --sort	sort the returned list of files on the classpath alphabetically
 
-       codegen:jpaClass:      Generates Force.com JPA enabled Java classes
-        Usage: jpaClass [args] <names of Force.com schema objects to generate as JPA classes>
+       codegen:jpaClass:      Generates Database.com JPA enabled Java classes
+        Usage: jpaClass [args] <names of Database.com schema objects to generate as JPA classes>
         args:
             --projectDir	root directory for project
-        -a, --all	generate all Force.com schema objects as JPA classes
+        -a, --all	generate all Database.com schema objects as JPA classes
         -d, --destDir	destination directory for generated JPA classes (within project)
         -p, --package	java package name for generated JPA classes
 
@@ -34,13 +34,13 @@ This tool supports the following commands.
        connection:rename:     rename a connection for cliforce. Usage connection:rename <currentName> <newName>
        connection:set:        set the current connection for cliforce. Usage connection:set <connectionName>
        connection:test:       test the current connection. Usage connection:test <connectionName>
-       db:describe:           Describes Force.com schema in the current org
-        Usage: describe [args] <names of Force.com schema objects to describe>
+       db:describe:           Describes Database.com schema in the current org
+        Usage: describe [args] <names of Database.com schema objects to describe>
         args:
-        -a, --all	describe all Force.com schema objects
-        -c, --custom	describe custom Force.com schema objects
-        -s, --standard	describe standard Force.com schema objects
-        -v, --verbose	verbosely describe Force.com schema objects
+        -a, --all	describe all Database.com schema objects
+        -c, --custom	describe custom Database.com schema objects
+        -s, --standard	describe standard Database.com schema objects
+        -v, --verbose	verbosely describe Database.com schema objects
 
        debug:                 Turns debug output on. Or off with the --off switch
         Usage: debug [args]
@@ -91,7 +91,7 @@ Compile the project:
 	$ cd cliforce
 	$ mvn install -DupdateReleaseInfo -DskipTests
 
-This tool uses a URL format similar to JDBC drivers for connecting to Force.com. The URL format is:
+This tool uses a URL format similar to JDBC drivers for connecting to Database.com. The URL format is:
 
 	force://login.salesforce.com;user=scott@acme.com;password=tiger
 
