@@ -89,15 +89,24 @@ public class TemplateCreateCommandTest extends BaseCliforceCommandTest {
     public void testCreateTemplateAndInstall() throws IOException, ConnectionException, ServletException, InterruptedException {
         System.out.println("creating template.  please wait...");
         String output = runCommand("template:create springmvc -d " + templateParentDir + " -p com.pack");
-        Assert.assertTrue(output.contains("BUILD SUCCESSFUL"), "creation of template not successful");
+        assertMvnBuildSuccessful(output, "creation of template not successful");
         // execute mvn install on the created template to make sure it compiles properly
         System.out.println("running maven build on template.  please wait...");
         output = runProcess("mvn install -DskipTests -e", templateParentDir + "/springmvc");
-        Assert.assertTrue(output.contains("BUILD SUCCESSFUL"), "mvn install without tests was not successful");
+        assertMvnBuildSuccessful(output, "mvn install without tests was not successful");
         // execute mvn install with tests enabled
         uncommentEntityAnnotation(templateParentDir + "/springmvc/src/main/java/com/pack/model/MyEntity.java");
         output = runProcess("mvn install -e", templateParentDir + "/springmvc");
-        Assert.assertTrue(output.contains("BUILD SUCCESSFUL"), "mvn install with tests was not successful");
+        assertMvnBuildSuccessful(output, "mvn install with tests was not successful");
+    }
+    
+    /**
+     * This method asserts that a mvn build was successful
+     * @param output is the console output from executed command
+     * @param assertMsg additional message to be printed in test failure report
+     */
+    private void assertMvnBuildSuccessful(String output, String assertMsg) {
+        Assert.assertTrue(output.contains("BUILD SUCCESSFUL"), assertMsg + "\nConsole output contained:\n" + output);
     }
     
     /**
