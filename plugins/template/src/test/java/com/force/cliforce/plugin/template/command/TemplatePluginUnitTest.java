@@ -53,8 +53,8 @@ public class TemplatePluginUnitTest {
         cmd.execute(ctx);
         Assert.assertFalse(ctx.out().contains("sh->mvn"));
         File proj = new File(workingDir, project);
-        Assert.assertTrue(proj.exists());
-        Assert.assertTrue(new File(proj, "pom.xml").exists());
+        Assert.assertTrue(proj.exists(), "template project directory does not exist");
+        Assert.assertTrue(new File(proj, "pom.xml").exists(), "template project pom.xml does not exist");
     }
 
 
@@ -70,8 +70,8 @@ public class TemplatePluginUnitTest {
         //As long as this doesn't throw an exception and the command still works the test passes
         cmd.execute(ctx);
         File proj = new File(workingDir, project);
-        Assert.assertTrue(proj.exists());
-        Assert.assertTrue(new File(proj, "pom.xml").exists());
+        Assert.assertTrue(proj.exists(),  "template project directory does not exist");
+        Assert.assertTrue(new File(proj, "pom.xml").exists(), "template project pom.xml does not exist");
     }
 
     @Test
