@@ -4,7 +4,7 @@
     <groupId>com.force.cliforce</groupId>
     <artifactId>cliforce-parent</artifactId>
     <packaging>pom</packaging>
-    <version>21.0.2-BETA</version>
+    <version>21.0.3-BETA</version>
     <modules>
         <module>boot</module>
         <module>cliforce</module>
@@ -119,7 +119,7 @@
     <build>
 
         <plugins>
-            <plugin>
+           <!-- <plugin>
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <version>1.0</version>
                 <executions>
@@ -130,7 +130,7 @@
                             <goal>enforce</goal>
                         </goals>
 
-                        <!-- Ensure that the project version and Force.com SDK versions match -->
+                        &lt;!&ndash; Ensure that the project version and Force.com SDK versions match &ndash;&gt;
                         <configuration>
                             <rules>
                                 <requireProperty>
@@ -142,7 +142,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
             
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

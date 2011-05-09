@@ -183,7 +183,7 @@ public class CLIForce {
                     for (String defalutPlugin : internalPlugins) {
                         DefaultPlugin.PluginArgs args = new DefaultPlugin.PluginArgs();
                         args.setArtifact(defalutPlugin);
-                        args.version = "LATEST";
+                        args.version = Boot.getCLIForceProperties().getProperty("version");
                         args.internal = true;
                         p.executeWithArgs(getContext(new String[0]), args);
                     }
