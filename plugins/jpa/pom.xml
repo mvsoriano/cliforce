@@ -9,7 +9,11 @@
 
     <groupId>com.force.cliforce.plugin</groupId>
     <artifactId>jpa</artifactId>
+    <packaging>pom</packaging>
     <name>jpa plugin</name>
+    <modules>
+        <module>jpa-test-fixture</module>
+    </modules>
 
     <properties>
       <geronimo.version>1.0</geronimo.version>
