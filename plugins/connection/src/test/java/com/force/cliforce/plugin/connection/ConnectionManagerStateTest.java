@@ -89,4 +89,16 @@ public class ConnectionManagerStateTest extends BaseCliforceCommandTest {
         Assert.assertNull(getCLIForce().getCurrentEnvironment(), "current environment should be null. current environment was " + getCLIForce().getCurrentEnvironment());
     }
     
+    @Test
+    public void testAddConnectionNameTests() throws IOException, ConnectionException, ServletException, InterruptedException {
+        Assert.assertNull(getCLIForce().getCurrentEnvironment(), "current environment should be null. current environment was " + getCLIForce().getCurrentEnvironment());
+
+        String output = executeCommand("connection:add","--notoken",
+                "-n","\'hello world\'",
+                "-h", "login.salesforce.com",
+                "-u", "user@domain.com",
+                "-p", "mountains4");
+        Assert.assertEquals(output, "Space and tab are not allowed in connection name.\n", "unexpected output from command");
+        Assert.assertNull(getCLIForce().getCurrentEnvironment(), "current environment should be null. current environment was " + getCLIForce().getCurrentEnvironment());
+    }
 }

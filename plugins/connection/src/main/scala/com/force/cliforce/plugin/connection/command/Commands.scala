@@ -137,17 +137,35 @@ class AddConnectionCommand extends JCommand[AddConnectionArgs] {
   def executeWithArgs(ctx: CommandContext, args: AddConnectionArgs) : Unit = {
     var interactive = false
     requireCliforce(cliforce)
-    if (args.name != null && (cliforce.getAvailableEnvironments.containsKey(args.name))) {
-      ctx.getCommandWriter.printf("There is already a connection named %s, please rename or remove it first\n", args.name)
-      args.name = null
-      return
-    }
-    while (args.name == null || (args.name eq "")) {
-      args.name = ctx.getCommandReader.readLine("connection name: ")
+
+    def duplicateNameCheck: Boolean = {
       if (args.name != null && (cliforce.getAvailableEnvironments.containsKey(args.name))) {
         ctx.getCommandWriter.printf("There is already a connection named %s, please rename or remove it first\n", args.name)
         args.name = null
+        return false
       }
+
+      return true
+    }
+
+    def spaceCheck: Boolean = {
+      if (args.name!= null && (args.name.contains(" ") || args.name.contains("\t"))) {
+        ctx.getCommandWriter.printf("Space and tab are not allowed in connection name.\n")
+        args.name = null
+        return false;
+      }
+
+      return true;
+    }
+
+    if (!duplicateNameCheck) return
+    if(!spaceCheck) return
+
+    while (args.name == null || args.name.trim.length == 0) {
+      args.name = ctx.getCommandReader.readLine("connection name: ")
+      spaceCheck
+      args.name = if (args.name == null) null else args.name.trim
+      duplicateNameCheck
     }
     while (args.user == null || (args.user eq "")) {
       args.user = ctx.getCommandReader.readLine("user: ")
