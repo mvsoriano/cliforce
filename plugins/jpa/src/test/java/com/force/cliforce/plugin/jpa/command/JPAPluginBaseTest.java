@@ -104,7 +104,7 @@ public class JPAPluginBaseTest {
     // This is yucky but could not get instance based mocking to work after classloader action on actual implementation of JPAPlugin
     private volatile static JPAPluginBaseTest current;
     
-    @MockClass(realClass = PersistenceProviderImpl.class, instantiation = Instantiation.PerMockInvocation)
+    @MockClass(realClass = org.datanucleus.jpa.PersistenceProviderImpl.class, instantiation = Instantiation.PerMockInvocation)
     public static class MockPersistenceProviderImpl {
         @Mock
         public EntityManagerFactory createEntityManagerFactory(String unitName, Map properties) {
