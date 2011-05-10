@@ -122,11 +122,21 @@ public class JPAClassTest {
     public Object[][] filePathProvider() {
 
         return new Object[][]{
-                {null, null, System.getProperty("user.dir") + "/./src/main/java"},
-                {"/projectDir", null, "/projectDir/./src/main/java"},
-                {null, "destDir", System.getProperty("user.dir") + "/destDir"},
-                {"/projectDir", "/destDir", "/projectDir/destDir"},
-                {"~/projectDir", "/destDir", System.getProperty("user.home") + "/projectDir/destDir"}
+                {null, null,
+                    System.getProperty("user.dir") + File.separator + "." + File.separator + "src"
+                    + File.separator + "main" + File.separator + "java"
+                },
+                {File.separator + "projectDir", null,
+                    File.separator + "projectDir" + File.separator + "." + File.separator + "src"
+                    + File.separator + "main" + File.separator + "java"
+                },
+                {null, "destDir", System.getProperty("user.dir") + File.separator + "destDir"},
+                {File.separator + "projectDir",
+                    File.separator + "destDir", File.separator + "projectDir" + File.separator + "destDir"
+                },
+                {"~" +File.separator + "projectDir", File.separator + "destDir",
+                    System.getProperty("user.home") + File.separator + "projectDir" + File.separator + "destDir"
+                }
         };
     }
     

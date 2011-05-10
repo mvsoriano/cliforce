@@ -43,9 +43,8 @@ import com.force.sdk.codegen.ForceJPAClassGenerator;
  */
 public class JPAClass extends JCommand<JPAClassArgs> {
 
-    private static final String FILE_SEPARATOR = System.getProperty("file.separator");
     private static final String DEFAULT_DEST_DIR = 
-        "." + FILE_SEPARATOR + "src" + FILE_SEPARATOR + "main" + FILE_SEPARATOR + "java"; // e.g. ./src/main/java
+        "." + File.separator + "src" + File.separator + "main" + File.separator + "java"; // e.g. ./src/main/java
     
     public static LazyLogger log = new LazyLogger(JPAClass.class);
     
@@ -63,8 +62,8 @@ public class JPAClass extends JCommand<JPAClassArgs> {
     public void executeWithArgs(CommandContext ctx, JPAClassArgs args) {
         Util.requirePartnerConnection(ctx);
         
-        String fullPath = args.projectDir + FILE_SEPARATOR + args.destDir;
-        fullPath.replaceAll(FILE_SEPARATOR + FILE_SEPARATOR, FILE_SEPARATOR); // Remove double file separators
+        String fullPath = args.projectDir + File.separator + args.destDir;
+        fullPath.replaceAll(File.separator + File.separator, File.separator); // Remove double file separators
         
         ForceJPAClassGenerator generator = new ForceJPAClassGenerator(ctx.getPartnerConnection(), new File(fullPath));
         generator.setPackageName(args.packageName);
