@@ -11,6 +11,13 @@
   <groupId>com.force.cliforce</groupId>
   <artifactId>ftest</artifactId>
   <name>ftest</name>
+  <packaging>pom</packaging>
+
+    <modules>
+        <module>jpa-test-fixture</module>
+        <module>commands</module>
+    </modules>
+
   
   <dependencies>
     <dependency>
