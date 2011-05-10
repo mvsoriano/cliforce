@@ -51,8 +51,8 @@ import com.sforce.ws.ConnectionException;
 /**
  * Tests for the template:create command.
  *
- * @author jeffrey.lai
- * @since 
+ * @author Jeff Lai
+ * 
  */
 public class TemplateCreateCommandTest extends BaseCliforceCommandTest {
     
@@ -106,7 +106,10 @@ public class TemplateCreateCommandTest extends BaseCliforceCommandTest {
      * @param assertMsg additional message to be printed in test failure report
      */
     private void assertMvnBuildSuccessful(String output, String assertMsg) {
-        Assert.assertTrue(output.contains("BUILD SUCCESSFUL"), assertMsg + "\nConsole output contained:\n" + output);
+        Assert.assertTrue(output.contains("BUILD SUCCESSFUL"), assertMsg + "\nConsole output contained:\n" +
+                "===============================================================================\n" +
+                output +
+                "===============================================================================\n");
     }
     
     /**

@@ -49,6 +49,7 @@ import com.force.cliforce.dependency.DependencyResolver.Scope
 import com.force.sdk.jpa.PersistenceProviderImpl
 import collection.JavaConversions._
 import java.util.{Map => JMap}
+import java.net.{URL, URLClassLoader}
 
 /**
  * 
@@ -144,8 +145,10 @@ abstract class JPACommand[P <: JPAParam] extends JCommand[P] {
     }
     var pcl: ClassLoader = resolver.createClassLoaderFor(args.group, args.artifact, args.version,
       if (args.searchTestJars) Scope.TEST else Scope.RUNTIME, curr, oa)
-
-    Thread.currentThread().setContextClassLoader(pcl)
+    var urls = new Array[URL](1)
+    urls(0) =new URL("file:///home/nnewbold/workspaces/forcesdk/cliforce/plugins/jpa/jpa-test-fixture/target/")
+    var cl: ClassLoader = new URLClassLoader(urls)
+    Thread.currentThread().setContextClassLoader(cl)
     try {
       // Create PersistenceProvider
       val clr = Thread.currentThread().getContextClassLoader()
