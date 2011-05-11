@@ -44,6 +44,8 @@ import com.google.inject.Injector;
 import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.ws.ConnectionException;
 
+import javax.servlet.ServletException;
+
 /**
  * Tests for commands in the connection plugin
  *
@@ -341,4 +343,19 @@ public class ConnectionTest {
         return ctx;
     }
 
+    @Test
+    public void testSpaceInConnectionName() throws Exception {
+        TestCommandContext ctx = addConnSetup(new String[][]{
+                {"jeff", "force://login.salesforce.com;user=user@user.com;password=mountains4"}
+        });
+        ctx = ctx.withCommandArguments("--notoken",
+                "-n","\'hello world\'",
+                "-h", "login.salesforce.com",
+                "-u", "user@domain.com",
+                "-p", "mountains4");
+        ctx = ctx.withCommandReader(new TestCommandReader(Lists.newArrayList("9")));
+        AddConnectionCommand addCmd = injector.getInjectedCommand(connPlugin, AddConnectionCommand.class);
+        addCmd.execute(ctx);
+        Assert.assertEquals(ctx.getCommandWriter().getOutput(), "Space and tab are not allowed in connection name.\n", "unexpected output from command");
+    }
 }
