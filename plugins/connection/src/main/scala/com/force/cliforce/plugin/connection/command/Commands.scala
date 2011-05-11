@@ -100,8 +100,8 @@ class AddConnectionArgs {
   @Parameter(names = Array("-p", "--password"), description = "password with which to connect")
   var password: String = null
 
-  @Parameter(names = Array("-h", "--host"), description = "Host to connect to, defaults to vmf01.t.salesforce.com")
-  var host = "vmf01.t.salesforce.com"
+  @Parameter(names = Array("-h", "--host"), description = "Host to connect to, defaults to login.salesforce.com")
+  var host = "login.salesforce.com"
 
   @Parameter(names = Array("-t", "--token"), description = "security token with which to connect")
   var token: String = ""
@@ -137,17 +137,35 @@ class AddConnectionCommand extends JCommand[AddConnectionArgs] {
   def executeWithArgs(ctx: CommandContext, args: AddConnectionArgs) : Unit = {
     var interactive = false
     requireCliforce(cliforce)
-    if (args.name != null && (cliforce.getAvailableEnvironments.containsKey(args.name))) {
-      ctx.getCommandWriter.printf("There is already a connection named %s, please rename or remove it first\n", args.name)
-      args.name = null
-      return
-    }
-    while (args.name == null || (args.name eq "")) {
-      args.name = ctx.getCommandReader.readLine("connection name: ")
+
+    def duplicateNameCheck: Boolean = {
       if (args.name != null && (cliforce.getAvailableEnvironments.containsKey(args.name))) {
         ctx.getCommandWriter.printf("There is already a connection named %s, please rename or remove it first\n", args.name)
         args.name = null
+        return false
       }
+
+      return true
+    }
+
+    def spaceCheck: Boolean = {
+      if (args.name!= null && (args.name.contains(" ") || args.name.contains("\t"))) {
+        ctx.getCommandWriter.printf("Space and tab are not allowed in connection name.\n")
+        args.name = null
+        return false;
+      }
+
+      return true;
+    }
+
+    if (!duplicateNameCheck) return
+    if(!spaceCheck) return
+
+    while (args.name == null || args.name.trim.length == 0) {
+      args.name = ctx.getCommandReader.readLine("connection name: ")
+      spaceCheck
+      args.name = if (args.name == null) null else args.name.trim
+      duplicateNameCheck
     }
     while (args.user == null || (args.user eq "")) {
       args.user = ctx.getCommandReader.readLine("user: ")
@@ -163,8 +181,8 @@ class AddConnectionCommand extends JCommand[AddConnectionArgs] {
       interactive = true
     }
 
-    if (args.host == null || (args.host eq "vmf01.t.salesforce.com")) {
-      args.host = ctx.getCommandReader.readLine("host (defaults to vmf01.t.salesforce.com): ")
+    if (args.host == null || (args.host eq "login.salesforce.com")) {
+      args.host = ctx.getCommandReader.readLine("host (defaults to login.salesforce.com): ")
       interactive = true
       if (args.host == "") {
         args.host = new AddConnectionArgs().host

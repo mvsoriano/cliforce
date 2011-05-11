@@ -21,7 +21,7 @@ This tool supports the following commands.
         Usage: add [args]
         args:
             --notoken	set this flag if security tokens are turned off in your org
-        -h, --host	Host to connect to, defaults to vmf01.t.salesforce.com
+        -h, --host	Host to connect to, defaults to login.salesforce.com
         -n, --name	name of the connection
         -p, --password	password with which to connect
         -t, --token	security token with which to connect
