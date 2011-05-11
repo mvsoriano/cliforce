@@ -62,10 +62,8 @@ public class JPAClass extends JCommand<JPAClassArgs> {
     public void executeWithArgs(CommandContext ctx, JPAClassArgs args) {
         Util.requirePartnerConnection(ctx);
         
-        String fullPath = args.projectDir + File.separator + args.destDir;
-        fullPath.replaceAll(File.separator + File.separator, File.separator); // Remove double file separators
-        
-        ForceJPAClassGenerator generator = new ForceJPAClassGenerator(ctx.getPartnerConnection(), new File(fullPath));
+        ForceJPAClassGenerator generator =
+            new ForceJPAClassGenerator(ctx.getPartnerConnection(), new File(args.projectDir + File.separator + args.destDir));
         generator.setPackageName(args.packageName);
         
         int numGeneratedFiles;
