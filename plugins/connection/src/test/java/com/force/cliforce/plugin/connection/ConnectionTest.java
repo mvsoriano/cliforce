@@ -44,8 +44,6 @@ import com.google.inject.Injector;
 import com.sforce.soap.partner.PartnerConnection;
 import com.sforce.ws.ConnectionException;
 
-import javax.servlet.ServletException;
-
 /**
  * Tests for commands in the connection plugin
  *
@@ -55,6 +53,7 @@ import javax.servlet.ServletException;
 public class ConnectionTest {
     Plugin connPlugin = new ConnectionPlugin();
     TestPluginInjector injector;
+    final String connectionUrl = "force://login.salesforce.com;user=user@user.com;password=mountains4";
     String tmpUserHome = System.getProperty("basedir") + "/target/tmp-user-home";
     File parentDir = new File(tmpUserHome);
 
@@ -87,7 +86,7 @@ public class ConnectionTest {
 
     @Test
     public void testAddConnection() throws Exception {
-        TestCommandContext ctx = addConnSetup(new String[][]{{"jeff", "force://login.salesforce.com;user=user@user.com;password=mountains4"}});
+        TestCommandContext ctx = addConnSetup(new String[][]{{"jeff", connectionUrl}});
         ListConnectionsCommand listCmd = injector.getInjectedCommand(connPlugin, ListConnectionsCommand.class);
         ctx.setCommandArguments(new String[0]);
         listCmd.execute(ctx);
@@ -155,7 +154,7 @@ public class ConnectionTest {
 
     @Test
     public void testRemoveConnection() throws Exception {
-        TestCommandContext ctx = addConnSetup(new String[][]{{"jeff", "force://login.salesforce.com;user=user@user.com;password=mountains4"}});
+        TestCommandContext ctx = addConnSetup(new String[][]{{"jeff", connectionUrl}});
         RemoveConnectionCommand rmCmd = injector.getInjectedCommand(connPlugin, RemoveConnectionCommand.class);
         ctx.setCommandArguments(new String[]{"jeff"});
         rmCmd.execute(ctx);
@@ -164,7 +163,7 @@ public class ConnectionTest {
 
     @Test
     public void testDefaultConnectionWithOneConnection() throws Exception {
-        TestCommandContext ctx = addConnSetup(new String[][]{{"jeff", "force://login.salesforce.com;user=user@user.com;password=mountains4"}});
+        TestCommandContext ctx = addConnSetup(new String[][]{{"jeff", connectionUrl}});
         DefaultConnectionCommand connectionCommand = injector.getInjectedCommand(connPlugin, DefaultConnectionCommand.class);
         ctx.setCommandArguments(new String[]{});
         connectionCommand.execute(ctx);
@@ -174,8 +173,8 @@ public class ConnectionTest {
     @Test
     public void testDefaultConnectionWithTwoConnections() throws Exception {
         TestCommandContext ctx = addConnSetup(new String[][]{
-                {"jeff", "force://login.salesforce.com;user=user@user.com;password=mountains4"}
-                , {"jeff2", "force://login.salesforce.com;user=user@user.com;password=mountains4"}
+                {"jeff", connectionUrl}
+                , {"jeff2", connectionUrl}
         });
         DefaultConnectionCommand connectionCommand = injector.getInjectedCommand(connPlugin, DefaultConnectionCommand.class);
         ctx.setCommandArguments(new String[]{});
@@ -185,7 +184,7 @@ public class ConnectionTest {
 
     @Test
     public void testDefaultConnectionNonExistentConn() throws Exception {
-        TestCommandContext ctx = addConnSetup(new String[][]{{"jeff", "force://login.salesforce.com;user=user@user.com;password=mountains4"}});
+        TestCommandContext ctx = addConnSetup(new String[][]{{"jeff", connectionUrl}});
         DefaultConnectionCommand connectionCommand = injector.getInjectedCommand(connPlugin, DefaultConnectionCommand.class);
         ctx.setCommandArguments(new String[]{"fake"});
         connectionCommand.execute(ctx);
@@ -207,7 +206,7 @@ public class ConnectionTest {
 
     @Test
     public void testConnectionCurrentOneConnection() throws Exception {
-        TestCommandContext ctx = addConnSetup(new String[][]{{"jeff", "force://login.salesforce.com;user=user@user.com;password=mountains4"}});
+        TestCommandContext ctx = addConnSetup(new String[][]{{"jeff", connectionUrl}});
         CurrentConnectionCommand cmd = injector.getInjectedCommand(connPlugin, CurrentConnectionCommand.class);
         cmd.execute(ctx);
         Assert.assertEquals(ctx.getCommandWriter().getOutput(), "Current Connection Name: jeff\n" +
@@ -256,7 +255,7 @@ public class ConnectionTest {
 
     @Test
     public void testRenameConnection() throws Exception {
-        TestCommandContext ctx = addConnSetup(new String[][]{{"jeff", "force://login.salesforce.com;user=user@user.com;password=mountains4"}});
+        TestCommandContext ctx = addConnSetup(new String[][]{{"jeff", connectionUrl}});
         RenameConnectionCommand reCmd = injector.getInjectedCommand(connPlugin, RenameConnectionCommand.class);
         ListConnectionsCommand listCmd = injector.getInjectedCommand(connPlugin, ListConnectionsCommand.class);
         ctx.setCommandArguments(new String[]{"jeff", "asdf"});
@@ -279,7 +278,7 @@ public class ConnectionTest {
 
     @Test
     public void testRenameConnectionSameName() throws Exception {
-        TestCommandContext ctx = addConnSetup(new String[][]{{"jeff", "force://login.salesforce.com;user=user@user.com;password=mountains4"},
+        TestCommandContext ctx = addConnSetup(new String[][]{{"jeff", connectionUrl},
                 {"asdf", "force://login.salesforce.com;user=user@domain.com;password=s3d4gd3"}});
         RenameConnectionCommand reCmd = injector.getInjectedCommand(connPlugin, RenameConnectionCommand.class);
         ListConnectionsCommand listCmd = injector.getInjectedCommand(connPlugin, ListConnectionsCommand.class);
@@ -313,7 +312,7 @@ public class ConnectionTest {
 
     @Test
     public void testAddDuplicateConnection() throws Exception {
-        TestCommandContext ctx = addConnSetup(new String[][]{{"jeff", "force://login.salesforce.com;user=user@user.com;password=mountains4"}});
+        TestCommandContext ctx = addConnSetup(new String[][]{{"jeff", connectionUrl}});
         ctx = ctx.withCommandArguments("--notoken", "-n", "jeff", "-h", "login.salesforce.com", "-u", "user@user.com", "-p", "mountains4");
         ctx = ctx.withCommandReader(new TestCommandReader(Lists.newArrayList("9")));
         AddConnectionCommand addCmd = injector.getInjectedCommand(connPlugin, AddConnectionCommand.class);
@@ -346,7 +345,7 @@ public class ConnectionTest {
     @Test
     public void testSpaceInConnectionName() throws Exception {
         TestCommandContext ctx = addConnSetup(new String[][]{
-                {"jeff", "force://login.salesforce.com;user=user@user.com;password=mountains4"}
+                {"jeff", connectionUrl}
         });
         ctx = ctx.withCommandArguments("--notoken",
                 "-n","\'hello world\'",
