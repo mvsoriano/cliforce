@@ -119,7 +119,7 @@ public class ConnectionTest {
                         "user: some.random@user.name.com\n" +
                         "password: *****************\n" +
                         "security token: apiKey\n" +
-                        "host (defaults to vmf01.t.salesforce.com): some.random.target.com\n" +
+                        "host (defaults to login.salesforce.com): some.random.target.com\n" +
                         "Enter oauth key and secret? (Y to enter, anything else to skip): N\n" +
                         "Connection: testInteractiveAddConnection added\n"
                 , "unexpected output: " + ctx.getCommandWriter().getOutput());
@@ -143,7 +143,7 @@ public class ConnectionTest {
                         "user: some.random@user.name.com\n" +
                         "password: *****************\n" +
                         "security token: apiKey\n" +
-                        "host (defaults to vmf01.t.salesforce.com): some.random.target.com\n" +
+                        "host (defaults to login.salesforce.com): some.random.target.com\n" +
                         "Enter oauth key and secret? (Y to enter, anything else to skip): Y\n" +
                         "oauth key:secret\n" +
                         "oauth secret:key\n" +

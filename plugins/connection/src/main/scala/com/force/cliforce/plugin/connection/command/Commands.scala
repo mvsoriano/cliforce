@@ -100,8 +100,8 @@ class AddConnectionArgs {
   @Parameter(names = Array("-p", "--password"), description = "password with which to connect")
   var password: String = null
 
-  @Parameter(names = Array("-h", "--host"), description = "Host to connect to, defaults to vmf01.t.salesforce.com")
-  var host = "vmf01.t.salesforce.com"
+  @Parameter(names = Array("-h", "--host"), description = "Host to connect to, defaults to login.salesforce.com")
+  var host = "login.salesforce.com"
 
   @Parameter(names = Array("-t", "--token"), description = "security token with which to connect")
   var token: String = ""
@@ -181,8 +181,8 @@ class AddConnectionCommand extends JCommand[AddConnectionArgs] {
       interactive = true
     }
 
-    if (args.host == null || (args.host eq "vmf01.t.salesforce.com")) {
-      args.host = ctx.getCommandReader.readLine("host (defaults to vmf01.t.salesforce.com): ")
+    if (args.host == null || (args.host eq "login.salesforce.com")) {
+      args.host = ctx.getCommandReader.readLine("host (defaults to login.salesforce.com): ")
       interactive = true
       if (args.host == "") {
         args.host = new AddConnectionArgs().host
