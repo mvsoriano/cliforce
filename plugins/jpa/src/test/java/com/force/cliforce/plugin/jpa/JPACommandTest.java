@@ -27,6 +27,7 @@
 package com.force.cliforce.plugin.jpa;
 
 import org.testng.Assert;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import com.force.cliforce.TestCommandContext;
@@ -47,28 +48,19 @@ public class JPACommandTest extends JPAPluginBaseTest {
     private static final String TEST_VERSION = "22.0.0-SNAPSHOT";
     private static final String TEST_GROUP = "com.force.cliforce";
 
-    private void validateConnectToOrg(TestCommandContext ctx) {
-        Assert.assertTrue(ctx.getCommandWriter().getOutput().contains("Connected to org mock_organization_id"), ctx.getCommandWriter().getOutput());
+    @DataProvider
+    public Object[][] jpaCommandWithArgs() {
+        return new Object[][] {
+                // command, ordered input, query, result,
+                { JPAPopulate.class, Lists.newArrayList("1", "3") }
+        };
     }
-    
-    private void validatePUSelection(TestCommandContext ctx) {
-        System.out.println(ctx.getCommandWriter().getOutput());
-        Assert.assertTrue(ctx.getCommandWriter().getOutput().contains(
-            "Select PersistenceUnit:\n" +
-            "1. SchemaLoadInvocationFTest\n" +
-            "2. extPersCtxPU\n" +
-            "3. testDNJpaPersistence\n" +
-            "4. testDNJpaPersistence2\n" +
-            "5. testDNJpaPersistence3\n" +
-            "[1-5] q to quit? 3\n" +
-            "Running with selected PersistenceUnit: testDNJpaPersistence"), ctx.getCommandWriter().getOutput());
-    }
-    
+
     /**
      * This test will check basic PersistenceUnit selection that is common to all JPA commands
      * @throws Exception
      */
-    @Test(enabled = false)
+    @Test
     public void testJPAPluginCommandParams() throws Exception {
         // Check all base params
         TestCommandContext ctx = createCtxWithJPA(JPAPopulate.class, new TestCommandReader(Lists.newArrayList("1", "3")), null, null,
@@ -77,7 +69,7 @@ public class JPACommandTest extends JPAPluginBaseTest {
         validatePUSelection(ctx);
         
         // try the 'q' quit command
-        ctx = createCtxWithJPA(JPAPopulate.class, new TestCommandReader(Lists.newArrayList("q")), null, null,
+        ctx = createCtxWithJPA(JPAPopulate.class, new TestCommandReader(Lists.newArrayList("1", "q")), null, null,
                 "-g", TEST_GROUP, "-a", TEST_ARTIFACT, "-v", TEST_VERSION, "-t");
         validateConnectToOrg(ctx);
         Assert.assertTrue(ctx.getCommandWriter().getOutput().endsWith(
@@ -88,7 +80,7 @@ public class JPACommandTest extends JPAPluginBaseTest {
                 "4. testDNJpaPersistence2\n" +
                 "5. testDNJpaPersistence3\n" +
                 "[1-5] q to quit? q\n"), ctx.getCommandWriter().getOutput());
-        
+
         // Pass in persistenceunit and expect no selection
         ctx = createCtxWithJPA(JPAPopulate.class, null, null, null,
                 "-g", TEST_GROUP, "-a", TEST_ARTIFACT, "-v", TEST_VERSION, "-t", "-u", "testDNJpaPersistence");
@@ -101,24 +93,24 @@ public class JPACommandTest extends JPAPluginBaseTest {
     public void testJPAPluginNegativeParams() throws Exception {
         // Check a missing base param
         TestCommandContext ctx = createCtxWithJPA(JPAPopulate.class, new TestCommandReader(Lists.newArrayList("1", "3")), null, null,
-                "-g", TEST_GROUP, "-a", TEST_ARTIFACT, "-v", TEST_VERSION, "-t");
+                "-g", "-a", TEST_ARTIFACT, "-v", TEST_VERSION, "-t");
         Assert.assertTrue(ctx.getCommandWriter().getOutput().startsWith(
         "Exception while executing command: populate"), ctx.getCommandWriter().getOutput());
         
         // try no selection followed by invalid selection
-//        ctx = createCtxWithJPA(JPAPopulate.class, new TestCommandReader(Lists.newArrayList("1", "", "0", "q")), null, null,
-//                "-g", TEST_GROUP, "-a", TEST_ARTIFACT, "-v", TEST_VERSION, "-t");
-//        validateConnectToOrg(ctx);
-//        Assert.assertTrue(ctx.getCommandWriter().getOutput().endsWith(
-//                "Select PersistenceUnit:\n" +
-//                "1. SchemaLoadInvocationFTest\n" +
-//                "2. extPersCtxPU\n" +
-//                "3. testDNJpaPersistence\n" +
-//                "4. testDNJpaPersistence2\n" +
-//                "5. testDNJpaPersistence3\n" +
-//                "[1-5] q to quit? \n" +
-//                "[1-5] q to quit? 0\n" +
-//                "[1-5] q to quit? q\n"), ctx.getCommandWriter().getOutput());
+        ctx = createCtxWithJPA(JPAPopulate.class, new TestCommandReader(Lists.newArrayList("1", "", "0", "q")), null, null,
+                "-g", TEST_GROUP, "-a", TEST_ARTIFACT, "-v", TEST_VERSION, "-t");
+        validateConnectToOrg(ctx);
+        Assert.assertTrue(ctx.getCommandWriter().getOutput().endsWith(
+                "Select PersistenceUnit:\n" +
+                "1. SchemaLoadInvocationFTest\n" +
+                "2. extPersCtxPU\n" +
+                "3. testDNJpaPersistence\n" +
+                "4. testDNJpaPersistence2\n" +
+                "5. testDNJpaPersistence3\n" +
+                "[1-5] q to quit? \n" +
+                "[1-5] q to quit? 0\n" +
+                "[1-5] q to quit? q\n"), ctx.getCommandWriter().getOutput());
     }
     
     @Test
@@ -147,4 +139,22 @@ public class JPACommandTest extends JPAPluginBaseTest {
         validateConnectToOrg(ctx);
         validatePUSelection(ctx);
     }
+
+    private void validateConnectToOrg(TestCommandContext ctx) {
+        Assert.assertTrue(ctx.getCommandWriter().getOutput().contains("Connected to org mock_organization_id"), ctx.getCommandWriter().getOutput());
+    }
+
+    private void validatePUSelection(TestCommandContext ctx) {
+        System.out.println(ctx.getCommandWriter().getOutput());
+        Assert.assertTrue(ctx.getCommandWriter().getOutput().contains(
+                "Select PersistenceUnit:\n" +
+                        "1. SchemaLoadInvocationFTest\n" +
+                        "2. extPersCtxPU\n" +
+                        "3. testDNJpaPersistence\n" +
+                        "4. testDNJpaPersistence2\n" +
+                        "5. testDNJpaPersistence3\n" +
+                        "[1-5] q to quit? 3\n" +
+                        "Running with selected PersistenceUnit: testDNJpaPersistence"), ctx.getCommandWriter().getOutput());
+    }
+
 }

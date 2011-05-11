@@ -45,7 +45,6 @@ import com.force.sdk.connector.ForceConnectorConfig;
 import com.force.sdk.connector.ForceServiceConnector;
 import com.force.sdk.connector.threadlocal.ForceThreadLocalStore;
 import com.force.sdk.jpa.ForceEntityManagerFactory;
-import com.force.sdk.jpa.PersistenceProviderImpl;
 import com.google.inject.Guice;
 import com.sforce.soap.metadata.DescribeMetadataResult;
 import com.sforce.soap.metadata.MetadataConnection;
@@ -88,6 +87,11 @@ public class JPAPluginBaseTest {
             res.setFields(new Field[0]);
             return res;
         }
+
+//        @Mock
+//        public QueryResult query(String query) {
+//            return new QueryResult();
+//        }
     }
     
     @MockClass(realClass = MetadataConnection.class, instantiation = Instantiation.PerMockInvocation)
@@ -100,12 +104,19 @@ public class JPAPluginBaseTest {
             return res;
         }
     }
+
+    @MockClass(realClass = ForceEntityManagerFactory.class, instantiation = Instantiation.PerMockInvocation)
+    public static final class MockForceEntityManagerFactory {
+        @Mock
+        public void $init(String unitName, Map properties) {}
+    }
     
     // This is yucky but could not get instance based mocking to work after classloader action on actual implementation of JPAPlugin
     private volatile static JPAPluginBaseTest current;
     
-    @MockClass(realClass = org.datanucleus.jpa.PersistenceProviderImpl.class, instantiation = Instantiation.PerMockInvocation)
-    public static class MockPersistenceProviderImpl {
+    @MockClass(realClass = com.force.sdk.jpa.PersistenceProviderImpl.class, instantiation = Instantiation.PerMockInvocation)
+    public static class MockPersistenceProviderImpl extends org.datanucleus.jpa.PersistenceProviderImpl {
+        @Override
         @Mock
         public EntityManagerFactory createEntityManagerFactory(String unitName, Map properties) {
             // Could not implement this with an anonymous class. Had to make it static.
@@ -127,7 +138,10 @@ public class JPAPluginBaseTest {
         Mockit.setUpMocks(MockPartnerConnection.class,
         MockMetadataConnection.class,
         MockPersistenceProviderImpl.class,
-        MockEntityManagerFactory.class);
+        MockEntityManagerFactory.class,
+        MockForceEntityManagerFactory.class
+        );
+
     }
     
     @BeforeMethod
@@ -139,7 +153,7 @@ public class JPAPluginBaseTest {
         Command cmd = injector.getInjectedCommand(jpaPlugin, commandClazz);
         ForceConnectorConfig cfg = new ForceConnectorConfig();
         cfg.setUsername("foobar@a.com");
-        cfg.setAuthEndpoint("https://login.salesforce.com");
+        cfg.setAuthEndpoint("https://fake.login.salesforce.com");
         cfg.setServiceEndpoint("http://someservice.com/services/Soap/u/");
         cfg.setSessionId("mocksession");
         ForceServiceConnector connector = new ForceServiceConnector(cfg);

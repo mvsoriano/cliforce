@@ -43,6 +43,10 @@
                 </includes>
             </resource>
         </resources>
+        <!-- explicitly tell maven to get persistence.xml in src/main/resources.
+             this is needed when the project is loaded at runtime during the test
+             phase (e.g. JPACommand.executeWithClasspath)
+        -->
         <testResources>
             <testResource>
                 <directory>${basedir}/src/main/resources</directory>
