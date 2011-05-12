@@ -36,14 +36,9 @@ import com.force.cliforce.TestCommandReader;
 import com.force.cliforce.plugin.jpa.command.*;
 import com.google.common.collect.Lists;
 
-import java.io.IOException;
-import java.net.JarURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
 
 /**
  * 
@@ -60,29 +55,45 @@ public class JPACommandTest extends JPAPluginBaseTest {
 
     @DataProvider
     public Object[][] jpaCommandWithArgs() {
-        String[] testFixtureProjectArgs = new String[]{ "-g", TEST_GROUP, "-a", TEST_ARTIFACT, "-v", TEST_VERSION, "-t" };
-
         return new Object[][] {
               // format: command, ordered input, query, result, command args, expected result
               /*  POSITIVE TESTS  */
                 {
-                        JPAPopulate.class, null, null, null, new String[]{ "-g", TEST_GROUP, "-a", TEST_ARTIFACT, "-v", TEST_VERSION, "-t", "-u", "testDNJpaPersistence" },
+                        JPAPopulate.class, null, null, null, getArgsWithProject("-u", "testDNJpaPersistence"),
                         "Running with selected PersistenceUnit: testDNJpaPersistence"
                 }
               , {
-                        JPAPopulate.class, null, null, null, new String[]{ "-g", TEST_GROUP, "-a", TEST_ARTIFACT, "-v", TEST_VERSION, "-t", "-f", "-u", "testDNJpaPersistence" },
-                        "Running with selected PersistenceUnit: testDNJpaPersistence"
+                        JPAPopulate.class, getReader("1", "3"), null, null, getArgsWithProject(),
+                        "[1-5] q to quit? 3\nRunning with selected PersistenceUnit: testDNJpaPersistence"
                 }
-              , { JPAPopulate.class, getReader("1", "3"), null, null, testFixtureProjectArgs, "[1-5] q to quit? 3\nRunning with selected PersistenceUnit: testDNJpaPersistence" }
-              , { JPAPopulate.class, getReader("1", "q"), null, null, testFixtureProjectArgs, "[1-5] q to quit? q" }
-              , { JPAPopulate.class, getReader("1", "", "q"), null, null, testFixtureProjectArgs, "[1-5] q to quit? \n[1-5] q to quit? q\n" }
-              , { JPAPopulate.class, getReader("1", "0", "q"), null, null, testFixtureProjectArgs, "[1-5] q to quit? 0\n[1-5] q to quit? q\n" }
-              , { JPAClean.class, getReader("1", "3"), null, null, testFixtureProjectArgs, "[1-5] q to quit? 3\nRunning with selected PersistenceUnit: testDNJpaPersistence" }
-              , { JPAQuery.class, getReader("1", "3", "select o from Account o", "q"), "select o from Account o", Lists.newArrayList(), testFixtureProjectArgs, "jpql (q to quit) > select o from Account o\nNo data found\njpql (q to quit) > q"}
+              , {
+                        JPAPopulate.class, getReader("1", "q"), null, null, getArgsWithProject(),
+                        "[1-5] q to quit? q"
+                }
+              , {
+                        JPAPopulate.class, getReader("1", "", "q"), null, null, getArgsWithProject(),
+                        "[1-5] q to quit? \n[1-5] q to quit? q\n"
+                }
+              , {
+                        JPAPopulate.class, getReader("1", "0", "q"), null, null, getArgsWithProject(),
+                        "[1-5] q to quit? 0\n[1-5] q to quit? q\n"
+                }
+              , {
+                        JPAClean.class, getReader("1", "3"), null, null, getArgsWithProject(),
+                        "[1-5] q to quit? 3\nRunning with selected PersistenceUnit: testDNJpaPersistence"
+                }
+              , {
+                        JPAClean.class, getReader("1", "3"), null, null, getArgsWithProject("-f", "-p"),
+                        "[1-5] q to quit? 3\nRunning with selected PersistenceUnit: testDNJpaPersistence"
+                }
+              , {
+                        JPAQuery.class, getReader("1", "3", "select o from Account o", "q"), "select o from Account o", Lists.newArrayList(), getArgsWithProject(),
+                        "jpql (q to quit) > select o from Account o\nNo data found\njpql (q to quit) > q"
+                }
               /*  NEGATIVE TESTS  */
 
                 // TODO: force a persistenceexception when the whole thing is mocked
-//              , { JPAQuery.class, getReader("1", "3", "select o from Account o", "q"), "select o from Account o", Lists.newArrayList(), testFixtureProjectArgs, "javax.persistence.PersistenceException: Class Account for query has not been resolved. Check the query and any imports specification"}
+//              , { JPAQuery.class, getReader("1", "3", "select o from Account o", "q"), "select o from Account o", Lists.newArrayList(), getArgsWithProject(), "javax.persistence.PersistenceException: Class Account for query has not been resolved. Check the query and any imports specification"}
         };
     }
 
@@ -109,6 +120,15 @@ public class JPACommandTest extends JPAPluginBaseTest {
     private TestCommandReader getReader(String... inputs) {
         ArrayList inputList = Lists.newArrayList(inputs);
         return new TestCommandReader(inputList);
+    }
+
+    private String[] getArgsWithProject(String... args) {
+        String[] argsWithProject = Arrays.copyOf(
+                new String[]{ "-g", TEST_GROUP, "-a", TEST_ARTIFACT, "-v", TEST_VERSION, "-t" }
+              , args.length + 7 /* 7 standard project args */
+        );
+        System.arraycopy(args, 0, argsWithProject, 7, args.length);
+        return argsWithProject;
     }
 
     private void verifyConnection(TestCommandContext ctx) {
