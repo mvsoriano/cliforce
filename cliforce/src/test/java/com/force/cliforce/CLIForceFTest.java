@@ -26,7 +26,10 @@
 
 package com.force.cliforce;
 
-import org.testng.Assert;
+import static com.force.cliforce.Util.getCliforceHome;
+import static com.force.cliforce.Util.withSeparator;
+import static org.testng.Assert.assertEquals;
+
 import org.testng.annotations.Test;
 
 import java.io.File;
@@ -35,7 +38,7 @@ import java.util.Calendar;
 import java.util.Scanner;
 
 /**
- * Functional Tests for CLIForce
+ * Functional Tests for cliforce
  * @author naamannewbold
  * @since javasdk-22.0.0-BETA
  */
@@ -49,10 +52,10 @@ public class CLIForceFTest {
         String timestampString = String.valueOf(timestamp);
         System.err.println(timestamp);
 
-        File errFile = new File(Util.getCliforceHome() + "/.force/cliforce.errors");
+        File errFile = new File(withSeparator(getCliforceHome()) + withSeparator(".force") + "cliforce.errors");
         Scanner scanner = new Scanner(errFile);
 
-        Assert.assertEquals(scanner.findWithinHorizon(timestampString, 0), timestampString, "Expected cliforce.errors to contain System.err output");
+        assertEquals(scanner.findWithinHorizon(timestampString, 0), timestampString, "Expected cliforce.errors to contain System.err output");
 
     }
 

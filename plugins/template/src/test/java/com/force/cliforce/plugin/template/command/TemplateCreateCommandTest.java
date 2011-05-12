@@ -26,6 +26,10 @@
 
 package com.force.cliforce.plugin.template.command;
 
+import static com.force.cliforce.Util.newLine;
+import static com.force.cliforce.Util.withNewLine;
+import static com.force.cliforce.Util.withSeparator;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -56,7 +60,7 @@ import com.sforce.ws.ConnectionException;
  */
 public class TemplateCreateCommandTest extends BaseCliforceCommandTest {
     
-    private final String templateParentDir = System.getProperty("basedir") + "/target/test-template";
+    private final String templateParentDir = withSeparator(System.getProperty("user.dir")) + withSeparator("target") + "test-template";
     
     @Override
     @BeforeClass
@@ -92,11 +96,13 @@ public class TemplateCreateCommandTest extends BaseCliforceCommandTest {
         assertMvnBuildSuccessful(output, "creation of template not successful");
         // execute mvn install on the created template to make sure it compiles properly
         System.out.println("running maven build on template.  please wait...");
-        output = runProcess("mvn install -DskipTests -e", templateParentDir + "/springmvc");
+        output = runProcess("mvn install -DskipTests -e", withSeparator(templateParentDir) + "springmvc");
         assertMvnBuildSuccessful(output, "mvn install without tests was not successful");
         // execute mvn install with tests enabled
-        uncommentEntityAnnotation(templateParentDir + "/springmvc/src/main/java/com/pack/model/MyEntity.java");
-        output = runProcess("mvn install -e", templateParentDir + "/springmvc");
+        uncommentEntityAnnotation(withSeparator(templateParentDir) + withSeparator("springmvc") + withSeparator("src")
+                + withSeparator("main") + withSeparator("java") + withSeparator("com") + withSeparator("pack")
+                + withSeparator("model") +"MyEntity.java");
+        output = runProcess("mvn install -e", withSeparator(templateParentDir) + "springmvc");
         assertMvnBuildSuccessful(output, "mvn install with tests was not successful");
     }
     
@@ -106,10 +112,12 @@ public class TemplateCreateCommandTest extends BaseCliforceCommandTest {
      * @param assertMsg additional message to be printed in test failure report
      */
     private void assertMvnBuildSuccessful(String output, String assertMsg) {
-        Assert.assertTrue(output.contains("BUILD SUCCESSFUL"), assertMsg + "\nConsole output contained:\n" +
-                "===============================================================================\n" +
-                output +
-                "===============================================================================\n");
+        Assert.assertTrue(output.contains("BUILD SUCCESSFUL"), assertMsg + 
+                newLine()
+              + withNewLine("Console output contained:")
+              + withNewLine("===============================================================================")
+              + output
+              + withNewLine("==============================================================================="));
     }
     
     /**
@@ -136,16 +144,17 @@ public class TemplateCreateCommandTest extends BaseCliforceCommandTest {
             sb = new StringBuilder();
             String line = null;
             while ((line = br.readLine()) != null) {
-                sb.append(line + "\n");
+                sb.append(line).append(newLine());
             } 
         } finally {
             if (br != null) br.close();
         }
-        Assert.assertEquals(retVal, 0, "Process was not terminated normally for the command " + cmd + 
-                "\nThe console output is printed below:\n" +
-                "===============================================================================\n" +
-                sb.toString() +
-                "===============================================================================\n");
+        Assert.assertEquals(retVal, 0, "Process was not terminated normally for the command " + cmd 
+                + newLine()
+                + withNewLine("The console output is printed below:")
+                + withNewLine("===============================================================================")
+                + sb.toString()
+                + withNewLine("==============================================================================="));
         // kill process
         p.destroy();
         return sb.toString();
@@ -166,7 +175,7 @@ public class TemplateCreateCommandTest extends BaseCliforceCommandTest {
                 if (line.contains("//@Entity")) {
                     line = line.replace("//@Entity", "@Entity");
                 }
-                bw.write(line + "\n");
+                bw.write(line + newLine());
             } 
         } finally {
             if (br != null) br.close();

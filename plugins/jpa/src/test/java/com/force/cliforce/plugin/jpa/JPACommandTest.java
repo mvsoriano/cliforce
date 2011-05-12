@@ -26,6 +26,8 @@
 
 package com.force.cliforce.plugin.jpa;
 
+import static com.force.cliforce.Util.withNewLine;
+
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -37,6 +39,7 @@ import com.force.cliforce.plugin.jpa.command.*;
 import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -48,31 +51,51 @@ import java.util.List;
  */
 public class JPACommandTest extends JPAPluginBaseTest {
 
-    private static final String TEST_ARTIFACT = "jpa-test-fixture";
-    private static final String TEST_VERSION = "22.0.0-SNAPSHOT";
-    private static final String TEST_GROUP = "com.force.cliforce";
+    private static final String TEST_GROUP = jpaTestFixtureProperties.getProperty("groupId");
+    private static final String TEST_ARTIFACT = jpaTestFixtureProperties.getProperty("artifactId");
+    private static final String TEST_VERSION = jpaTestFixtureProperties.getProperty("version");
 
     @DataProvider
     public Object[][] jpaCommandWithArgs() {
-        String[] testFixtureProjectArgs = new String[]{ "-g", TEST_GROUP, "-a", TEST_ARTIFACT, "-v", TEST_VERSION, "-t" };
-
         return new Object[][] {
               // format: command, ordered input, query, result, command args, expected result
               /*  POSITIVE TESTS  */
                 {
-                        JPAPopulate.class, null, null, null, new String[]{ "-g", TEST_GROUP, "-a", TEST_ARTIFACT, "-v", TEST_VERSION, "-t", "-u", "testDNJpaPersistence" },
+                        JPAPopulate.class, null, null, null, getArgsWithProject("-u", "testDNJpaPersistence"),
                         "Running with selected PersistenceUnit: testDNJpaPersistence"
                 }
-              , { JPAPopulate.class, getReader("1", "3"), null, null, testFixtureProjectArgs, "[1-5] q to quit? 3\nRunning with selected PersistenceUnit: testDNJpaPersistence" }
-              , { JPAPopulate.class, getReader("1", "q"), null, null, testFixtureProjectArgs, "[1-5] q to quit? q" }
-              , { JPAPopulate.class, getReader("1", "", "q"), null, null, testFixtureProjectArgs, "[1-5] q to quit? \n[1-5] q to quit? q\n" }
-              , { JPAPopulate.class, getReader("1", "0", "q"), null, null, testFixtureProjectArgs, "[1-5] q to quit? 0\n[1-5] q to quit? q\n" }
-              , { JPAClean.class, getReader("1", "3"), null, null, testFixtureProjectArgs, "[1-5] q to quit? 3\nRunning with selected PersistenceUnit: testDNJpaPersistence" }
-              , { JPAQuery.class, getReader("1", "3", "select o from Account o", "q"), "select o from Account o", Lists.newArrayList(), testFixtureProjectArgs, "jpql (q to quit) > select o from Account o\nNo data found\njpql (q to quit) > q"}
+              , {
+                        JPAPopulate.class, getReader("1", "3"), null, null, getArgsWithProject(),
+                        withNewLine("[1-5] q to quit? 3") + "Running with selected PersistenceUnit: testDNJpaPersistence"
+                }
+              , {
+                        JPAPopulate.class, getReader("1", "q"), null, null, getArgsWithProject(),
+                        "[1-5] q to quit? q"
+                }
+              , {
+                        JPAPopulate.class, getReader("1", "", "q"), null, null, getArgsWithProject(),
+                        withNewLine("[1-5] q to quit? ") + withNewLine("[1-5] q to quit? q")
+                }
+              , {
+                        JPAPopulate.class, getReader("1", "0", "q"), null, null, getArgsWithProject(),
+                        withNewLine("[1-5] q to quit? 0") + withNewLine("[1-5] q to quit? q")
+                }
+              , {
+                        JPAClean.class, getReader("1", "3"), null, null, getArgsWithProject(),
+                        withNewLine("[1-5] q to quit? 3") + "Running with selected PersistenceUnit: testDNJpaPersistence"
+                }
+              , {
+                        JPAClean.class, getReader("1", "3"), null, null, getArgsWithProject("-f", "-p"),
+                        withNewLine("[1-5] q to quit? 3") + "Running with selected PersistenceUnit: testDNJpaPersistence"
+                }
+              , {
+                        JPAQuery.class, getReader("1", "3", "select o from Account o", "q"), "select o from Account o", Lists.newArrayList(), getArgsWithProject(),
+                        withNewLine("jpql (q to quit) > select o from Account o") + withNewLine("No data found") + "jpql (q to quit) > q"
+                }
               /*  NEGATIVE TESTS  */
 
                 // TODO: force a persistenceexception when the whole thing is mocked
-//              , { JPAQuery.class, getReader("1", "3", "select o from Account o", "q"), "select o from Account o", Lists.newArrayList(), testFixtureProjectArgs, "javax.persistence.PersistenceException: Class Account for query has not been resolved. Check the query and any imports specification"}
+//              , { JPAQuery.class, getReader("1", "3", "select o from Account o", "q"), "select o from Account o", Lists.newArrayList(), getArgsWithProject(), "javax.persistence.PersistenceException: Class Account for query has not been resolved. Check the query and any imports specification"}
         };
     }
 
@@ -92,13 +115,22 @@ public class JPACommandTest extends JPAPluginBaseTest {
     private void assertStringContains(String actual, String expectedSubstring) {
         Assert.assertTrue(
                 actual.contains(expectedSubstring)
-                , "Expected substring: " + expectedSubstring + "\nActual substring: " + actual
+              , "Expected substring: " + withNewLine(expectedSubstring) + "Actual substring: " + actual
         );
     }
 
     private TestCommandReader getReader(String... inputs) {
         ArrayList inputList = Lists.newArrayList(inputs);
         return new TestCommandReader(inputList);
+    }
+
+    private String[] getArgsWithProject(String... args) {
+        String[] argsWithProject = Arrays.copyOf(
+                new String[]{ "-g", TEST_GROUP, "-a", TEST_ARTIFACT, "-v", TEST_VERSION, "-t" }
+              , args.length + 7 /* 7 standard project args */
+        );
+        System.arraycopy(args, 0, argsWithProject, 7, args.length);
+        return argsWithProject;
     }
 
     private void verifyConnection(TestCommandContext ctx) {
@@ -108,14 +140,14 @@ public class JPACommandTest extends JPAPluginBaseTest {
     private void validatePUSelection(TestCommandContext ctx) {
         System.out.println(ctx.getCommandWriter().getOutput());
         Assert.assertTrue(ctx.getCommandWriter().getOutput().contains(
-                "Select PersistenceUnit:\n" +
-                        "1. SchemaLoadInvocationFTest\n" +
-                        "2. extPersCtxPU\n" +
-                        "3. testDNJpaPersistence\n" +
-                        "4. testDNJpaPersistence2\n" +
-                        "5. testDNJpaPersistence3\n" +
-                        "[1-5] q to quit? 3\n" +
-                        "Running with selected PersistenceUnit: testDNJpaPersistence"), ctx.getCommandWriter().getOutput());
+                withNewLine("Select PersistenceUnit:")
+                    + withNewLine("1. SchemaLoadInvocationFTest")
+                    + withNewLine("2. extPersCtxPU")
+                    + withNewLine("3. testDNJpaPersistence")
+                    + withNewLine("4. testDNJpaPersistence2")
+                    + withNewLine("5. testDNJpaPersistence3")
+                    + withNewLine("[1-5] q to quit? 3")
+                    + "Running with selected PersistenceUnit: testDNJpaPersistence"), ctx.getCommandWriter().getOutput());
     }
 
 }

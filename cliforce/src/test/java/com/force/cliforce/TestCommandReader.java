@@ -74,7 +74,7 @@ public class TestCommandReader implements CommandReader {
         assertHasWriter();
         assertHasMoreInput();
         nextInput = inputs.next();
-        out.print(prompt + maskedOutput(nextInput, mask) + "\n");
+        out.println(prompt + maskedOutput(nextInput, mask));
     }
 
     private String maskedOutput(String input, Character mask) {

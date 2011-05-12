@@ -26,6 +26,8 @@
 
 package com.force.cliforce;
 
+import static com.force.cliforce.Util.withSeparator;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -58,12 +60,12 @@ import com.sforce.ws.ConnectionException;
  */
 public class FilePathCompletorTest extends BasePluginsTest {
     
-    private final String testParentDirPath = System.getProperty("basedir") + "/target/testac";
-    private final String testDirContainsZeroFilesPath = testParentDirPath + "/zerofiles";
-    private final String testDirContainsOneFilePath = testParentDirPath + "/onefile";
-    private final String testDirContainsThreeFilesPath = testParentDirPath + "/threefiles";
-    private final String testDirContainsFiftyFilesPath = testParentDirPath + "/fiftyfiles";
-    private final String testDirHasSpaceInName = testParentDirPath + "/space directory";
+    private final String testParentDirPath = withSeparator(System.getProperty("user.dir")) + withSeparator("target") + "testac";
+    private final String testDirContainsZeroFilesPath = withSeparator(testParentDirPath) + "zerofiles";
+    private final String testDirContainsOneFilePath = withSeparator(testParentDirPath) + "onefile";
+    private final String testDirContainsThreeFilesPath = withSeparator(testParentDirPath) + "threefiles";
+    private final String testDirContainsFiftyFilesPath = withSeparator(testParentDirPath) + "fiftyfiles";
+    private final String testDirHasSpaceInName = withSeparator(testParentDirPath) + "space directory";
     
     
     @Override
@@ -142,7 +144,7 @@ public class FilePathCompletorTest extends BasePluginsTest {
             candidates.add(" <main param> <" + j.getMainParameterDescription() + ">");
         }     
         Collections.sort(candidates);
-        String buffer = cmdStub + testDirContainsZeroFilesPath + "/";
+        String buffer = cmdStub + withSeparator(testDirContainsZeroFilesPath);
         int cursor = buffer.length() + 1;
         runCompletorTestCase(buffer, cursor, candidates);
     }
@@ -150,20 +152,22 @@ public class FilePathCompletorTest extends BasePluginsTest {
     @SuppressWarnings("unchecked")
     @Test(dataProvider = "commandStub")
     public void testPathCompletionWithOneChoice(String cmdStub) {
-        runCompletorTestCase(cmdStub + testDirContainsOneFilePath + "/", 0, Arrays.asList(new String[] {cmdStub + testDirContainsOneFilePath + "/test0.txt "}));
+        runCompletorTestCase(cmdStub + withSeparator(testDirContainsOneFilePath), 0,
+                Arrays.asList(new String[] {cmdStub + withSeparator(testDirContainsOneFilePath) + "test0.txt "}));
     }
     
     // TODO re-enable this test once W-933703 is resolved
     @SuppressWarnings("unchecked")
     @Test(enabled=false, dataProvider = "commandStub")
     public void testPathCompletionWithSpaceInDirName(String cmdStub) {
-        runCompletorTestCase(cmdStub + testDirHasSpaceInName + "/", 0, Arrays.asList(new String[] {cmdStub + testDirHasSpaceInName + "/test0.txt "}));        
+        runCompletorTestCase(cmdStub + withSeparator(testDirHasSpaceInName), 0,
+                Arrays.asList(new String[] {cmdStub + withSeparator(testDirHasSpaceInName) + "test0.txt "}));        
     }
     
     @SuppressWarnings("unchecked")
     @Test(dataProvider = "commandStub")
     public void testPathCompletionWithThreeChoices(String cmdStub) {
-        String buffer = cmdStub + testDirContainsThreeFilesPath + "/";
+        String buffer = cmdStub + withSeparator(testDirContainsThreeFilesPath);
         int cursor = buffer.length();
         runCompletorTestCase(buffer, cursor, Arrays.asList(new String[] {"test0.txt ", "test1.txt ", "test2.txt "}));
     }
@@ -173,7 +177,7 @@ public class FilePathCompletorTest extends BasePluginsTest {
     public void testPathCompletionWithFiftyChoices(String cmdStub) {
         // TODO need to figure out what correct expected results are for this test case before enabling
         // there are 50+ possible files to for the tab path completion
-        String buffer = cmdStub + testDirContainsFiftyFilesPath + "/";
+        String buffer = cmdStub + withSeparator(testDirContainsFiftyFilesPath);
         int cursor = buffer.length();
         runCompletorTestCase(buffer, cursor, Arrays.asList(new String[] {""}));
     }
@@ -186,7 +190,7 @@ public class FilePathCompletorTest extends BasePluginsTest {
     
     private void createFiles(String dirPath, int numFiles) throws IOException {
         for (int i = 0; i < numFiles; i++) {
-            File testFile = new File(dirPath + "/test" + i + ".txt");
+            File testFile = new File(withSeparator(dirPath) + "test" + i + ".txt");
             testFile.createNewFile();
             Assert.assertTrue(testFile.exists(), "failed to create " + testFile.getCanonicalPath()); 
         }

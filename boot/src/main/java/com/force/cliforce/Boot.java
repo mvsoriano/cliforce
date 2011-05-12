@@ -41,7 +41,7 @@ public class Boot {
     static Properties repositories;
 
     public static void main(String[] args) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException, IOException {
-        if (!(new File(getCliforceHome() + "/.force/cliforce_plugins").exists())) {
+        if (!(new File(withSeparator(getCliforceHome()) + withSeparator(".force") + "cliforce_plugins").exists())) {
             System.out.println("Downloading dependencies, this can take some time the first time you run cliforce");
         }
         DependencyResolver resolver = getBootResolver();
@@ -66,7 +66,7 @@ public class Boot {
     }
 
     public static String getLocalMavenRepository() {
-        return System.getProperty("maven.repo", getCliforceHome() + "/.m2/repository/");
+        return System.getProperty("maven.repo", withSeparator(getCliforceHome()) + withSeparator(".m2") + withSeparator("repository"));
     }
 
 
@@ -91,6 +91,10 @@ public class Boot {
         return repositories;
     }
 
+    private static String withSeparator(String str) {
+        return str + File.separator;
+    }
+    
     public static class SystemOutputAdapter implements OutputAdapter {
         @Override
         public void println(String msg) {

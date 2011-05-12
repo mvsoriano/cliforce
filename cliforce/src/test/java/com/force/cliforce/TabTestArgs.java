@@ -34,7 +34,7 @@ import java.net.URISyntaxException;
 /**
  * TabTestArgs is an arguments class for tab completion tests. The arguments defined
  * are used e.g. by {@link JCommandTabCompletionTest} for testing the tab completion
- * functionality. New CLIForce argument types should be refelcted with a new test
+ * functionality. New cliforce argument types should be refelcted with a new test
  * parameter here.
  *
  * @author sclasen

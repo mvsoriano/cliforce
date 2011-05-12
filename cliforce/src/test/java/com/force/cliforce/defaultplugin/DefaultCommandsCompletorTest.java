@@ -26,6 +26,8 @@
 
 package com.force.cliforce.defaultplugin;
 
+import static com.force.cliforce.Util.withNewLine;
+
 import com.force.cliforce.BaseCliforceCommandTest;
 import com.force.cliforce.CLIForce;
 import com.force.cliforce.Plugin;
@@ -126,7 +128,9 @@ public class DefaultCommandsCompletorTest extends BaseCliforceCommandTest {
     //W-936274
     @Test
     public void testHelpHelpText() {
-        runCompletorTestCase("help ", 5, Arrays.asList(new String[]{" ", "Display this help message, or help for a specific command\n\tUsage: help <command>"}));
+        runCompletorTestCase("help ", 5,
+                Arrays.asList(new String[]{" ", withNewLine("Display this help message, or help for a specific command")
+                                                    + "\tUsage: help <command>"}));
     }
 
     @Test
