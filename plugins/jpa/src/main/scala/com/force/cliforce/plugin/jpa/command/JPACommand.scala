@@ -49,6 +49,7 @@ import com.force.cliforce.dependency.DependencyResolver.Scope
 import com.force.sdk.jpa.PersistenceProviderImpl
 import collection.JavaConversions._
 import java.util.{Map => JMap}
+import java.net.{URL, URLClassLoader}
 
 /**
  * 
@@ -142,7 +143,7 @@ abstract class JPACommand[P <: JPAParam] extends JCommand[P] {
         ctx.getCommandWriter().printf("%s: %s", msg, e.toString())
       }
     }
-    var pcl: ClassLoader = resolver.createClassLoaderFor(args.group, args.artifact, args.version,
+    var pcl: ClassLoader = resolver.createClassLoaderFor(args.group, args.artifact, args.packaging, args.version,
       if (args.searchTestJars) Scope.TEST else Scope.RUNTIME, curr, oa)
 
     Thread.currentThread().setContextClassLoader(pcl)
@@ -187,6 +188,9 @@ class JPAParam {
   @Parameter(names = Array("-a", "--artifact"), description = "Artifact id", required = true)
   var artifact: String = null
     
+  @Parameter(names = Array("-type", "--type"), description = "Artifact packaging type")
+  var packaging: String = "jar"
+  
   @Parameter(names = Array("-v", "--version"), description = "Version number", required = true)
   var version: String = null
     
