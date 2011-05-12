@@ -228,7 +228,7 @@ class Schema private (name: String, label: String,
             // Field information
             // FieldName (Field Label) ... [ <TYPE> ... <NOT NULL> ... <DEFAULTED> ]
             for (field <- fields) {
-                sb.append("\n")
+                sb.append(Util.newLine())
                 sb.append("    %-70s" format (field.getName + " (" + field.getLabel + ")"))
                 sb.append(" [ ")
                 sb.append("%-30s" format (field.getType.toString.replace("_", ""))).append(' ')

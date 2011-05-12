@@ -103,7 +103,7 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public String describe() {
-            return "Display this help message, or help for a specific command\n\tUsage: help <command>";
+            return withNewLine("Display this help message, or help for a specific command") + "\tUsage: help <command>";
         }
 
         @Override
@@ -120,15 +120,15 @@ public class DefaultPlugin implements Plugin {
 
                 for (Map.Entry<String, String> entry : descs.entrySet()) {
                     String pad = pad(offset - entry.getKey().length());
-                    ctx.getCommandWriter().printf("%s:" + pad + "%s\n", entry.getKey(), entry.getValue());
+                    ctx.getCommandWriter().printfln("%s:" + pad + "%s", entry.getKey(), entry.getValue());
                 }
             } else {
                 String key = ctx.getCommandArguments()[0];
                 String desc = descs.get(key);
                 if (desc == null) {
-                    ctx.getCommandWriter().printf("No such command: %s\n", key);
+                    ctx.getCommandWriter().printfln("No such command: %s", key);
                 } else {
-                    ctx.getCommandWriter().printf("%s:\t\t\t %s\n", key, desc);
+                    ctx.getCommandWriter().printfln("%s:\t\t\t %s", key, desc);
                 }
             }
         }
@@ -194,20 +194,20 @@ public class DefaultPlugin implements Plugin {
             requireCliforce(cliForce);
             requireResolver(resolver);
             if (cliForce.getInternalPlugins().contains(arg.artifact()) && !arg.internal) {
-                ctx.getCommandWriter().printf("Manually installing internal plugins [%s] is not supported\n", Joiner.on(", ").join(cliForce.getInternalPlugins()));
+                ctx.getCommandWriter().printfln("Manually installing internal plugins [%s] is not supported", Joiner.on(", ").join(cliForce.getInternalPlugins()));
                 return;
             }
             CommandWriter output = ctx.getCommandWriter();
             if (arg.artifact() == null) {
                 output.println("Listing plugins...");
                 for (Map.Entry<String, String> e : cliForce.getInstalledPlugins().entrySet()) {
-                    output.printf("Plugin: %s (%s)\n", e.getKey(), e.getValue());
+                    output.printfln("Plugin: %s (%s)", e.getKey(), e.getValue());
                 }
                 output.println("Done.");
             } else {
 
                 if (cliForce.getActivePlugins().contains(arg.artifact())) {
-                    output.printf("Plugin %s is already installed. Please execute 'unplug %s' before running this command\n", arg.artifact(), arg.artifact());
+                    output.printfln("Plugin %s is already installed. Please execute 'unplug %s' before running this command", arg.artifact(), arg.artifact());
                     return;
                 }
 
@@ -243,7 +243,7 @@ public class DefaultPlugin implements Plugin {
                     ServiceLoader<Plugin> loader = ServiceLoader.load(Plugin.class, pcl);
                     Iterator<Plugin> iterator = loader.iterator();
                     if (!iterator.hasNext()) {
-                        output.printf("Error: %s doesn't declare a Plugin in META-INF/services/com.force.cliforce.Plugin\n", arg.artifact());
+                        output.printfln("Error: %s doesn't declare a Plugin in META-INF/services/com.force.cliforce.Plugin", arg.artifact());
                         return;
                     }
                     Plugin p = iterator.next();
@@ -252,7 +252,7 @@ public class DefaultPlugin implements Plugin {
 
                     while (iterator.hasNext()) {
                         Plugin ignore = iterator.next();
-                        output.printf("only one plugin per artifact is supported, %s will not be registered\n", ignore.getClass().getName());
+                        output.printfln("only one plugin per artifact is supported, %s will not be registered", ignore.getClass().getName());
                     }
                     loader.reload();
                 } catch (Exception e) {
@@ -292,12 +292,12 @@ public class DefaultPlugin implements Plugin {
             requireCliforce(cliForce);
             String version = cliForce.getInstalledPluginVersion(arg.artifact());
             if (version == null) {
-                ctx.getCommandWriter().printf("Required Plugin %s version %s is not installed, exiting\n", arg.artifact(), arg.version);
+                ctx.getCommandWriter().printfln("Required Plugin %s version %s is not installed, exiting", arg.artifact(), arg.version);
                 throw new ExitException("Required Plugin Not Installed");
             }
             if (!version.equals(arg.version)) {
                 //this will be funny about RELEASE for now...best practice use and require explicit versions
-                ctx.getCommandWriter().printf("incorrect version %s of Required Plugin %s version %s is not installed, exiting\n", version, arg.artifact(), arg.version);
+                ctx.getCommandWriter().printfln("incorrect version %s of Required Plugin %s version %s is not installed, exiting", version, arg.artifact(), arg.version);
                 throw new ExitException("Required Plugin Not Installed");
             }
 
@@ -326,9 +326,9 @@ public class DefaultPlugin implements Plugin {
 
             for (String arg : ctx.getCommandArguments()) {
                 if (cliForce.getInternalPlugins().contains(arg)) {
-                    ctx.getCommandWriter().printf("Removing internal plugins [%s] is not supported\n", Joiner.on(", ").join(cliForce.getInternalPlugins()));
+                    ctx.getCommandWriter().printfln("Removing internal plugins [%s] is not supported", Joiner.on(", ").join(cliForce.getInternalPlugins()));
                 } else {
-                    ctx.getCommandWriter().printf("Removing plugin: %s\n", arg);
+                    ctx.getCommandWriter().printfln("Removing plugin: %s", arg);
                     cliForce.removePlugin(arg);
                 }
             }
@@ -413,7 +413,7 @@ public class DefaultPlugin implements Plugin {
                 args = nargs;
             }
 
-            writer.printf("sh: Executing: %s\n", Joiner.on(" ").join(args));
+            writer.printfln("sh: Executing: %s", Joiner.on(" ").join(args));
             ProcessBuilder processBuilder = new ProcessBuilder(args);
             if (workingDir != null) {
                 processBuilder = processBuilder.directory(workingDir);
@@ -489,10 +489,10 @@ public class DefaultPlugin implements Plugin {
         public void execute(CommandContext ctx) throws Exception {
             Properties cliforceProperties = new Properties();
             cliforceProperties.load(getClass().getClassLoader().getResourceAsStream("cliforce.properties"));
-            ctx.getCommandWriter().printf("groupId:%s\n", cliforceProperties.getProperty("groupId"));
-            ctx.getCommandWriter().printf("artifactId:%s\n", cliforceProperties.getProperty("artifactId"));
-            ctx.getCommandWriter().printf("version:%s\n", cliforceProperties.getProperty("version"));
-            ctx.getCommandWriter().printf("builtAt:%s\n", cliforceProperties.getProperty("builtAt"));
+            ctx.getCommandWriter().printfln("groupId:%s", cliforceProperties.getProperty("groupId"));
+            ctx.getCommandWriter().printfln("artifactId:%s", cliforceProperties.getProperty("artifactId"));
+            ctx.getCommandWriter().printfln("version:%s", cliforceProperties.getProperty("version"));
+            ctx.getCommandWriter().printfln("builtAt:%s", cliforceProperties.getProperty("builtAt"));
         }
     }
 
@@ -510,7 +510,7 @@ public class DefaultPlugin implements Plugin {
         @Override
         public void execute(CommandContext ctx) throws Exception {
             for (Map.Entry<String, String> env : System.getenv().entrySet()) {
-                ctx.getCommandWriter().printf("%s = %s\n", env.getKey(), env.getValue());
+                ctx.getCommandWriter().printfln("%s = %s", env.getKey(), env.getValue());
             }
         }
     }
@@ -529,7 +529,7 @@ public class DefaultPlugin implements Plugin {
         @Override
         public void execute(CommandContext ctx) throws Exception {
             for (String prop : System.getProperties().stringPropertyNames()) {
-                ctx.getCommandWriter().printf("%s = %s\n", prop, System.getProperty(prop));
+                ctx.getCommandWriter().printfln("%s = %s", prop, System.getProperty(prop));
             }
         }
     }
@@ -560,8 +560,8 @@ public class DefaultPlugin implements Plugin {
 
         @Override
         public String describe() {
-            return usage("show the classpath for a cliforce plugin, or for cliforce itself. \n " +
-                    "Note that the classloader of cliforce is the parent classloader of plugin classloaders");
+            return usage(withNewLine("show the classpath for a cliforce plugin, or for cliforce itself. ")
+                    + " Note that the classloader of cliforce is the parent classloader of plugin classloaders");
         }
 
         @Override
@@ -570,7 +570,7 @@ public class DefaultPlugin implements Plugin {
             Collection<URL> classpathForCommand;
             List<URL> classpathForPlugin = cliForce.getClasspathForPlugin(args.plugin());
             if (classpathForPlugin == null) {
-                ctx.getCommandWriter().printf("No such plugin: %s\n", args.plugin());
+                ctx.getCommandWriter().printfln("No such plugin: %s", args.plugin());
                 return;
             }
             if (args.sort) {

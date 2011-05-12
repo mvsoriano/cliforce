@@ -26,6 +26,7 @@
 
 package com.force.cliforce;
 
+import static com.force.cliforce.Util.newLine;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterDescription;
@@ -80,7 +81,7 @@ public abstract class JCommand<T> implements Command {
             new JCommander(args, ctx.getCommandArguments());
             executeWithArgs(ctx, args);
         } catch (ParameterException e) {
-            ctx.getCommandWriter().printf("Exception while executing command: %s -> %s\n", name(), e.getMessage());
+            ctx.getCommandWriter().printfln("Exception while executing command: %s -> %s", name(), e.getMessage());
             log.get().debug("Exception while executing command", e);
         }
     }
@@ -104,16 +105,16 @@ public abstract class JCommand<T> implements Command {
         Map<String, String> commandOptions = getCommandOptions();
         String main = commandOptions.remove("<main>");
         if (main == null) main = "";
-        StringBuilder usage = new StringBuilder(description).append("\n\tUsage: ").append(name());
+        StringBuilder usage = new StringBuilder(description).append(newLine()).append("\tUsage: ").append(name());
         boolean args = false;
         if (commandOptions.size() > 0) {
             args = true;
         }
         if (args) usage.append(" [args]");
-        usage.append(" ").append(main).append("\n");
-        if (args) usage.append("\targs:\n");
+        usage.append(" ").append(main).append(newLine());
+        if (args) usage.append("\targs:").append(newLine());
         for (Map.Entry<String, String> e : commandOptions.entrySet()) {
-            usage.append("\t").append(e.getKey()).append("\t").append(e.getValue()).append("\n");
+            usage.append("\t").append(e.getKey()).append("\t").append(e.getValue()).append(newLine());
         }
         return usage.toString();
     }

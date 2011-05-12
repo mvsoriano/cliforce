@@ -26,6 +26,8 @@
 
 package com.force.cliforce.plugin.db.command;
 
+import static com.force.cliforce.Util.newLine;
+import static com.force.cliforce.Util.withNewLine;
 import static org.testng.Assert.assertEquals;
 
 import java.util.ArrayList;
@@ -121,28 +123,28 @@ public class DescribeTest {
 
         return new Object[][]{
                 {true/*all*/, false/*custom*/, false/*standard*/, Collections.<String>emptyList(), 
-                    "  CustomObject (Custom Object)                                           [                                                           ]\n" +
-                    "  StandardObject1 (Standard Object1)                                     [                                                           ]\n" +
-                    "  StandardObject2 (Standard Object2)                                     [                                                           ]\n"},
+                    withNewLine("  CustomObject (Custom Object)                                           [                                                           ]")
+                  + withNewLine("  StandardObject1 (Standard Object1)                                     [                                                           ]")
+                  + withNewLine("  StandardObject2 (Standard Object2)                                     [                                                           ]")},
                 {false/*all*/, true/*custom*/, false/*standard*/, Collections.<String>emptyList(), 
-                    "  CustomObject (Custom Object)                                           [                                                           ]\n"},
+                    withNewLine("  CustomObject (Custom Object)                                           [                                                           ]")},
                 {false/*all*/, false/*custom*/, true/*standard*/, Collections.<String>emptyList(), 
-                    "  StandardObject1 (Standard Object1)                                     [                                                           ]\n" +
-                    "  StandardObject2 (Standard Object2)                                     [                                                           ]\n"},
+                    withNewLine("  StandardObject1 (Standard Object1)                                     [                                                           ]")
+                  + withNewLine("  StandardObject2 (Standard Object2)                                     [                                                           ]")},
                 {false/*all*/, false/*custom*/, false/*standard*/, Lists.<String>newArrayList("StandardObject1"), 
-                    "  StandardObject1 (Standard Object1)                                     [                                                           ]\n"},
+                    withNewLine("  StandardObject1 (Standard Object1)                                     [                                                           ]")},
                 {false/*all*/, true/*custom*/, false/*standard*/, Lists.<String>newArrayList("StandardObject2"),
-                    "  CustomObject (Custom Object)                                           [                                                           ]\n" +
-                    "  StandardObject2 (Standard Object2)                                     [                                                           ]\n"},
+                    withNewLine("  CustomObject (Custom Object)                                           [                                                           ]")
+                  + withNewLine("  StandardObject2 (Standard Object2)                                     [                                                           ]")},
                 {false/*all*/, true/*custom*/, false/*standard*/, Lists.<String>newArrayList("CustomObject"),
-                    "  CustomObject (Custom Object)                                           [                                                           ]\n"},
+                    withNewLine("  CustomObject (Custom Object)                                           [                                                           ]")},
                 {false/*all*/, true/*custom*/, false/*standard*/, Lists.<String>newArrayList("StandardObject1", "StandardObject1"),
-                    "  CustomObject (Custom Object)                                           [                                                           ]\n" +
-                    "  StandardObject1 (Standard Object1)                                     [                                                           ]\n"},
+                    withNewLine("  CustomObject (Custom Object)                                           [                                                           ]")
+                  + withNewLine("  StandardObject1 (Standard Object1)                                     [                                                           ]")},
                 {false/*all*/, true/*custom*/, false/*standard*/, Lists.<String>newArrayList("deadbeef", "StandardObject1"),
-                    "  CustomObject (Custom Object)                                           [                                                           ]\n" +
-                    "  StandardObject1 (Standard Object1)                                     [                                                           ]\n" +
-                    "  UNABLE TO FIND (deadbeef)                                              [                                                           ]\n"},
+                    withNewLine("  CustomObject (Custom Object)                                           [                                                           ]")
+                  + withNewLine("  StandardObject1 (Standard Object1)                                     [                                                           ]")
+                  + withNewLine("  UNABLE TO FIND (deadbeef)                                              [                                                           ]")},
         };
     }
     
@@ -201,8 +203,8 @@ public class DescribeTest {
         describe.executeWithArgs(ctx, args);
         
         assertEquals(cmdWriter.getOutput(),
-                "  VerboseObject (Verbose Object)                                         [                                                           ]\n" +
-                "    VerboseField (Verbose Field)                                           [ string                                               ]\n",
+                withNewLine("  VerboseObject (Verbose Object)                                         [                                                           ]")
+              + withNewLine("    VerboseField (Verbose Field)                                           [ string                                               ]"),
                 "Unexpected describe output");
     }
     
@@ -213,7 +215,7 @@ public class DescribeTest {
     	describe.executeWithArgs(ctx, args);
     	
     	assertEquals(cmdWriter.getOutput(), 
-    			"No schema describe results\n",
+    	        withNewLine("No schema describe results"),
     			"Unexpected describe output");
     }
     
@@ -227,14 +229,15 @@ public class DescribeTest {
 		describe.executeWithArgs(ctx, args);
 		
 		assertEquals(cmdWriter.getOutput(),
-				"  UNABLE TO FIND (MisnamedSchema)                                        [                                                           ]\n",
+		        withNewLine("  UNABLE TO FIND (MisnamedSchema)                                        [                                                           ]"),
 				"Unexpected describe output");
 	}
 
     @Test
     public void testDescribeWithNoSchemaNamed() {
     	describe.executeWithArgs(ctx, new DescribeArgs());
-    	assertEquals(cmdWriter.getOutput(), "No schema described. Please specify the schema object names or use -a, -c, -s\n",
+    	assertEquals(cmdWriter.getOutput(), 
+    	        withNewLine("No schema described. Please specify the schema object names or use -a, -c, -s"),
     			"Unexpected describe output");
     }
     
@@ -267,7 +270,7 @@ public class DescribeTest {
     	describe.executeWithArgs(ctx, args);
     	
     	// Get the CRUD string from the describe results
-    	String crudString = cmdWriter.getOutput().substring(cmdWriter.getOutput().indexOf('['), cmdWriter.getOutput().lastIndexOf('\n'));
+    	String crudString = cmdWriter.getOutput().substring(cmdWriter.getOutput().indexOf('['), cmdWriter.getOutput().lastIndexOf(newLine()));
     	assertEquals(crudString, expectedCRUDString, "Unexpected CRUD string");
     }
 
@@ -315,7 +318,7 @@ public class DescribeTest {
         args.verbose_$eq(true);
         describe.executeWithArgs(ctx, args);
         
-        String fieldString = cmdWriter.getOutput().substring(cmdWriter.getOutput().lastIndexOf('['), cmdWriter.getOutput().lastIndexOf('\n'));
+        String fieldString = cmdWriter.getOutput().substring(cmdWriter.getOutput().lastIndexOf('['), cmdWriter.getOutput().lastIndexOf(newLine()));
         assertEquals(fieldString, expectedFieldString, "Unexpected describe output");
     }
 }

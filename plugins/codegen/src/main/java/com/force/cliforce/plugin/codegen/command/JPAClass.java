@@ -26,6 +26,8 @@
 
 package com.force.cliforce.plugin.codegen.command;
 
+import static com.force.cliforce.Util.withSeparator;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,7 +46,7 @@ import com.force.sdk.codegen.ForceJPAClassGenerator;
 public class JPAClass extends JCommand<JPAClassArgs> {
 
     private static final String DEFAULT_DEST_DIR = 
-        "." + File.separator + "src" + File.separator + "main" + File.separator + "java"; // e.g. ./src/main/java
+        withSeparator(".") + withSeparator("src") + withSeparator("main") + "java"; // e.g. ./src/main/java
     
     public static LazyLogger log = new LazyLogger(JPAClass.class);
     
@@ -63,7 +65,7 @@ public class JPAClass extends JCommand<JPAClassArgs> {
         Util.requirePartnerConnection(ctx);
         
         ForceJPAClassGenerator generator =
-            new ForceJPAClassGenerator(ctx.getPartnerConnection(), new File(args.projectDir + File.separator + args.destDir));
+            new ForceJPAClassGenerator(ctx.getPartnerConnection(), new File(withSeparator(args.projectDir.getPath()) + args.destDir));
         generator.setPackageName(args.packageName);
         
         int numGeneratedFiles;

@@ -26,6 +26,8 @@
 
 package com.force.cliforce.plugin.jpa;
 
+import static com.force.cliforce.Util.withNewLine;
+
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -64,7 +66,7 @@ public class JPACommandTest extends JPAPluginBaseTest {
                 }
               , {
                         JPAPopulate.class, getReader("1", "3"), null, null, getArgsWithProject(),
-                        "[1-5] q to quit? 3\nRunning with selected PersistenceUnit: testDNJpaPersistence"
+                        withNewLine("[1-5] q to quit? 3") + "Running with selected PersistenceUnit: testDNJpaPersistence"
                 }
               , {
                         JPAPopulate.class, getReader("1", "q"), null, null, getArgsWithProject(),
@@ -72,23 +74,23 @@ public class JPACommandTest extends JPAPluginBaseTest {
                 }
               , {
                         JPAPopulate.class, getReader("1", "", "q"), null, null, getArgsWithProject(),
-                        "[1-5] q to quit? \n[1-5] q to quit? q\n"
+                        withNewLine("[1-5] q to quit? ") + withNewLine("[1-5] q to quit? q")
                 }
               , {
                         JPAPopulate.class, getReader("1", "0", "q"), null, null, getArgsWithProject(),
-                        "[1-5] q to quit? 0\n[1-5] q to quit? q\n"
+                        withNewLine("[1-5] q to quit? 0") + withNewLine("[1-5] q to quit? q")
                 }
               , {
                         JPAClean.class, getReader("1", "3"), null, null, getArgsWithProject(),
-                        "[1-5] q to quit? 3\nRunning with selected PersistenceUnit: testDNJpaPersistence"
+                        withNewLine("[1-5] q to quit? 3") + "Running with selected PersistenceUnit: testDNJpaPersistence"
                 }
               , {
                         JPAClean.class, getReader("1", "3"), null, null, getArgsWithProject("-f", "-p"),
-                        "[1-5] q to quit? 3\nRunning with selected PersistenceUnit: testDNJpaPersistence"
+                        withNewLine("[1-5] q to quit? 3") + "Running with selected PersistenceUnit: testDNJpaPersistence"
                 }
               , {
                         JPAQuery.class, getReader("1", "3", "select o from Account o", "q"), "select o from Account o", Lists.newArrayList(), getArgsWithProject(),
-                        "jpql (q to quit) > select o from Account o\nNo data found\njpql (q to quit) > q"
+                        withNewLine("jpql (q to quit) > select o from Account o") + withNewLine("No data found") + "jpql (q to quit) > q"
                 }
               /*  NEGATIVE TESTS  */
 
@@ -113,7 +115,7 @@ public class JPACommandTest extends JPAPluginBaseTest {
     private void assertStringContains(String actual, String expectedSubstring) {
         Assert.assertTrue(
                 actual.contains(expectedSubstring)
-              , "Expected substring: " + expectedSubstring + "\nActual substring: " + actual
+              , "Expected substring: " + withNewLine(expectedSubstring) + "Actual substring: " + actual
         );
     }
 
@@ -138,14 +140,14 @@ public class JPACommandTest extends JPAPluginBaseTest {
     private void validatePUSelection(TestCommandContext ctx) {
         System.out.println(ctx.getCommandWriter().getOutput());
         Assert.assertTrue(ctx.getCommandWriter().getOutput().contains(
-                "Select PersistenceUnit:\n" +
-                        "1. SchemaLoadInvocationFTest\n" +
-                        "2. extPersCtxPU\n" +
-                        "3. testDNJpaPersistence\n" +
-                        "4. testDNJpaPersistence2\n" +
-                        "5. testDNJpaPersistence3\n" +
-                        "[1-5] q to quit? 3\n" +
-                        "Running with selected PersistenceUnit: testDNJpaPersistence"), ctx.getCommandWriter().getOutput());
+                withNewLine("Select PersistenceUnit:")
+                    + withNewLine("1. SchemaLoadInvocationFTest")
+                    + withNewLine("2. extPersCtxPU")
+                    + withNewLine("3. testDNJpaPersistence")
+                    + withNewLine("4. testDNJpaPersistence2")
+                    + withNewLine("5. testDNJpaPersistence3")
+                    + withNewLine("[1-5] q to quit? 3")
+                    + "Running with selected PersistenceUnit: testDNJpaPersistence"), ctx.getCommandWriter().getOutput());
     }
 
 }

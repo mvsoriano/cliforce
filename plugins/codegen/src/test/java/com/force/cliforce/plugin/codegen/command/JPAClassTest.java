@@ -26,6 +26,10 @@
 
 package com.force.cliforce.plugin.codegen.command;
 
+import static com.force.cliforce.Util.separator;
+import static com.force.cliforce.Util.withNewLine;
+import static com.force.cliforce.Util.withSeparator;
+
 import com.force.cliforce.TestCommandContext;
 import com.force.cliforce.TestCommandWriter;
 import com.force.cliforce.TestModule;
@@ -123,20 +127,16 @@ public class JPAClassTest {
 
         return new Object[][]{
                 {null, null,
-                    System.getProperty("user.dir") + File.separator + "." + File.separator + "src"
-                    + File.separator + "main" + File.separator + "java"
+                    withSeparator(System.getProperty("user.dir")) + withSeparator(".") + withSeparator("src") + withSeparator("main") + "java"
                 },
-                {File.separator + "projectDir", null,
-                    File.separator + "projectDir" + File.separator + "." + File.separator + "src"
-                    + File.separator + "main" + File.separator + "java"
+                {separator() + "projectDir", null,
+                    separator() + withSeparator("projectDir") + withSeparator(".") + withSeparator("src") + withSeparator("main") + "java"
                 },
-                {null, "destDir", System.getProperty("user.dir") + File.separator + "destDir"},
-                {File.separator + "projectDir",
-                    File.separator + "destDir", File.separator + "projectDir" + File.separator + "destDir"
+                {null, "destDir", withSeparator(System.getProperty("user.dir")) + "destDir"},
+                {separator() + "projectDir", separator() + "destDir", separator() + withSeparator("projectDir") + "destDir"},
+                {withSeparator("~") + "projectDir", separator() + "destDir",
+                    withSeparator(System.getProperty("user.home")) + withSeparator("projectDir") + "destDir"
                 },
-                {"~" +File.separator + "projectDir", File.separator + "destDir",
-                    System.getProperty("user.home") + File.separator + "projectDir" + File.separator + "destDir"
-                }
         };
     }
     
@@ -188,14 +188,14 @@ public class JPAClassTest {
         jpaClass.executeWithArgs(ctx, args);
         
         assertEquals(cmdWriter.getOutput(),
-                "Successfully generated 2 JPA classes\n",
+                withNewLine("Successfully generated 2 JPA classes"),
                 "Unexpected jpaClass output");
     }
     
     @Test
     public void testGenerateWithNoSchemaNamed() {
         jpaClass.executeWithArgs(ctx, new JPAClassArgs());
-        assertEquals(cmdWriter.getOutput(), "No Java classes generated. Please specify the schema object names or use -a\n",
+        assertEquals(cmdWriter.getOutput(), withNewLine("No Java classes generated. Please specify the schema object names or use -a"),
                 "Unexpected jpaClass output");
     }
 }

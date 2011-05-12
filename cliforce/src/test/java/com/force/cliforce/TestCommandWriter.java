@@ -26,6 +26,8 @@
 
 package com.force.cliforce;
 
+import static com.force.cliforce.Util.newLine;
+import static com.force.cliforce.Util.withNewLine;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -50,13 +52,18 @@ public class TestCommandWriter implements CommandWriter{
     }
 
     @Override
+    public void printfln(String format, Object... args) {
+        builder.append(String.format(withNewLine(format), args));
+    }
+    
+    @Override
     public void print(String msg) {
         builder.append(msg);
     }
 
     @Override
     public void println(String msg) {
-        builder.append(msg).append("\n");
+        builder.append(msg).append(newLine());
     }
 
     @Override
