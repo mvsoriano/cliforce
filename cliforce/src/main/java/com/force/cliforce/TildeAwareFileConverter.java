@@ -26,10 +26,11 @@
 
 package com.force.cliforce;
 
-import com.beust.jcommander.IStringConverter;
+import java.io.File;
+
 import jline.internal.Configuration;
 
-import java.io.File;
+import com.beust.jcommander.IStringConverter;
 
 /**
  * TildeAwareFileConverter
@@ -47,7 +48,7 @@ public class TildeAwareFileConverter implements IStringConverter<java.io.File> {
             translated = homeDir.getPath() + translated.substring(1);
         } else if (translated.startsWith("~")) {
             translated = homeDir.getParentFile().getAbsolutePath();
-        } else if (!(translated.startsWith(separator()))) {
+        } else if (!startsWithRoot(translated)) {
             String cwd = getUserDir().getAbsolutePath();
             translated = cwd + separator() + translated;
         }
@@ -64,5 +65,15 @@ public class TildeAwareFileConverter implements IStringConverter<java.io.File> {
 
     protected File getUserDir() {
         return new File(".");
+    }
+    
+    private boolean startsWithRoot(String filePath) {
+        for (File root : File.listRoots()) {
+            if (filePath.startsWith(root.getAbsolutePath())) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 }

@@ -26,23 +26,36 @@
 
 package com.force.cliforce;
 
+import static org.testng.Assert.fail;
 
-import javax.inject.Singleton;
 import java.util.HashSet;
 import java.util.Set;
+
+import javax.inject.Singleton;
 
 import jline.console.completer.Completer;
 
 public class TestModule extends MainModule {
 
     public TestModule() {
-        this(System.getProperty("positive.test.user.home"));
+        // Any test calling this constructor requires the positive.test.user.home System property be set.
+        this(System.getProperty("positive.test.user.home"), false /*allowNullDir*/);
     }
 
     public TestModule(String userHomeDirectory) {
-        System.setProperty("cliforce.home", userHomeDirectory);
+        this(userHomeDirectory, true /*allowNullDir*/);
     }
 
+    private TestModule(String userHomeDirectory, boolean allowNullDir) {
+        if (userHomeDirectory == null && !allowNullDir) {
+            fail("Cannot run with null userHomeDirectory (check System property positive.test.user.home)");
+        }
+        
+        if (userHomeDirectory != null) {
+            System.setProperty("cliforce.home", userHomeDirectory);
+        }
+    }
+    
     @Override
     protected void configure() {
         super.configure();

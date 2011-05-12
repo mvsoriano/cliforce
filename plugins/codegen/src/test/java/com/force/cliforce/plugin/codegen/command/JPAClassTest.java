@@ -90,7 +90,7 @@ public class JPAClassTest {
     
     @BeforeClass
     public void classSetUp() throws ConnectionException {
-        injector = Guice.createInjector(new TestModule());
+        injector = Guice.createInjector(new TestModule(null));
         // This config will require no validation
         ConnectorConfig config = new ConnectorConfig();
         config.setManualLogin(true);
@@ -148,7 +148,7 @@ public class JPAClassTest {
             @Mock
             public void $init(PartnerConnection conn, File destDir) {
                 // Assert the file path in the generator constructor
-                assertEquals(destDir.getAbsolutePath(), expectedFilePath,
+                assertEquals(destDir.getPath(), expectedFilePath,
                         "Unexpected file path in generator");
             }
         };
