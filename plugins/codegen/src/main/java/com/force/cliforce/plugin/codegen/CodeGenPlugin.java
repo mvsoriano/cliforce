@@ -34,7 +34,7 @@ import com.force.cliforce.Plugin;
 import com.force.cliforce.plugin.codegen.command.JPAClass;
 
 /**
- * CLIForce plugin for automatic code generation.
+ * cliforce plugin for automatic code generation.
  * 
  * @author Tim Kral
  */

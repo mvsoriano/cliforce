@@ -26,6 +26,10 @@
 
 package com.force.cliforce.plugin.connection;
 
+import static com.force.cliforce.Util.newLine;
+import static com.force.cliforce.Util.withNewLine;
+import static com.force.cliforce.Util.withSeparator;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -54,7 +58,7 @@ public class ConnectionTest {
     Plugin connPlugin = new ConnectionPlugin();
     TestPluginInjector injector;
     final String connectionUrl = "force://login.salesforce.com;user=user@user.com;password=mountains4";
-    String tmpUserHome = System.getProperty("basedir") + "/target/tmp-user-home";
+    String tmpUserHome = withSeparator(System.getProperty("user.dir")) + withSeparator("target") + "tmp-user-home";
     File parentDir = new File(tmpUserHome);
 
     @BeforeMethod
@@ -80,7 +84,8 @@ public class ConnectionTest {
         ListConnectionsCommand cmd = injector.getInjectedCommand(connPlugin, ListConnectionsCommand.class);
         TestCommandContext ctx = new TestCommandContext();
         cmd.execute(ctx);
-        Assert.assertEquals(ctx.getCommandWriter().getOutput(), "There are no connections configured. Please use connection:add to add one.\n",
+        Assert.assertEquals(ctx.getCommandWriter().getOutput(),
+                withNewLine("There are no connections configured. Please use connection:add to add one."),
                 "unexpected output from command");
     }
 
@@ -90,16 +95,18 @@ public class ConnectionTest {
         ListConnectionsCommand listCmd = injector.getInjectedCommand(connPlugin, ListConnectionsCommand.class);
         ctx.setCommandArguments(new String[0]);
         listCmd.execute(ctx);
-        Assert.assertEquals(ctx.getCommandWriter().getOutput(), "\n===========================\n" +
-                "Name:         jeff\n" +
-                "Host:         login.salesforce.com\n" +
-                "User:         user@user.com\n" +
-                "Password:     **********\n" +
-                "OAuth Key:    None\n"+
-                "OAuth Secret: None\n"+
-                "Valid:        true\n" +
-                "Message:      None\n" +
-                "===========================\n", "unexpected output from command");
+        Assert.assertEquals(ctx.getCommandWriter().getOutput(),
+                  newLine()
+                + withNewLine("===========================")
+                + withNewLine("Name:         jeff")
+                + withNewLine("Host:         login.salesforce.com")
+                + withNewLine("User:         user@user.com")
+                + withNewLine("Password:     **********")
+                + withNewLine("OAuth Key:    None")
+                + withNewLine("OAuth Secret: None")
+                + withNewLine("Valid:        true")
+                + withNewLine("Message:      None")
+                + withNewLine("==========================="), "unexpected output from command");
     }
 
     @Test
@@ -115,15 +122,15 @@ public class ConnectionTest {
         cmd.execute(ctx);
 
         Assert.assertEquals(
-                ctx.getCommandWriter().getOutput()
-                , "connection name: testInteractiveAddConnection\n" +
-                        "user: some.random@user.name.com\n" +
-                        "password: *****************\n" +
-                        "security token: apiKey\n" +
-                        "host (defaults to login.salesforce.com): some.random.target.com\n" +
-                        "Enter oauth key and secret? (Y to enter, anything else to skip): N\n" +
-                        "Connection: testInteractiveAddConnection added\n"
-                , "unexpected output: " + ctx.getCommandWriter().getOutput());
+                ctx.getCommandWriter().getOutput(),
+                    withNewLine("connection name: testInteractiveAddConnection")
+                  + withNewLine("user: some.random@user.name.com")
+                  + withNewLine("password: *****************")
+                  + withNewLine("security token: apiKey")
+                  + withNewLine("host (defaults to login.salesforce.com): some.random.target.com")
+                  + withNewLine("Enter oauth key and secret? (Y to enter, anything else to skip): N")
+                  + withNewLine("Connection: testInteractiveAddConnection added"),
+                "unexpected output: " + ctx.getCommandWriter().getOutput());
     }
 
     @Test
@@ -139,17 +146,17 @@ public class ConnectionTest {
         cmd.execute(ctx);
 
         Assert.assertEquals(
-                ctx.getCommandWriter().getOutput()
-                , "connection name: testInteractiveAddConnection\n" +
-                        "user: some.random@user.name.com\n" +
-                        "password: *****************\n" +
-                        "security token: apiKey\n" +
-                        "host (defaults to login.salesforce.com): some.random.target.com\n" +
-                        "Enter oauth key and secret? (Y to enter, anything else to skip): Y\n" +
-                        "oauth key:secret\n" +
-                        "oauth secret:key\n" +
-                        "Connection: testInteractiveAddConnection added\n"
-                , "unexpected output: " + ctx.getCommandWriter().getOutput());
+                ctx.getCommandWriter().getOutput(),
+                    withNewLine("connection name: testInteractiveAddConnection")
+                  + withNewLine("user: some.random@user.name.com")
+                  + withNewLine("password: *****************")
+                  + withNewLine("security token: apiKey")
+                  + withNewLine("host (defaults to login.salesforce.com): some.random.target.com")
+                  + withNewLine("Enter oauth key and secret? (Y to enter, anything else to skip): Y")
+                  + withNewLine("oauth key:secret")
+                  + withNewLine("oauth secret:key")
+                  + withNewLine("Connection: testInteractiveAddConnection added"),
+                "unexpected output: " + ctx.getCommandWriter().getOutput());
     }
 
     @Test
@@ -158,7 +165,7 @@ public class ConnectionTest {
         RemoveConnectionCommand rmCmd = injector.getInjectedCommand(connPlugin, RemoveConnectionCommand.class);
         ctx.setCommandArguments(new String[]{"jeff"});
         rmCmd.execute(ctx);
-        Assert.assertEquals(ctx.getCommandWriter().getOutput(), "Connection: jeff removed\n", "unexpected ouput from command");
+        Assert.assertEquals(ctx.getCommandWriter().getOutput(), withNewLine("Connection: jeff removed"), "unexpected ouput from command");
     }
 
     @Test
@@ -167,7 +174,9 @@ public class ConnectionTest {
         DefaultConnectionCommand connectionCommand = injector.getInjectedCommand(connPlugin, DefaultConnectionCommand.class);
         ctx.setCommandArguments(new String[]{});
         connectionCommand.execute(ctx);
-        Assert.assertEquals(ctx.getCommandWriter().getOutput(), "The currently selected default connection name is: jeff\n", "unexpected ouput from command: " + ctx.getCommandWriter().getOutput());
+        Assert.assertEquals(ctx.getCommandWriter().getOutput(),
+                withNewLine("The currently selected default connection name is: jeff"),
+                "unexpected ouput from command: " + ctx.getCommandWriter().getOutput());
     }
 
     @Test
@@ -179,7 +188,9 @@ public class ConnectionTest {
         DefaultConnectionCommand connectionCommand = injector.getInjectedCommand(connPlugin, DefaultConnectionCommand.class);
         ctx.setCommandArguments(new String[]{});
         connectionCommand.execute(ctx);
-        Assert.assertEquals(ctx.getCommandWriter().getOutput(), "The currently selected default connection name is: jeff\n", "unexpected ouput from command: " + ctx.getCommandWriter().getOutput());
+        Assert.assertEquals(ctx.getCommandWriter().getOutput(),
+                withNewLine("The currently selected default connection name is: jeff"),
+                "unexpected ouput from command: " + ctx.getCommandWriter().getOutput());
     }
 
     @Test
@@ -188,7 +199,9 @@ public class ConnectionTest {
         DefaultConnectionCommand connectionCommand = injector.getInjectedCommand(connPlugin, DefaultConnectionCommand.class);
         ctx.setCommandArguments(new String[]{"fake"});
         connectionCommand.execute(ctx);
-        Assert.assertEquals(ctx.getCommandWriter().getOutput(), "There is no such connection: fake available\n", "unexpected ouput from command");
+        Assert.assertEquals(ctx.getCommandWriter().getOutput(),
+                withNewLine("There is no such connection: fake available"),
+                "unexpected ouput from command");
     }
 
     @Test
@@ -199,8 +212,10 @@ public class ConnectionTest {
             cmd.execute(ctx);
             Assert.fail("executing command should have thrown an exception");
         } catch (ResourceException e) {
-            Assert.assertEquals(e.getMessage(), "Unable to execute the command, since the current force connection is null.\n" +
-                    "Please add a valid connection using connection:add", "unexpected error message");
+            Assert.assertEquals(e.getMessage(),
+                    withNewLine("Unable to execute the command, since the current force connection is null.") +
+                        "Please add a valid connection using connection:add",
+                    "unexpected error message");
         }
     }
 
@@ -209,9 +224,11 @@ public class ConnectionTest {
         TestCommandContext ctx = addConnSetup(new String[][]{{"jeff", connectionUrl}});
         CurrentConnectionCommand cmd = injector.getInjectedCommand(connPlugin, CurrentConnectionCommand.class);
         cmd.execute(ctx);
-        Assert.assertEquals(ctx.getCommandWriter().getOutput(), "Current Connection Name: jeff\n" +
-                "Current User: user@user.com\n" +
-                "Current Endpoint: login.salesforce.com\n", "unexpected result returned");
+        Assert.assertEquals(ctx.getCommandWriter().getOutput(),
+                  withNewLine("Current Connection Name: jeff")
+                + withNewLine("Current User: user@user.com")
+                + withNewLine("Current Endpoint: login.salesforce.com"),
+              "unexpected result returned");
     }
 
     @Test
@@ -223,7 +240,7 @@ public class ConnectionTest {
         TestCommandContext ctx = new TestContextWithConnector(cmgr.getCurrentConnector());
         TestConnectionCommand cmd = injector.getInjectedCommand(connPlugin, TestConnectionCommand.class);
         cmd.execute(ctx);
-        Assert.assertEquals(ctx.out(), "connection valid\n");
+        Assert.assertEquals(ctx.out(), withNewLine("connection valid"));
         guiceInjector = Guice.createInjector(new TestModule(System.getProperty("negative.test.user.home")));
         cmgr = guiceInjector.getInstance(ConnectionManager.class);
         cmgr.loadUserConnections();
@@ -231,7 +248,7 @@ public class ConnectionTest {
         injector = guiceInjector.getInstance(TestPluginInjector.class);
         cmd = injector.getInjectedCommand(connPlugin, TestConnectionCommand.class);
         cmd.execute(ctx);
-        Assert.assertEquals(ctx.out(), "connection invalid\nexecute debug and retry to see failure information\n");
+        Assert.assertEquals(ctx.out(), withNewLine("connection invalid") + withNewLine("execute debug and retry to see failure information"));
     }
 
     private class TestContextWithConnector extends TestCommandContext {
@@ -260,20 +277,23 @@ public class ConnectionTest {
         ListConnectionsCommand listCmd = injector.getInjectedCommand(connPlugin, ListConnectionsCommand.class);
         ctx.setCommandArguments(new String[]{"jeff", "asdf"});
         reCmd.execute(ctx);
-        Assert.assertEquals(ctx.getCommandWriter().getOutput(), "Renamed connection jeff to asdf\n", "unexpected output from command");
+        Assert.assertEquals(ctx.getCommandWriter().getOutput(), withNewLine("Renamed connection jeff to asdf"),
+                "unexpected output from command");
         ctx.setCommandArguments(new String[0]);
         ctx.getCommandWriter().reset();
         listCmd.execute(ctx);
-        Assert.assertEquals(ctx.getCommandWriter().getOutput(), "\n===========================\n" +
-                "Name:         asdf\n" +
-                "Host:         login.salesforce.com\n" +
-                "User:         user@user.com\n" +
-                "Password:     **********\n" +
-                "OAuth Key:    None\n"+
-                "OAuth Secret: None\n"+
-                "Valid:        true\n" +
-                "Message:      None\n" +
-                "===========================\n");
+        Assert.assertEquals(ctx.getCommandWriter().getOutput(),
+                  newLine() 
+                + withNewLine("===========================")
+                + withNewLine("Name:         asdf")
+                + withNewLine("Host:         login.salesforce.com")
+                + withNewLine("User:         user@user.com")
+                + withNewLine("Password:     **********")
+                + withNewLine("OAuth Key:    None")
+                + withNewLine("OAuth Secret: None")
+                + withNewLine("Valid:        true")
+                + withNewLine("Message:      None")
+                + withNewLine("==========================="));
     }
 
     @Test
@@ -284,30 +304,35 @@ public class ConnectionTest {
         ListConnectionsCommand listCmd = injector.getInjectedCommand(connPlugin, ListConnectionsCommand.class);
         ctx.setCommandArguments(new String[]{"jeff", "asdf"});
         reCmd.execute(ctx);
-        Assert.assertEquals(ctx.getCommandWriter().getOutput(), "There is already a connection named asdf, please rename or delete it first\n", "unexpected output from command");
+        Assert.assertEquals(ctx.getCommandWriter().getOutput(),
+                withNewLine("There is already a connection named asdf, please rename or delete it first"),
+                "unexpected output from command");
         ctx.setCommandArguments(new String[0]);
         ctx.getCommandWriter().reset();
         listCmd.execute(ctx);
-        Assert.assertEquals(ctx.getCommandWriter().getOutput(), "\n===========================\n" +
-                "Name:         asdf\n" +
-                "Host:         login.salesforce.com\n" +
-                "User:         user@domain.com\n" +
-                "Password:     *******\n" +
-                "OAuth Key:    None\n"+
-                "OAuth Secret: None\n"+
-                "Valid:        true\n" +
-                "Message:      None\n" +
-                "===========================\n\n" +
-                "===========================\n" +
-                "Name:         jeff\n" +
-                "Host:         login.salesforce.com\n" +
-                "User:         user@user.com\n" +
-                "Password:     **********\n" +
-                "OAuth Key:    None\n"+
-                "OAuth Secret: None\n"+
-                "Valid:        true\n" +
-                "Message:      None\n" +
-                "===========================\n", "unexpected output from command");
+        Assert.assertEquals(ctx.getCommandWriter().getOutput(),
+                  newLine() 
+                + withNewLine("===========================")
+                + withNewLine("Name:         asdf")
+                + withNewLine("Host:         login.salesforce.com")
+                + withNewLine("User:         user@domain.com")
+                + withNewLine("Password:     *******")
+                + withNewLine("OAuth Key:    None")
+                + withNewLine("OAuth Secret: None")
+                + withNewLine("Valid:        true")
+                + withNewLine("Message:      None")
+                + withNewLine("===========================")
+                + newLine()
+                + withNewLine("===========================")
+                + withNewLine("Name:         jeff")
+                + withNewLine("Host:         login.salesforce.com")
+                + withNewLine("User:         user@user.com")
+                + withNewLine("Password:     **********")
+                + withNewLine("OAuth Key:    None")
+                + withNewLine("OAuth Secret: None")
+                + withNewLine("Valid:        true")
+                + withNewLine("Message:      None")
+                + withNewLine("==========================="), "unexpected output from command");
     }
 
     @Test
@@ -317,7 +342,8 @@ public class ConnectionTest {
         ctx = ctx.withCommandReader(new TestCommandReader(Lists.newArrayList("9")));
         AddConnectionCommand addCmd = injector.getInjectedCommand(connPlugin, AddConnectionCommand.class);
         addCmd.execute(ctx);
-        Assert.assertEquals(ctx.getCommandWriter().getOutput(), "There is already a connection named jeff, please rename or remove it first\n");
+        Assert.assertEquals(ctx.getCommandWriter().getOutput(),
+                withNewLine("There is already a connection named jeff, please rename or remove it first"));
     }
     
 
@@ -334,7 +360,8 @@ public class ConnectionTest {
             env = new ForceEnv(arr[1], "test");
             ctx = ctx.withCommandArguments(new String[]{"--notoken", "-n", arr[0], "-h", env.getHost(), "-u", env.getUser(), "-p", env.getPassword()});
             addCmd.execute(ctx);
-            Assert.assertEquals(ctx.getCommandWriter().getOutput(), "Connection: " + arr[0] + " added\n", "unexpected output from connection:add command");
+            Assert.assertEquals(ctx.getCommandWriter().getOutput(),
+                    withNewLine("Connection: " + arr[0] + " added"), "unexpected output from connection:add command");
             ctx.getCommandWriter().reset();
         }
         Assert.assertNotNull(connMan.getCurrentEnv(), "connection manager current env was null");
@@ -355,6 +382,8 @@ public class ConnectionTest {
         ctx = ctx.withCommandReader(new TestCommandReader(Lists.newArrayList("9")));
         AddConnectionCommand addCmd = injector.getInjectedCommand(connPlugin, AddConnectionCommand.class);
         addCmd.execute(ctx);
-        Assert.assertEquals(ctx.getCommandWriter().getOutput(), "Space and tab are not allowed in connection name.\n", "unexpected output from command");
+        Assert.assertEquals(ctx.getCommandWriter().getOutput(),
+                withNewLine("Space and tab are not allowed in connection name."),
+                "unexpected output from command");
     }
 }

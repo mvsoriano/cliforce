@@ -39,7 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Use this class if you need the CLIForce object in your command test.
+ * Use this class if you need the cliforce object in your command test.
  *
  * @author jeffrey.lai
  * @since javasdk-21.0.2-BETA

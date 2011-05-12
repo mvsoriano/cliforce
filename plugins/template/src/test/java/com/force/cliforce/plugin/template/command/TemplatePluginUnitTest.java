@@ -26,6 +26,8 @@
 
 package com.force.cliforce.plugin.template.command;
 
+import static com.force.cliforce.Util.withNewLine;
+import static com.force.cliforce.Util.withSeparator;
 
 import com.force.cliforce.TestCommandContext;
 import com.force.cliforce.TestModule;
@@ -77,9 +79,12 @@ public class TemplatePluginUnitTest {
     @Test
     public void testInvalidDirectoryForTemplateCreate() throws Exception {
         NewProjectCommand command = Guice.createInjector(new TestModule()).getInstance(NewProjectCommand.class);
-        TestCommandContext commandContext = new TestCommandContext().withCommandArguments("project", "-d", "totally/invalid/path/abc123doeraeme");
+        TestCommandContext commandContext = new TestCommandContext().withCommandArguments("project", "-d",
+                withSeparator("totally") + withSeparator("invalid") + withSeparator("path") + "abc123doeraeme");
         command.execute(commandContext);
-        Assert.assertTrue(commandContext.out().contains("totally/invalid/path/abc123doeraeme does not exist or is not a directory\n"), "Unexpected output for " + command + " " + commandContext.out());
+        Assert.assertTrue(commandContext.out().contains(withSeparator("totally") + withSeparator("invalid")
+                + withSeparator("path") + withNewLine("abc123doeraeme does not exist or is not a directory")),
+                "Unexpected output for " + command + " " + commandContext.out());
     }
 
     private class TestCommandContextConnectionExceptions extends TestCommandContext {

@@ -26,17 +26,18 @@
 
 package com.force.cliforce.defaultplugin;
 
-
-import java.util.Arrays;
-import java.util.List;
-
-import mockit.Mock;
-import mockit.Mockit;
+import static com.force.cliforce.Util.newLine;
+import static com.force.cliforce.Util.withNewLine;
 
 import org.testng.Assert;
-import org.testng.annotations.*;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
 
-import com.force.cliforce.*;
+import com.force.cliforce.Command;
+import com.force.cliforce.DefaultPlugin;
+import com.force.cliforce.TestCliforceAccessor;
+import com.force.cliforce.TestCommandContext;
+import com.force.cliforce.TestModule;
 import com.force.cliforce.command.DebugCommand;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -72,8 +73,8 @@ public class DefaultCommandsUnitTest {
     @DataProvider(name = "expectedData")
     public Object[][] appCommandExpectedInput() {
         return new Object[][]{
-                {"sh: Executing: echo something\n  something", new String[]{"echo", "something"}, true}
-                , {"sh: Executing: abc\nThe command failed to execute. Please check the path to the executable you provided",
+                {withNewLine("sh: Executing: echo something") + "  something", new String[]{"echo", "something"}, true}
+                , {withNewLine("sh: Executing: abc") + "The command failed to execute. Please check the path to the executable you provided",
                         new String[]{"abc"}, true}
                 , {"stderr", new String[]{"dir ", "-3", "/3"} /*-3 for unix, /3 for win*/, false /* check that stderr is not in the output */}
         };
@@ -96,8 +97,10 @@ public class DefaultCommandsUnitTest {
     @DataProvider(name = "pluginTestData")
     public Object[][] pluginTestData() {
         return new Object[][]{
-                {DefaultPlugin.UnplugCommand.class, "Removing plugin: strangeApp\n....not found\n", new String[]{"strangeApp"}, true}
-                , {DefaultPlugin.PluginCommand.class, "The maven artifact associated with the plugin could not be found.\n", new String[]{"strangeApp"}, true}
+                {DefaultPlugin.UnplugCommand.class, withNewLine("Removing plugin: strangeApp") + withNewLine("....not found"),
+                    new String[]{"strangeApp"}, true}
+                , {DefaultPlugin.PluginCommand.class, withNewLine("The maven artifact associated with the plugin could not be found."),
+                    new String[]{"strangeApp"}, true}
         };
     }
 
@@ -131,7 +134,7 @@ public class DefaultCommandsUnitTest {
         command.execute(context);
         command.execute(context.withCommandArguments("--off"));
 
-        String[] actualOutput = context.out().split("\n");
+        String[] actualOutput = context.out().split(newLine());
 
 
         int j = 0;
@@ -141,7 +144,8 @@ public class DefaultCommandsUnitTest {
             }
 
             Assert.assertTrue(j < expectedOutput.length, "Actual output exceeds expected output. Found:" + actualOutput[i]);
-            Assert.assertEquals(actualOutput[i].trim(), expectedOutput[j], "Actual output line:" + actualOutput[i].trim() + "\nExpected output line:" + expectedOutput[j]);
+            Assert.assertEquals(actualOutput[i].trim(), expectedOutput[j],
+                    "Actual output line:" + withNewLine(actualOutput[i].trim()) + "Expected output line:" + expectedOutput[j]);
             j++;
         }
 

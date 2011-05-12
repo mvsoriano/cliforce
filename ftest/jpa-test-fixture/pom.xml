@@ -11,6 +11,7 @@
 
     <artifactId>jpa-test-fixture</artifactId>
     <name>jpa-test-fixture</name>
+    <packaging>war</packaging>
 
     <dependencies>
         <dependency>
@@ -56,7 +57,21 @@
                 </includes>
             </testResource>
         </testResources>
+
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>make-a-jar</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.datanucleus</groupId>
                 <artifactId>maven-datanucleus-plugin</artifactId>

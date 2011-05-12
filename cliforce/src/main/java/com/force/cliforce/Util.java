@@ -41,6 +41,8 @@ import java.util.Properties;
 
 public class Util {
 
+    private static final String NEW_LINE = System.getProperty("line.separator");
+    
     static LazyLogger log = new LazyLogger(Util.class);
 
 
@@ -48,6 +50,22 @@ public class Util {
         return Boot.getCliforceHome();
     }
 
+    public static String separator() {
+        return File.separator;
+    }
+    
+    public static String withSeparator(String str) {
+        return str + separator();
+    }
+    
+    public static String newLine() {
+        return NEW_LINE;
+    }
+    
+    public static String withNewLine(String str) {
+        return str + newLine();
+    }
+    
     public static String getApiVersion() {
         String url = com.sforce.soap.metadata.Connector.END_POINT;
         String apiVersion = url.substring(url.lastIndexOf("/") + 1);
@@ -90,7 +108,7 @@ public class Util {
         File propFile = getForcePropertiesFile(name);
         if (!propFile.getParentFile().exists()) {
             if (!propFile.getParentFile().mkdir()) {
-                throw new IOException("Unable to create ~/.force/ directory");
+                throw new IOException("Unable to create " + withSeparator("~") + withSeparator(".force") + " directory");
             }
         }
         if (propFile.exists() || propFile.createNewFile()) {
@@ -103,7 +121,7 @@ public class Util {
     }
 
     static File getForcePropertiesFile(String name) {
-        return new File(getCliforceHome() + "/.force/cliforce_" + name);
+        return new File(withSeparator(getCliforceHome()) + withSeparator(".force") + "cliforce_" + name);
     }
 
     /**
@@ -125,7 +143,8 @@ public class Util {
 
     public static void requireForceEnv(CommandContext context) throws ResourceException {
         if (context.getForceEnv() == null) {
-            String msg = "Unable to execute the command, since the current force connection is null.\nPlease add a valid connection using connection:add";
+            String msg = withNewLine("Unable to execute the command, since the current force connection is null.")
+                         + "Please add a valid connection using connection:add";
             throw new ResourceException(msg);
         }
     }
@@ -138,11 +157,11 @@ public class Util {
             metadataConnection = context.getMetadataConnection();
         } catch (Exception e) {
             log.get().debug("Exception getting metadata connection", e);
-            throw new ResourceException(msg + "invalid.\nPlease add a valid connection using connection:add", e);
+            throw new ResourceException(msg + withNewLine("invalid.") + "Please add a valid connection using connection:add", e);
         }
 
         if (metadataConnection == null) {
-            throw new ResourceException(msg + "null.\nPlease add a valid connection using connection:add");
+            throw new ResourceException(msg + withNewLine("null.") + "Please add a valid connection using connection:add");
         }
     }
 
@@ -153,10 +172,10 @@ public class Util {
             partnerConnection = context.getPartnerConnection();
         } catch (Exception e) {
             log.get().debug("Exception getting partner conenction", e);
-            throw new ResourceException(msg + "invalid.\nPlease add a valid connection using connection:add", e);
+            throw new ResourceException(msg + withNewLine("invalid.") + "Please add a valid connection using connection:add", e);
         }
         if (partnerConnection == null) {
-            throw new ResourceException(msg + "null\nPlease add a valid connection using connection:add");
+            throw new ResourceException(msg + withNewLine("null") + "Please add a valid connection using connection:add");
         }
     }
 
@@ -167,10 +186,10 @@ public class Util {
             bulkConnection = context.getBulkConnection();
         } catch (Exception e) {
             log.get().debug("Exception getting rest conenction", e);
-            throw new ResourceException(msg + "invalid.\nPlease add a valid connection using connection:add", e);
+            throw new ResourceException(msg + withNewLine("invalid.") + "Please add a valid connection using connection:add", e);
         }
         if (bulkConnection == null) {
-            throw new ResourceException(msg + "null.\nPlease add a valid connection using connection:add");
+            throw new ResourceException(msg + withNewLine("null.") + "Please add a valid connection using connection:add");
         }
     }
 

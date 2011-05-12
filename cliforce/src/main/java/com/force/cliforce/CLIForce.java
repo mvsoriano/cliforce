@@ -26,6 +26,10 @@
 
 package com.force.cliforce;
 
+import static com.force.cliforce.Util.getCliforceHome;
+import static com.force.cliforce.Util.withNewLine;
+import static com.force.cliforce.Util.withSeparator;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,6 +62,7 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.core.util.StatusPrinter;
 
+import com.force.cliforce.Boot;
 import com.force.sdk.connector.ForceServiceConnector;
 import com.google.inject.Guice;
 import com.google.inject.name.Named;
@@ -155,7 +160,7 @@ public class CLIForce {
         //we redirect stderr to a file because slf4j can sometimes decide to write to
         //system.err on startup due to timing issues during init.
         try {
-            File errors = new File(Util.getCliforceHome() + "/.force/cliforce.errors");
+            File errors = new File(withSeparator(getCliforceHome()) + withSeparator(".force") + "cliforce.errors");
             if (errors.exists() || errors.createNewFile()) {
                 System.setErr(new PrintStream(new FileOutputStream(errors, true))); // append errors to existing file
             }
@@ -197,7 +202,7 @@ public class CLIForce {
                     for (String defalutPlugin : internalPlugins) {
                         DefaultPlugin.PluginArgs args = new DefaultPlugin.PluginArgs();
                         args.setArtifact(defalutPlugin);
-                        args.version = "LATEST";
+                        args.version = Boot.getCLIForceProperties().getProperty("version");
                         args.internal = true;
                         p.executeWithArgs(getContext(new String[0]), args);
                     }
@@ -223,7 +228,7 @@ public class CLIForce {
     }
 
     private void setupHistory(ConsoleReader r, PrintWriter o) throws IOException {
-        File hist = new File(Util.getCliforceHome() + "/.force/cliforce_history");
+        File hist = new File(withSeparator(getCliforceHome()) + withSeparator(".force") + "cliforce_history");
         if (!hist.getParentFile().exists()) {
             if (!hist.getParentFile().mkdir()) {
                 o.println("can't create .force directory");
@@ -305,7 +310,7 @@ public class CLIForce {
             if (cmd != null) {
                 executeCommand(cmdKey, cmd, args);
             } else {
-                writer.printf("Unknown Command %s\n", cmdKey);
+                writer.printfln("Unknown Command %s", cmdKey);
             }
         }
     }
@@ -325,7 +330,7 @@ public class CLIForce {
                 writer.println("execute debug and retry to see failure information");
             }
         } catch (Exception e) {
-            writer.printf("Exception while executing command %s\n", cmdKey);
+            writer.printfln("Exception while executing command %s", cmdKey);
             writer.printStackTrace(e);
         } finally {
             Thread.currentThread().setContextClassLoader(curr);
@@ -366,7 +371,7 @@ public class CLIForce {
         pluginManager.installPlugin(artifact, version, p, internal);
         if (!internal && initLatch.getCount() == 0) {
             List<Command> pluginCommands = pluginManager.getPluginCommands(artifact);
-            writer.printf("Plugin: %s installed\n", artifact);
+            writer.printfln("Plugin: %s installed", artifact);
             writer.println("Adds the following commands");
             for (Command pluginCommand : pluginCommands) {
                 writer.println(pluginCommand.name());
@@ -387,7 +392,7 @@ public class CLIForce {
             writer.println("....not found");
         } else {
             for (Command command : pluginCommands) {
-                writer.printf("\tremoved command: %s\n", command.name());
+                writer.printfln("\tremoved command: %s", command.name());
             }
             pluginManager.removePlugin(artifactId);
             writer.println("Done");
@@ -437,7 +442,7 @@ public class CLIForce {
         if (!debug) {
             level = Level.OFF;
         }
-        writer.printf("Setting logger level to %s\n", level.levelStr);
+        writer.printfln("Setting logger level to %s", level.levelStr);
         ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
         rootLogger.setLevel(level);
     }
@@ -584,7 +589,12 @@ public class CLIForce {
         public void printf(String format, Object... args) {
             out.printf(format, args);
         }
-
+        
+        @Override
+        public void printfln(String format, Object... args) {
+            out.printf(withNewLine(format), args);
+        }
+        
         @Override
         public void print(String msg) {
             out.print(msg);

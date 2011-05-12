@@ -80,9 +80,9 @@ class CurrentConnectionCommand extends Command {
   def execute(ctx: CommandContext) = {
     requireCliforce(cliforce)
     requireForceEnv(ctx)
-    ctx.getCommandWriter.printf("Current Connection Name: %s\n", cliforce.getCurrentEnvironment)
-    ctx.getCommandWriter.printf("Current User: %s\n", ctx.getForceEnv.getUser);
-    ctx.getCommandWriter.printf("Current Endpoint: %s\n", ctx.getForceEnv.getHost);
+    ctx.getCommandWriter.printfln("Current Connection Name: %s", cliforce.getCurrentEnvironment)
+    ctx.getCommandWriter.printfln("Current User: %s", ctx.getForceEnv.getUser);
+    ctx.getCommandWriter.printfln("Current Endpoint: %s", ctx.getForceEnv.getHost);
   }
 
   def describe = "show the currently selected connection"
@@ -140,7 +140,7 @@ class AddConnectionCommand extends JCommand[AddConnectionArgs] {
 
     def duplicateNameCheck: Boolean = {
       if (args.name != null && (cliforce.getAvailableEnvironments.containsKey(args.name))) {
-        ctx.getCommandWriter.printf("There is already a connection named %s, please rename or remove it first\n", args.name)
+        ctx.getCommandWriter.printfln("There is already a connection named %s, please rename or remove it first", args.name)
         args.name = null
         return false
       }
@@ -150,7 +150,7 @@ class AddConnectionCommand extends JCommand[AddConnectionArgs] {
 
     def spaceCheck: Boolean = {
       if (args.name!= null && (args.name.contains(" ") || args.name.contains("\t"))) {
-        ctx.getCommandWriter.printf("Space and tab are not allowed in connection name.\n")
+        ctx.getCommandWriter.printfln("Space and tab are not allowed in connection name.")
         args.name = null
         return false;
       }
@@ -211,9 +211,9 @@ class AddConnectionCommand extends JCommand[AddConnectionArgs] {
         cliforce.setDefaultEnvironment(args.name)
         cliforce.setCurrentEnvironment(args.name)
       }
-      ctx.getCommandWriter.printf("Connection: %s added\n", args.name)
+      ctx.getCommandWriter.printfln("Connection: %s added", args.name)
     } else {
-      ctx.getCommandWriter.printf("The url entered is invalid, reason:%s\n", env.getMessage)
+      ctx.getCommandWriter.printfln("The url entered is invalid, reason:%s", env.getMessage)
     }
 
   }
@@ -230,7 +230,7 @@ class DefaultConnectionCommand extends Command {
   def execute(ctx: CommandContext) = {
     requireCliforce(cliforce)
     if (ctx.getCommandArguments.size == 0) {
-      ctx.getCommandWriter.printf("The currently selected default connection name is: %s\n", cliforce.getDefaultEnvironment)
+      ctx.getCommandWriter.printfln("The currently selected default connection name is: %s", cliforce.getDefaultEnvironment)
     } else if (ctx.getCommandArguments.size != 1) {
       ctx.getCommandWriter.println("Error, command expects exactly one argument")
       ctx.getCommandWriter.println(describe)
@@ -240,7 +240,7 @@ class DefaultConnectionCommand extends Command {
         cliforce.setDefaultEnvironment(name)
         cliforce.setCurrentEnvironment(name)
       } else {
-        ctx.getCommandWriter.printf("There is no such connection: %s available\n", name)
+        ctx.getCommandWriter.printfln("There is no such connection: %s available", name)
       }
     }
   }
@@ -264,7 +264,7 @@ class SetConnectionCommand extends Command {
       if (cliforce.getAvailableEnvironments.containsKey(name)) {
         cliforce.setCurrentEnvironment(name)
       } else {
-        ctx.getCommandWriter.printf("There is no such connection: %s available\n", name)
+        ctx.getCommandWriter.printfln("There is no such connection: %s available", name)
       }
     }
   }
@@ -287,12 +287,12 @@ class RenameConnectionCommand extends Command {
       val name = ctx.getCommandArguments.apply(0)
       val newname = ctx.getCommandArguments.apply(1)
       if (cliforce.getAvailableEnvironments.containsKey(newname)) {
-        ctx.getCommandWriter.printf("There is already a connection named %s, please rename or delete it first\n", newname)
+        ctx.getCommandWriter.printfln("There is already a connection named %s, please rename or delete it first", newname)
       } else if (cliforce.getAvailableEnvironments.containsKey(name)) {
         cliforce.renameEnvironment(name, newname)
-        ctx.getCommandWriter.printf("Renamed connection %s to %s\n", name, newname)
+        ctx.getCommandWriter.printfln("Renamed connection %s to %s", name, newname)
       } else {
-        ctx.getCommandWriter.printf("There is no such connection: %s avaiable\n", name)
+        ctx.getCommandWriter.printfln("There is no such connection: %s avaiable", name)
       }
     }
   }
@@ -315,9 +315,9 @@ class RemoveConnectionCommand extends Command {
       val name = ctx.getCommandArguments.apply(0)
       if (cliforce.getAvailableEnvironments.containsKey(name)) {
         cliforce.removeEnvironment(name)
-        ctx.getCommandWriter.printf("Connection: %s removed\n", name)
+        ctx.getCommandWriter.printfln("Connection: %s removed", name)
       } else {
-        ctx.getCommandWriter.printf("There is no such connection: %s available\n", name)
+        ctx.getCommandWriter.printfln("There is no such connection: %s available", name)
       }
     }
   }
@@ -339,7 +339,8 @@ class TestConnectionCommand extends Command {
       ctx.getCommandWriter.println("connection valid")
     } catch {
       case e: Exception => {
-        ctx.getCommandWriter.println("connection invalid\nexecute debug and retry to see failure information")
+        ctx.getCommandWriter.println("connection invalid")
+        ctx.getCommandWriter.println("execute debug and retry to see failure information")
         log.get.debug("connection invalid", e)
       }
     }

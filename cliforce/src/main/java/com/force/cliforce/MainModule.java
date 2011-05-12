@@ -46,7 +46,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 /**
- * Private Module that exposes CLIForce and DependencyResolver
+ * Private Module that exposes cliforce and DependencyResolver
  */
 public class MainModule extends PrivateModule {
     @Override
@@ -75,7 +75,7 @@ public class MainModule extends PrivateModule {
         try {
             return Boot.getBootResolver();
         } catch (IOException e) {
-            throw new RuntimeException("IOException while trying to load the Boot resolver, in CLIForce MainModule");
+            throw new RuntimeException("IOException while trying to load the Boot resolver, in cliforce MainModule");
         }
     }
 

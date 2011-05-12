@@ -26,6 +26,7 @@
 
 package com.force.cliforce;
 
+import static com.force.cliforce.Util.withNewLine;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -58,11 +59,11 @@ public class DefaultCommandsFTest extends BaseCliforceCommandTest {
     @DataProvider(name = "commandExecutionWithArgs")
     public Object[][] providecommandExecutionWithArgs() {
         return new Object[][]{
-                { DefaultPlugin.ClasspathCommand.class, "No such plugin: abcdefg1234567\n", new String[]{"abcdefg1234567"}}
-              , { DefaultPlugin.ClasspathCommand.class, "No such plugin: abcdefg1234567\n", new String[]{"abcdefg1234567", "-s"}}
-              , { DefaultPlugin.ClasspathCommand.class, "No such plugin: abcdefg1234567\n", new String[]{"-s", "abcdefg1234567"}}
-              , { DefaultPlugin.ClasspathCommand.class, "No such plugin: abcdefg1234567\n", new String[]{"abcdefg1234567", "--sort"}}
-              , { DefaultPlugin.ClasspathCommand.class, "No such plugin: abcdefg1234567\n", new String[]{"--sort", "abcdefg1234567"}}
+                { DefaultPlugin.ClasspathCommand.class, withNewLine("No such plugin: abcdefg1234567"), new String[]{"abcdefg1234567"}}
+              , { DefaultPlugin.ClasspathCommand.class, withNewLine("No such plugin: abcdefg1234567"), new String[]{"abcdefg1234567", "-s"}}
+              , { DefaultPlugin.ClasspathCommand.class, withNewLine("No such plugin: abcdefg1234567"), new String[]{"-s", "abcdefg1234567"}}
+              , { DefaultPlugin.ClasspathCommand.class, withNewLine("No such plugin: abcdefg1234567"), new String[]{"abcdefg1234567", "--sort"}}
+              , { DefaultPlugin.ClasspathCommand.class, withNewLine("No such plugin: abcdefg1234567"), new String[]{"--sort", "abcdefg1234567"}}
         };
     }
 
@@ -78,8 +79,8 @@ public class DefaultCommandsFTest extends BaseCliforceCommandTest {
     @DataProvider(name = "stringCommands")
     public Object[][] provideStringCommands() {
         return new Object[][] {
-                { "!debug --on", "Unknown Command !debug --on\n" }
-              , { "!debug", "Unknown Command !debug\n" }
+                { "!debug --on", withNewLine("Unknown Command !debug --on") }
+              , { "!debug", withNewLine("Unknown Command !debug") }
         };
     }
 

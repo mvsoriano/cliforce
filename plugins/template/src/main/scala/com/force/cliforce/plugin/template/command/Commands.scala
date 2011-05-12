@@ -106,7 +106,7 @@ class NewProjectCommand extends JCommand[NewProjectArgs] {
       if (args.dir.exists && args.dir.isDirectory) {
         shell.setWorkingDir(args.dir)
       } else {
-        ctx.getCommandWriter.printf("%s does not exist or is not a directory\n", args.dir.getAbsolutePath)
+        ctx.getCommandWriter.printfln("%s does not exist or is not a directory", args.dir.getAbsolutePath)
         return
       }
 

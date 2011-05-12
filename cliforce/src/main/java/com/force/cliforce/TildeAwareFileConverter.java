@@ -26,6 +26,8 @@
 
 package com.force.cliforce;
 
+import static com.force.cliforce.Util.withSeparator;
+
 import java.io.File;
 
 import jline.internal.Configuration;
@@ -44,19 +46,15 @@ public class TildeAwareFileConverter implements IStringConverter<java.io.File> {
         File homeDir = new File(System.getProperty("user.home"));
         String translated = value;
         // Special character: ~ maps to the user's home directory
-        if (translated.startsWith("~" + separator())) {
+        if (translated.startsWith(withSeparator("~"))) {
             translated = homeDir.getPath() + translated.substring(1);
         } else if (translated.startsWith("~")) {
             translated = homeDir.getParentFile().getAbsolutePath();
         } else if (!startsWithRoot(translated)) {
             String cwd = getUserDir().getAbsolutePath();
-            translated = cwd + separator() + translated;
+            translated = withSeparator(cwd) + translated;
         }
         return new File(translated);
-    }
-
-    protected String separator() {
-        return File.separator;
     }
 
     protected File getUserHome() {

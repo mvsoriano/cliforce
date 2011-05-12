@@ -1,11 +1,11 @@
-#Writing plugins for the CLIForce shell
+#Writing plugins for the cliforce shell
 
 Writing a plugin enables you to add commands that execute your own Java code that is passed a CommandContext as a parameter. This context gives you access to MetadataConnection, PartnerConnection, and BulkConnection connections.
 
-The simplest example of a CLIForce plugin is available on github at [http://github.com/sclasen/cliplugin](http://github.com/sclasen/cliplugin).
+The simplest example of a cliforce plugin is available on github at [http://github.com/sclasen/cliplugin](http://github.com/sclasen/cliplugin).
 
 Your plugin must currently be published (even locally) as a Maven artifact for you to be able to install it in the shell. The current naming
-convention for CLIForce plugins is that the Maven groupId must be com.force.cliforce.plugin. The artifactId of your plugin is used to prefix the name of commands
+convention for cliforce plugins is that the Maven groupId must be com.force.cliforce.plugin. The artifactId of your plugin is used to prefix the name of commands
 that your plugin provides.
 
 The two important Java interfaces involved in creating a plugin are com.force.cliforce.Plugin
@@ -49,16 +49,16 @@ Due to the way java generics work, plugins that only have a single can be create
     }
 
 
-#Accessing the CLIForce or DependencyResolver instance
+#Accessing the cliforce or DependencyResolver instance
 
-If your command needs access to the current CLIForce or DependencyResolver instance, simply declare a field of the proper type, annotated with a
+If your command needs access to the current cliforce or DependencyResolver instance, simply declare a field of the proper type, annotated with a
 javax.inject.Inject annotation. (JSR-330, Dependency Injection for Java)
 
 For example
 
     public class MyCommand implements Command
     @Inject
-    private CLIForce cliforce;
+    private cliforce cliforce;
     @Inject
     private DependencyResolver resolver;
 

@@ -1,6 +1,6 @@
-#CLIForce Boot process
+#cliforce Boot process
 
-CLIForce is a self updating tool, here is how it does that.
+cliforce is a self updating tool, here is how it does that.
 
 ## cliforce-boot module and its boot-assembly.xml assembly descriptor
 
@@ -21,9 +21,9 @@ When you install cliforce, you are essentially creating a script that runs
 
 The boot class is very simple. It uses the version of DependencyResolver (and maven-aether) that it is packaged up with
 to create a classloader from the runtime dependencies of the LATEST release of the main cliforce module, using maven-aether
-to download the appropriate jars from maven repositories. It then reflectively loads the CLIForce class and calls its main method,
-using the classloader which contains the latest version of CLIForce and its runtime dependencies.
+to download the appropriate jars from maven repositories. It then reflectively loads the cliforce class and calls its main method,
+using the classloader which contains the latest version of cliforce and its runtime dependencies.
 
-In this way, users will run the latest CLIForce version automatically, subject to standard maven update check timeframes (check once per day).
+In this way, users will run the latest cliforce version automatically, subject to standard maven update check timeframes (check once per day).
 
 

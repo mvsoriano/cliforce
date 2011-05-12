@@ -28,6 +28,7 @@ package com.force.cliforce.plugin.jpa.command;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -63,7 +64,16 @@ public class JPAPluginBaseTest {
     TestPluginInjector injector;
     String query;
     List<?> result;
-    
+
+    protected static final Properties jpaTestFixtureProperties = new Properties();
+    static {
+        try {
+            jpaTestFixtureProperties.load(ClassLoader.getSystemResource("jpa-test-fixture.properties").openStream());
+        } catch (Exception e) {
+            Assert.fail("Unable to retrieve properties for jpa test fixture.", e);
+        }
+    }
+
     @MockClass(realClass = PartnerConnection.class, instantiation = Instantiation.PerMockInvocation)
     public static class MockPartnerConnection {
         @Mock
@@ -90,7 +100,11 @@ public class JPAPluginBaseTest {
 
 //        @Mock
 //        public QueryResult query(String query) {
-//            return new QueryResult();
+//            final QueryResult queryResult = new QueryResult();
+//            queryResult.setDone(true);
+//            queryResult.setRecords();
+//            queryResult.setSize();
+//            return queryResult;
 //        }
     }
     
