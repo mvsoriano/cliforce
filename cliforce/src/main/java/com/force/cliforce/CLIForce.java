@@ -58,6 +58,7 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.core.util.StatusPrinter;
 
+import com.force.cliforce.Boot;
 import com.force.sdk.connector.ForceServiceConnector;
 import com.google.inject.Guice;
 import com.google.inject.name.Named;
@@ -197,7 +198,7 @@ public class CLIForce {
                     for (String defalutPlugin : internalPlugins) {
                         DefaultPlugin.PluginArgs args = new DefaultPlugin.PluginArgs();
                         args.setArtifact(defalutPlugin);
-                        args.version = "LATEST";
+                        args.version = Boot.getCLIForceProperties().getProperty("version");
                         args.internal = true;
                         p.executeWithArgs(getContext(new String[0]), args);
                     }
