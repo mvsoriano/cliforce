@@ -12,7 +12,7 @@ import java.util.zip.ZipFile;
 
 public class ZipUtil {
 
-	public static final String TEMP_SUB_DIR_NAME = ".force/warTemporaryDir";
+	public static final String TEMP_SUB_DIR_NAME = ".force/warTemporaryDir/";
 	
 	public static void unzipWarFile(File file, File destinationDir) throws ZipException, IOException {
 
@@ -71,7 +71,6 @@ public class ZipUtil {
 	            }
 	        }
 	    }
-
 	    // The directory is now empty so delete it
 	    return dir.delete();
 	}

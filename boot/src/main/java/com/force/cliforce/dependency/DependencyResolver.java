@@ -206,13 +206,7 @@ public class DependencyResolver {
                 		try {
                 			String warDirName = Boot.getCliforceHome() + "/" + ZipUtil.TEMP_SUB_DIR_NAME;
                 			ZipUtil.unzipWarFile(file, new File(warDirName));
-                			//classpath.add(new URL("file:" + warDirName + "*"));
-                			//classpath.add(new URL("file:" + warDirName));
                 			classpath.add(new URL("file:" + warDirName + "WEB-INF/classes/"));
-//                			File warDirFile = new File(warDirName);
-//                			URL warDirUrl = new URL("file:" + warDirName + "*");
-//                			URL pesUrl = new URL("file:" + warDirName + "persistence.xml");
-                			//throw new DependencyResolutionException("adding to cs: " + warDirFile.toURI().toURL() + " -- " + warDirUrl.toString() + "--" + pesUrl.toString());
                 		} catch(IOException e) {
                 			throw new DependencyResolutionException(e);
                 		}                    	
