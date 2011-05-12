@@ -36,8 +36,14 @@ import com.force.cliforce.TestCommandReader;
 import com.force.cliforce.plugin.jpa.command.*;
 import com.google.common.collect.Lists;
 
+import java.io.IOException;
+import java.net.JarURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 /**
  * 
@@ -48,9 +54,9 @@ import java.util.List;
  */
 public class JPACommandTest extends JPAPluginBaseTest {
 
-    private static final String TEST_ARTIFACT = "jpa-test-fixture";
-    private static final String TEST_VERSION = "22.0.0-SNAPSHOT";
-    private static final String TEST_GROUP = "com.force.cliforce";
+    private static final String TEST_GROUP = jpaTestFixtureProperties.getProperty("groupId");
+    private static final String TEST_ARTIFACT = jpaTestFixtureProperties.getProperty("artifactId");
+    private static final String TEST_VERSION = jpaTestFixtureProperties.getProperty("version");
 
     @DataProvider
     public Object[][] jpaCommandWithArgs() {
@@ -61,6 +67,10 @@ public class JPACommandTest extends JPAPluginBaseTest {
               /*  POSITIVE TESTS  */
                 {
                         JPAPopulate.class, null, null, null, new String[]{ "-g", TEST_GROUP, "-a", TEST_ARTIFACT, "-v", TEST_VERSION, "-t", "-u", "testDNJpaPersistence" },
+                        "Running with selected PersistenceUnit: testDNJpaPersistence"
+                }
+              , {
+                        JPAPopulate.class, null, null, null, new String[]{ "-g", TEST_GROUP, "-a", TEST_ARTIFACT, "-v", TEST_VERSION, "-t", "-f", "-u", "testDNJpaPersistence" },
                         "Running with selected PersistenceUnit: testDNJpaPersistence"
                 }
               , { JPAPopulate.class, getReader("1", "3"), null, null, testFixtureProjectArgs, "[1-5] q to quit? 3\nRunning with selected PersistenceUnit: testDNJpaPersistence" }
@@ -92,7 +102,7 @@ public class JPACommandTest extends JPAPluginBaseTest {
     private void assertStringContains(String actual, String expectedSubstring) {
         Assert.assertTrue(
                 actual.contains(expectedSubstring)
-                , "Expected substring: " + expectedSubstring + "\nActual substring: " + actual
+              , "Expected substring: " + expectedSubstring + "\nActual substring: " + actual
         );
     }
 
