@@ -194,7 +194,7 @@ public class DependencyResolver {
             for (DependencyNode dn : nlg.getNodes()) {
                 if (dn.getDependency() != null && ok(dn.getDependency())) {
                     File file = dn.getDependency().getArtifact().getFile();
-                    if (file != null) {
+                    if (file != null && !isWar(file)) {
                         classpath.add(file.toURI().toURL());
                         if (scope == Scope.TEST && version.equals(dn.getVersion().toString())) {
                             file = new File(file.getPath().replace(".jar", "-tests.jar"));
@@ -202,24 +202,38 @@ public class DependencyResolver {
                                 classpath.add(file.toURI().toURL());
                             }
                         }
+                    } else {
+                		try {
+                			String warDirName = Boot.getCliforceHome() + "/" + ZipUtil.TEMP_SUB_DIR_NAME;
+                			ZipUtil.unzipWarFile(file, new File(warDirName));
+                			//classpath.add(new URL("file:" + warDirName + "*"));
+                			//classpath.add(new URL("file:" + warDirName));
+                			classpath.add(new URL("file:" + warDirName + "WEB-INF/classes/"));
+//                			File warDirFile = new File(warDirName);
+//                			URL warDirUrl = new URL("file:" + warDirName + "*");
+//                			URL pesUrl = new URL("file:" + warDirName + "persistence.xml");
+                			//throw new DependencyResolutionException("adding to cs: " + warDirFile.toURI().toURL() + " -- " + warDirUrl.toString() + "--" + pesUrl.toString());
+                		} catch(IOException e) {
+                			throw new DependencyResolutionException(e);
+                		}                    	
                     }
                 }
             }
 
 
-            for (File file : nlg.getFiles()) {
-            	if("war".equals(file.getName().substring(file.getName().length() - 3, file.getName().length()))) {
-            		try {
-            			File warDir = new File(Boot.getCliforceHome() + "/" + ZipUtil.TEMP_SUB_DIR_NAME);
-            			ZipUtil.unzipWarFile(file, warDir);
-            			classpath.add(warDir.toURI().toURL());
-            		} catch(IOException e) {
-            			throw new DependencyResolutionException(e);
-            		}
-            	} else {
-            		classpath.add(file.toURI().toURL());
-            	}
-            }
+//            for (File file : nlg.getFiles()) {
+//            	if(isWar(file)) {
+//            		try {
+//            			File warDir = new File(Boot.getCliforceHome() + "/" + ZipUtil.TEMP_SUB_DIR_NAME);
+//            			ZipUtil.unzipWarFile(file, warDir);
+//            			classpath.add(warDir.toURI().toURL());
+//            		} catch(IOException e) {
+//            			throw new DependencyResolutionException(e);
+//            		}
+//            	} else {
+//            		//classpath.add(file.toURI().toURL());
+//            	}
+//            }
             setupLoggingDependencies(groupId, artifactId, classpath);
             addLoggingDependencies(classpath);
             return new URLClassLoader(classpath.toArray(new URL[classpath.size()]), parent);
@@ -232,6 +246,10 @@ public class DependencyResolver {
             throw new DependencyResolutionException(e);
         }
 
+    }
+    
+    private boolean isWar(File file) {
+    	return "war".equals(file.getName().substring(file.getName().length() - 3, file.getName().length()));
     }
 
     private void setupLoggingDependencies(String groupId, String artifactId, Collection<URL> classpath) {
