@@ -199,7 +199,7 @@ class JPAParam {
   var artifact: String = null
     
   @Parameter(names = Array("-type", "--type"), description = "Artifact packaging type")
-  var packaging: String = "jar"
+  var packaging: String = "war"
   
   @Parameter(names = Array("-v", "--version"), description = "Version number", required = true)
   var version: String = null

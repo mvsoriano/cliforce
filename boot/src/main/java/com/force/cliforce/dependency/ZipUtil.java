@@ -14,6 +14,14 @@ public class ZipUtil {
 
 	public static final String TEMP_SUB_DIR_NAME = ".force/warTemporaryDir/";
 	
+	/**
+	 * Unzip the war or zip file to the destination directory
+	 * 
+	 * @param file
+	 * @param destinationDir
+	 * @throws ZipException if war/zip file is invalid
+	 * @throws IOException on file and directory errors
+	 */
 	public static void unzipWarFile(File file, File destinationDir) throws ZipException, IOException {
 
 		int BUFFER = 2048;
@@ -58,9 +66,12 @@ public class ZipUtil {
 		}
 	}
 	
-	// Deletes all files and subdirectories under dir.
-	// Returns true if all deletions were successful.
-	// If a deletion fails, the method stops attempting to delete and returns false.
+	/**
+	 * Deletes all files and subdirectories under dir.
+	 * If a deletion fails, the method stops attempting to delete and returns false.
+	 * 
+	 * @return true if all deletions were successful
+	 */
 	public static boolean deleteDir(File dir) {
 	    if (dir.isDirectory()) {
 	        String[] children = dir.list();

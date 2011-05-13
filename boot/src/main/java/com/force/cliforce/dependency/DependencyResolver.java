@@ -214,20 +214,6 @@ public class DependencyResolver {
                 }
             }
 
-
-//            for (File file : nlg.getFiles()) {
-//            	if(isWar(file)) {
-//            		try {
-//            			File warDir = new File(Boot.getCliforceHome() + "/" + ZipUtil.TEMP_SUB_DIR_NAME);
-//            			ZipUtil.unzipWarFile(file, warDir);
-//            			classpath.add(warDir.toURI().toURL());
-//            		} catch(IOException e) {
-//            			throw new DependencyResolutionException(e);
-//            		}
-//            	} else {
-//            		//classpath.add(file.toURI().toURL());
-//            	}
-//            }
             setupLoggingDependencies(groupId, artifactId, classpath);
             addLoggingDependencies(classpath);
             return new URLClassLoader(classpath.toArray(new URL[classpath.size()]), parent);
@@ -318,6 +304,21 @@ public class DependencyResolver {
         return createClassLoaderFor(groupId, artifactId, version, Scope.RUNTIME, parent, out);
     }
     
+    /**
+     * Create a classloader that contains all the runtime dependencies of the given maven dependency.
+     * Attempt offline resolution first, and if that fails, attempt online resolution.
+     * 
+     * The type of artifact will default to jar.
+     * 
+     * @param groupId
+     * @param artifactId
+     * @param version
+     * @param scope
+     * @param parent
+     * @param out
+     * @return
+     * @throws DependencyResolutionException
+     */
     public ClassLoader createClassLoaderFor(String groupId, String artifactId, String version, Scope scope, ClassLoader parent, OutputAdapter out) throws DependencyResolutionException {
     	return createClassLoaderFor(groupId, artifactId, "jar", version, scope, parent, out);
     }
@@ -328,6 +329,7 @@ public class DependencyResolver {
      *
      * @param groupId    maven groupId
      * @param artifactId maven artifactid
+     * @param type 		 maven artifact type
      * @param version    maven version
      * @param scope      maven dependency scope ("runtime", "test" etc.)
      * @param parent     for the created classloader

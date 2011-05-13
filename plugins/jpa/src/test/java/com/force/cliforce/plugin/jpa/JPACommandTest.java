@@ -41,6 +41,7 @@ import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * 
@@ -50,7 +51,7 @@ import java.util.List;
  * @since javasdk-22.0.0-BETA
  */
 public class JPACommandTest extends JPAPluginBaseTest {
-
+	
     private static final String TEST_GROUP = jpaTestFixtureProperties.getProperty("groupId");
     private static final String TEST_ARTIFACT = jpaTestFixtureProperties.getProperty("artifactId");
     private static final String TEST_VERSION = jpaTestFixtureProperties.getProperty("version");
@@ -59,39 +60,72 @@ public class JPACommandTest extends JPAPluginBaseTest {
     public Object[][] jpaCommandWithArgs() {
         return new Object[][] {
               // format: command, ordered input, query, result, command args, expected result
-              /*  POSITIVE TESTS  */
+              /*  POSITIVE TESTS - jar file */
                 {
-                        JPAPopulate.class, null, null, null, getArgsWithProject("-u", "testDNJpaPersistence"),
+                        JPAPopulate.class, null, null, null, getArgsWithProject("-u", "testDNJpaPersistence", "--type", "jar"),
                         "Running with selected PersistenceUnit: testDNJpaPersistence"
                 }
               , {
-                        JPAPopulate.class, getReader("1", "3"), null, null, getArgsWithProject(),
+                        JPAPopulate.class, getReader("1", "3"), null, null, getArgsWithProject("--type", "jar"),
                         withNewLine("[1-5] q to quit? 3") + "Running with selected PersistenceUnit: testDNJpaPersistence"
                 }
               , {
-                        JPAPopulate.class, getReader("1", "q"), null, null, getArgsWithProject(),
+                        JPAPopulate.class, getReader("1", "q"), null, null, getArgsWithProject("--type", "jar"),
                         "[1-5] q to quit? q"
                 }
               , {
-                        JPAPopulate.class, getReader("1", "", "q"), null, null, getArgsWithProject(),
+                        JPAPopulate.class, getReader("1", "", "q"), null, null, getArgsWithProject("--type", "jar"),
                         withNewLine("[1-5] q to quit? ") + withNewLine("[1-5] q to quit? q")
                 }
               , {
-                        JPAPopulate.class, getReader("1", "0", "q"), null, null, getArgsWithProject(),
+                        JPAPopulate.class, getReader("1", "0", "q"), null, null, getArgsWithProject("--type", "jar"),
                         withNewLine("[1-5] q to quit? 0") + withNewLine("[1-5] q to quit? q")
                 }
               , {
-                        JPAClean.class, getReader("1", "3"), null, null, getArgsWithProject(),
+                        JPAClean.class, getReader("1", "3"), null, null, getArgsWithProject("--type", "jar"),
                         withNewLine("[1-5] q to quit? 3") + "Running with selected PersistenceUnit: testDNJpaPersistence"
                 }
               , {
-                        JPAClean.class, getReader("1", "3"), null, null, getArgsWithProject("-f", "-p"),
+                        JPAClean.class, getReader("1", "3"), null, null, getArgsWithProject("-f", "-p", "--type", "jar"),
                         withNewLine("[1-5] q to quit? 3") + "Running with selected PersistenceUnit: testDNJpaPersistence"
                 }
               , {
-                        JPAQuery.class, getReader("1", "3", "select o from Account o", "q"), "select o from Account o", Lists.newArrayList(), getArgsWithProject(),
+                        JPAQuery.class, getReader("1", "3", "select o from Account o", "q"), "select o from Account o", Lists.newArrayList(), getArgsWithProject("--type", "jar"),
                         withNewLine("jpql (q to quit) > select o from Account o") + withNewLine("No data found") + "jpql (q to quit) > q"
                 }
+              /*  POSITIVE TESTS - war file */
+              , {
+            	  JPAPopulate.class, null, null, null, getArgsWithProject("-u", "testDNJpaPersistence"),
+            	  "Running with selected PersistenceUnit: testDNJpaPersistence"
+              }
+              , {
+            	  JPAPopulate.class, getReader("3"), null, null, getArgsWithProject(),
+            	  withNewLine("[1-5] q to quit? 3") + "Running with selected PersistenceUnit: testDNJpaPersistence"
+              }
+              , {
+            	  JPAPopulate.class, getReader("q"), null, null, getArgsWithProject(),
+            	  "[1-5] q to quit? q"
+              }
+              , {
+            	  JPAPopulate.class, getReader("", "q"), null, null, getArgsWithProject(),
+            	  withNewLine("[1-5] q to quit? ") + withNewLine("[1-5] q to quit? q")
+              }
+              , {
+            	  JPAPopulate.class, getReader("0", "q"), null, null, getArgsWithProject(),
+            	  withNewLine("[1-5] q to quit? 0") + withNewLine("[1-5] q to quit? q")
+              }
+              , {
+            	  JPAClean.class, getReader("3"), null, null, getArgsWithProject(),
+            	  withNewLine("[1-5] q to quit? 3") + "Running with selected PersistenceUnit: testDNJpaPersistence"
+              }
+              , {
+            	  JPAClean.class, getReader("3"), null, null, getArgsWithProject("-f", "-p"),
+            	  withNewLine("[1-5] q to quit? 3") + "Running with selected PersistenceUnit: testDNJpaPersistence"
+              }
+              , {
+            	  JPAQuery.class, getReader("3", "select o from Account o", "q"), "select o from Account o", Lists.newArrayList(), getArgsWithProject(),
+            	  withNewLine("jpql (q to quit) > select o from Account o") + withNewLine("No data found") + "jpql (q to quit) > q"
+              }
               /*  NEGATIVE TESTS  */
 
                 // TODO: force a persistenceexception when the whole thing is mocked
@@ -126,7 +160,7 @@ public class JPACommandTest extends JPAPluginBaseTest {
 
     private String[] getArgsWithProject(String... args) {
         String[] argsWithProject = Arrays.copyOf(
-                new String[]{ "-g", TEST_GROUP, "-a", TEST_ARTIFACT, "-v", TEST_VERSION, "-t" }
+                new String[]{ "-g", TEST_GROUP, "-a", TEST_ARTIFACT, "-v", TEST_VERSION, "-t"}
               , args.length + 7 /* 7 standard project args */
         );
         System.arraycopy(args, 0, argsWithProject, 7, args.length);
