@@ -26,6 +26,7 @@
 
 package com.force.cliforce.plugin.jpa.command
 
+import com.force.cliforce.Boot;
 import com.force.cliforce.Util.requireResolver
 
 import javax.inject.Inject
@@ -45,10 +46,13 @@ import com.force.cliforce.JCommand
 import com.force.cliforce.Util._
 import com.force.cliforce.dependency.OutputAdapter
 import com.force.cliforce.dependency.DependencyResolver
+import com.force.cliforce.dependency.ZipUtil
 import com.force.cliforce.dependency.DependencyResolver.Scope
 import com.force.sdk.jpa.PersistenceProviderImpl
 import collection.JavaConversions._
+import java.io.File;
 import java.util.{Map => JMap}
+import java.net.{URL, URLClassLoader}
 
 /**
  * 
@@ -78,7 +82,14 @@ abstract class JPACommand[P <: JPAParam] extends JCommand[P] {
     requireResolver(resolver)
 
     ctx.getCommandWriter().println("Connected to org " + ctx.getPartnerConnection().getUserInfo().getOrganizationId())
-    executeWithClasspath(ctx, args)
+    try {    	
+    	executeWithClasspath(ctx, args)
+    } finally {
+    	val tempWarDir = new File(Boot.getCliforceHome() + "/" + ZipUtil.TEMP_SUB_DIR_NAME)
+    	if(tempWarDir.exists()) {
+    		ZipUtil.deleteDir(tempWarDir)
+    	}
+    }
   }
 
   private def getPersistenceUnit(ctx: CommandContext, persistenceXmlFiles: List[PersistenceFileMetaData]): String = {
@@ -142,7 +153,7 @@ abstract class JPACommand[P <: JPAParam] extends JCommand[P] {
         ctx.getCommandWriter().printf("%s: %s", msg, e.toString())
       }
     }
-    var pcl: ClassLoader = resolver.createClassLoaderFor(args.group, args.artifact, args.version,
+    var pcl: ClassLoader = resolver.createClassLoaderFor(args.group, args.artifact, args.packaging, args.version,
       if (args.searchTestJars) Scope.TEST else Scope.RUNTIME, curr, oa)
 
     Thread.currentThread().setContextClassLoader(pcl)
@@ -187,6 +198,9 @@ class JPAParam {
   @Parameter(names = Array("-a", "--artifact"), description = "Artifact id", required = true)
   var artifact: String = null
     
+  @Parameter(names = Array("-type", "--type"), description = "Artifact packaging type")
+  var packaging: String = "war"
+  
   @Parameter(names = Array("-v", "--version"), description = "Version number", required = true)
   var version: String = null
     

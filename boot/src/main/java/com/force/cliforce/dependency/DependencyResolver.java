@@ -48,6 +48,7 @@ import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.sonatype.aether.util.graph.PreorderNodeListGenerator;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -168,10 +169,10 @@ public class DependencyResolver {
         }
     }
     
-    private URLClassLoader createClassLoaderInternal(String groupId, String artifactId, String version, Scope scope, ClassLoader parent) {
+    private URLClassLoader createClassLoaderInternal(String groupId, String artifactId, String type, String version, Scope scope, ClassLoader parent) {
         try {
             initialize();
-            DefaultArtifact defaultArtifact = new DefaultArtifact(groupId + ":" + artifactId + ":" + version);
+            DefaultArtifact defaultArtifact = new DefaultArtifact(groupId + ":" + artifactId + ":" + type + ":" + version);
             Dependency dependency =
                     new Dependency(defaultArtifact, scope.toString().toLowerCase());
             CollectRequest collectRequest = new CollectRequest();
@@ -193,7 +194,7 @@ public class DependencyResolver {
             for (DependencyNode dn : nlg.getNodes()) {
                 if (dn.getDependency() != null && ok(dn.getDependency())) {
                     File file = dn.getDependency().getArtifact().getFile();
-                    if (file != null) {
+                    if (file != null && !isWar(file)) {
                         classpath.add(file.toURI().toURL());
                         if (scope == Scope.TEST && version.equals(dn.getVersion().toString())) {
                             file = new File(file.getPath().replace(".jar", "-tests.jar"));
@@ -201,14 +202,18 @@ public class DependencyResolver {
                                 classpath.add(file.toURI().toURL());
                             }
                         }
+                    } else {
+                		try {
+                			String warDirName = Boot.getCliforceHome() + "/" + ZipUtil.TEMP_SUB_DIR_NAME;
+                			ZipUtil.unzipWarFile(file, new File(warDirName));
+                			classpath.add(new URL("file:" + warDirName + "WEB-INF/classes/"));
+                		} catch(IOException e) {
+                			throw new DependencyResolutionException(e);
+                		}                    	
                     }
                 }
             }
 
-
-            for (File file : nlg.getFiles()) {
-                classpath.add(file.toURI().toURL());
-            }
             setupLoggingDependencies(groupId, artifactId, classpath);
             addLoggingDependencies(classpath);
             return new URLClassLoader(classpath.toArray(new URL[classpath.size()]), parent);
@@ -221,6 +226,10 @@ public class DependencyResolver {
             throw new DependencyResolutionException(e);
         }
 
+    }
+    
+    private boolean isWar(File file) {
+    	return "war".equals(file.getName().substring(file.getName().length() - 3, file.getName().length()));
     }
 
     private void setupLoggingDependencies(String groupId, String artifactId, Collection<URL> classpath) {
@@ -294,13 +303,33 @@ public class DependencyResolver {
     public ClassLoader createClassLoaderFor(String groupId, String artifactId, String version, ClassLoader parent, OutputAdapter out) throws DependencyResolutionException {
         return createClassLoaderFor(groupId, artifactId, version, Scope.RUNTIME, parent, out);
     }
-
+    
+    /**
+     * Create a classloader that contains all the runtime dependencies of the given maven dependency.
+     * Attempt offline resolution first, and if that fails, attempt online resolution.
+     * 
+     * The type of artifact will default to jar.
+     * 
+     * @param groupId
+     * @param artifactId
+     * @param version
+     * @param scope
+     * @param parent
+     * @param out
+     * @return
+     * @throws DependencyResolutionException
+     */
+    public ClassLoader createClassLoaderFor(String groupId, String artifactId, String version, Scope scope, ClassLoader parent, OutputAdapter out) throws DependencyResolutionException {
+    	return createClassLoaderFor(groupId, artifactId, "jar", version, scope, parent, out);
+    }
+    
     /**
      * Create a classloader that contains all the runtime dependencies of the given maven dependency.
      * Attempt offline resolution first, and if that fails, attempt online resolution.
      *
      * @param groupId    maven groupId
      * @param artifactId maven artifactid
+     * @param type 		 maven artifact type
      * @param version    maven version
      * @param scope      maven dependency scope ("runtime", "test" etc.)
      * @param parent     for the created classloader
@@ -308,9 +337,9 @@ public class DependencyResolver {
      * @return a classloader with all the runtime dependencies of the given maven artifact.
      * @throws DependencyResolutionException if the artifact cant be resolved
      */
-    public ClassLoader createClassLoaderFor(String groupId, String artifactId, String version, Scope scope, ClassLoader parent, OutputAdapter out) throws DependencyResolutionException {
+    public ClassLoader createClassLoaderFor(String groupId, String artifactId, String type, String version, Scope scope, ClassLoader parent, OutputAdapter out) throws DependencyResolutionException {
         try {
-            return createClassLoaderInternal(groupId, artifactId, version, scope, parent);
+            return createClassLoaderInternal(groupId, artifactId, type, version, scope, parent);
         } catch (DependencyResolutionException dre) {
             out.println(dre, "Exception resolving dependencies");
             throw dre;
