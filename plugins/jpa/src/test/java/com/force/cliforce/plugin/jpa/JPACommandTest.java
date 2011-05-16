@@ -41,7 +41,6 @@ import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * 
@@ -60,44 +59,17 @@ public class JPACommandTest extends JPAPluginBaseTest {
     public Object[][] jpaCommandWithArgs() {
         return new Object[][] {
               // format: command, ordered input, query, result, command args, expected result
-              /*  POSITIVE TESTS - jar file */
+              /*  POSITIVE TESTS */
                 {
-                        JPAPopulate.class, null, null, null, getArgsWithProject("-u", "testDNJpaPersistence", "--type", "jar"),
-                        "Running with selected PersistenceUnit: testDNJpaPersistence"
-                }
-              , {
-                        JPAPopulate.class, getReader("1", "3"), null, null, getArgsWithProject("--type", "jar"),
-                        withNewLine("[1-5] q to quit? 3") + "Running with selected PersistenceUnit: testDNJpaPersistence"
-                }
-              , {
-                        JPAPopulate.class, getReader("1", "q"), null, null, getArgsWithProject("--type", "jar"),
-                        "[1-5] q to quit? q"
-                }
-              , {
-                        JPAPopulate.class, getReader("1", "", "q"), null, null, getArgsWithProject("--type", "jar"),
-                        withNewLine("[1-5] q to quit? ") + withNewLine("[1-5] q to quit? q")
-                }
-              , {
-                        JPAPopulate.class, getReader("1", "0", "q"), null, null, getArgsWithProject("--type", "jar"),
-                        withNewLine("[1-5] q to quit? 0") + withNewLine("[1-5] q to quit? q")
-                }
-              , {
-                        JPAClean.class, getReader("1", "3"), null, null, getArgsWithProject("--type", "jar"),
-                        withNewLine("[1-5] q to quit? 3") + "Running with selected PersistenceUnit: testDNJpaPersistence"
-                }
-              , {
-                        JPAClean.class, getReader("1", "3"), null, null, getArgsWithProject("-f", "-p", "--type", "jar"),
-                        withNewLine("[1-5] q to quit? 3") + "Running with selected PersistenceUnit: testDNJpaPersistence"
-                }
-              , {
-                        JPAQuery.class, getReader("1", "3", "select o from Account o", "q"), "select o from Account o", Lists.newArrayList(), getArgsWithProject("--type", "jar"),
-                        withNewLine("jpql (q to quit) > select o from Account o") + withNewLine("No data found") + "jpql (q to quit) > q"
-                }
-              /*  POSITIVE TESTS - war file */
-              , {
             	  JPAPopulate.class, null, null, null, getArgsWithProject("-u", "testDNJpaPersistence"),
             	  "Running with selected PersistenceUnit: testDNJpaPersistence"
-              }
+                }
+                // test basic war functionality -- unless there are specific war features, we only really need a basic
+                // sanity test that war persistence.xml and classes are loaded
+              , {
+            	  JPAPopulate.class, null, null, null, getArgsWithProject("-u", "testDNJpaPersistence", "--type", "war"),
+            	  "Running with selected PersistenceUnit: testDNJpaPersistence"
+                }
               , {
             	  JPAPopulate.class, getReader("3"), null, null, getArgsWithProject(),
             	  withNewLine("[1-5] q to quit? 3") + "Running with selected PersistenceUnit: testDNJpaPersistence"
@@ -159,12 +131,19 @@ public class JPACommandTest extends JPAPluginBaseTest {
     }
 
     private String[] getArgsWithProject(String... args) {
-        String[] argsWithProject = Arrays.copyOf(
-                new String[]{ "-g", TEST_GROUP, "-a", TEST_ARTIFACT, "-v", TEST_VERSION, "-t"}
-              , args.length + 7 /* 7 standard project args */
-        );
-        System.arraycopy(args, 0, argsWithProject, 7, args.length);
-        return argsWithProject;
+        return joinArgs(new String[]{ "-g", TEST_GROUP, "-a", TEST_ARTIFACT, "-v", TEST_VERSION, "-t"}, args);
+    }
+
+    private String[] joinArgs(String[]... args) {
+        int totalLength = 0;
+        for (String[] s : args) totalLength += s.length;
+        String[] result = Arrays.copyOf(args[0], totalLength);
+        int currentPos = args[0].length;
+        for (int i = 1; i < args.length; i++) {
+            System.arraycopy(args[i], 0, result, currentPos, args[i].length);
+            currentPos += args[i].length;
+        }
+        return result;
     }
 
     private void verifyConnection(TestCommandContext ctx) {
