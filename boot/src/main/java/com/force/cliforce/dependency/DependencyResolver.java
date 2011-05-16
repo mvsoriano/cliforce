@@ -203,13 +203,7 @@ public class DependencyResolver {
                             }
                         }
                     } else {
-                		try {
-                			String warDirName = Boot.getCliforceHome() + "/" + ZipUtil.TEMP_SUB_DIR_NAME;
-                			ZipUtil.unzipWarFile(file, new File(warDirName));
-                			classpath.add(new URL("file:" + warDirName + "WEB-INF/classes/"));
-                		} catch(IOException e) {
-                			throw new DependencyResolutionException(e);
-                		}                    	
+                    	classpath.add(new URL("jar:" + file.toURI().toURL() +  "!/WEB-INF/classes/"));
                     }
                 }
             }
