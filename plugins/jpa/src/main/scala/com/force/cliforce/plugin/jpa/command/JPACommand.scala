@@ -46,7 +46,6 @@ import com.force.cliforce.JCommand
 import com.force.cliforce.Util._
 import com.force.cliforce.dependency.OutputAdapter
 import com.force.cliforce.dependency.DependencyResolver
-import com.force.cliforce.dependency.ZipUtil
 import com.force.cliforce.dependency.DependencyResolver.Scope
 import com.force.sdk.jpa.PersistenceProviderImpl
 import collection.JavaConversions._
@@ -82,14 +81,7 @@ abstract class JPACommand[P <: JPAParam] extends JCommand[P] {
     requireResolver(resolver)
 
     ctx.getCommandWriter().println("Connected to org " + ctx.getPartnerConnection().getUserInfo().getOrganizationId())
-    try {    	
-    	executeWithClasspath(ctx, args)
-    } finally {
-    	val tempWarDir = new File(Boot.getCliforceHome() + "/" + ZipUtil.TEMP_SUB_DIR_NAME)
-    	if(tempWarDir.exists()) {
-    		ZipUtil.deleteDir(tempWarDir)
-    	}
-    }
+    executeWithClasspath(ctx, args)
   }
 
   private def getPersistenceUnit(ctx: CommandContext, persistenceXmlFiles: List[PersistenceFileMetaData]): String = {
