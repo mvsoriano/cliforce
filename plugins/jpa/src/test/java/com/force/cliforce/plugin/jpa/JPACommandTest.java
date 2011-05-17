@@ -28,6 +28,7 @@ package com.force.cliforce.plugin.jpa;
 
 import static com.force.cliforce.Util.withNewLine;
 
+import com.force.cliforce.plugin.jpa.command.JPAQuery;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -64,47 +65,52 @@ public class JPACommandTest extends JPAPluginBaseTest {
             	  JPAPopulate.class, null, null, null, getArgsWithProject("-u", "testDNJpaPersistence"),
             	  "Running with selected PersistenceUnit: testDNJpaPersistence"
                 }
-                // test basic jar functionality -- unless there are specific war features, we only really need a basic
-                // sanity test that war persistence.xml and classes are loaded
-              , {
-            	  JPAPopulate.class, null, null, null, getArgsWithProject("-u", "testDNJpaPersistence", "--type", "jar"),
+              , { // jars are supported -- simple test to make sure we can find persistence.xml in a jar
+            	  JPAPopulate.class, getReader("1", "3"), null, null, getArgsWithProject("-u", "testDNJpaPersistence", "--type", "jar"),
+            	  "Running with selected PersistenceUnit: testDNJpaPersistence"
+                }
+              , { // default type is war, but doing a basic test to ensure the type 'war' works anyway
+            	  JPAPopulate.class, getReader("3"), null, null, getArgsWithProject("-u", "testDNJpaPersistence", "--type", "war"),
             	  "Running with selected PersistenceUnit: testDNJpaPersistence"
                 }
               , {
             	  JPAPopulate.class, getReader("3"), null, null, getArgsWithProject(),
             	  withNewLine("[1-5] q to quit? 3") + "Running with selected PersistenceUnit: testDNJpaPersistence"
-              }
+                }
               , {
             	  JPAPopulate.class, getReader("q"), null, null, getArgsWithProject(),
             	  "[1-5] q to quit? q"
-              }
-              , {
-            	  JPAPopulate.class, getReader("", "q"), null, null, getArgsWithProject(),
-            	  withNewLine("[1-5] q to quit? ") + withNewLine("[1-5] q to quit? q")
-              }
-              , {
-            	  JPAPopulate.class, getReader("0", "q"), null, null, getArgsWithProject(),
-            	  withNewLine("[1-5] q to quit? 0") + withNewLine("[1-5] q to quit? q")
-              }
+                }
               , {
             	  JPAClean.class, getReader("3"), null, null, getArgsWithProject(),
             	  withNewLine("[1-5] q to quit? 3") + "Running with selected PersistenceUnit: testDNJpaPersistence"
-              }
+                }
               , {
             	  JPAClean.class, getReader("3"), null, null, getArgsWithProject("-f", "-p"),
             	  withNewLine("[1-5] q to quit? 3") + "Running with selected PersistenceUnit: testDNJpaPersistence"
-              }
+                }
               , {
             	  JPAQuery.class, getReader("3", "select o from Account o", "q"), "select o from Account o", Lists.newArrayList(), getArgsWithProject(),
             	  withNewLine("jpql (q to quit) > select o from Account o") + withNewLine("No data found") + "jpql (q to quit) > q"
-              }
-              /*  NEGATIVE TESTS  */
+                }
 
-                // TODO: force a persistenceexception when the whole thing is mocked
+              /*  NEGATIVE TESTS  */
 //              , {
-//                  JPAQuery.class, getReader("1", "3", "select klj sdflkj lj k from Account o", "q"), "select o from Account o", Lists.newArrayList(), getArgsWithProject(),
-//                  "javax.persistence.PersistenceException: Class Account for query has not been resolved. Check the query and any imports specification"
+//                  JPAQuery.class, getReader("3", "soql", "q"), "soql", Lists.newArrayList(), getArgsWithProject(),
+//                  withNewLine("jpql (q to quit) > soql") + "java.lang.IllegalArgumentException: JPQL Query should always start with SELECT/UPDATE/DELETE"
 //                }
+//              , {
+//                  JPAQuery.class, getReader("3", "select nothing from nothing"), "select nothing from nothing", Lists.newArrayList(), getArgsWithProject(),
+//                  "javax.persistence.PersistenceException: Class nothing for query has not been resolved. Check the query and any imports specification"
+//                }
+              , {
+                  JPAPopulate.class, getReader("", "q"), null, null, getArgsWithProject(),
+                  withNewLine("[1-5] q to quit? ") + withNewLine("[1-5] q to quit? q")
+                }
+              , {
+                  JPAPopulate.class, getReader("0", "q"), null, null, getArgsWithProject(),
+                  withNewLine("[1-5] q to quit? 0") + withNewLine("[1-5] q to quit? q")
+                }
         };
     }
 
