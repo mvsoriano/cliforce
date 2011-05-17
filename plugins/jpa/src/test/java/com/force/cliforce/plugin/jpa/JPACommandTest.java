@@ -64,10 +64,10 @@ public class JPACommandTest extends JPAPluginBaseTest {
             	  JPAPopulate.class, null, null, null, getArgsWithProject("-u", "testDNJpaPersistence"),
             	  "Running with selected PersistenceUnit: testDNJpaPersistence"
                 }
-                // test basic war functionality -- unless there are specific war features, we only really need a basic
+                // test basic jar functionality -- unless there are specific war features, we only really need a basic
                 // sanity test that war persistence.xml and classes are loaded
               , {
-            	  JPAPopulate.class, null, null, null, getArgsWithProject("-u", "testDNJpaPersistence", "--type", "war"),
+            	  JPAPopulate.class, null, null, null, getArgsWithProject("-u", "testDNJpaPersistence", "--type", "jar"),
             	  "Running with selected PersistenceUnit: testDNJpaPersistence"
                 }
               , {
@@ -101,7 +101,10 @@ public class JPACommandTest extends JPAPluginBaseTest {
               /*  NEGATIVE TESTS  */
 
                 // TODO: force a persistenceexception when the whole thing is mocked
-//              , { JPAQuery.class, getReader("1", "3", "select o from Account o", "q"), "select o from Account o", Lists.newArrayList(), getArgsWithProject(), "javax.persistence.PersistenceException: Class Account for query has not been resolved. Check the query and any imports specification"}
+//              , {
+//                  JPAQuery.class, getReader("1", "3", "select klj sdflkj lj k from Account o", "q"), "select o from Account o", Lists.newArrayList(), getArgsWithProject(),
+//                  "javax.persistence.PersistenceException: Class Account for query has not been resolved. Check the query and any imports specification"
+//                }
         };
     }
 

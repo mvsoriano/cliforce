@@ -26,7 +26,7 @@
 
 package com.force.cliforce.plugin.jpa.command
 
-import com.force.cliforce.Boot;
+
 import com.force.cliforce.Util.requireResolver
 
 import javax.inject.Inject
@@ -41,17 +41,17 @@ import org.xml.sax.SAXException
 
 import com.beust.jcommander.Parameter
 import com.beust.jcommander.internal.Maps
-import com.force.cliforce.CommandContext
-import com.force.cliforce.JCommand
 import com.force.cliforce.Util._
 import com.force.cliforce.dependency.OutputAdapter
 import com.force.cliforce.dependency.DependencyResolver
 import com.force.cliforce.dependency.DependencyResolver.Scope
+import com.force.cliforce.dependency.DependencyResolutionException
 import com.force.sdk.jpa.PersistenceProviderImpl
 import collection.JavaConversions._
 import java.io.File;
 import java.util.{Map => JMap}
 import java.net.{URL, URLClassLoader}
+import com.force.cliforce.{LazyLogger, Boot, CommandContext, JCommand}
 
 /**
  * 
@@ -63,7 +63,7 @@ abstract class JPACommand[P <: JPAParam] extends JCommand[P] {
 
   @Inject
   var resolver: DependencyResolver = null
-
+  var log: LazyLogger = new LazyLogger(classOf[JPACommand[JPAParam]])
   /**
    * Individual commands implement this to do actual work
    * 
@@ -145,8 +145,17 @@ abstract class JPACommand[P <: JPAParam] extends JCommand[P] {
         ctx.getCommandWriter().printf("%s: %s", msg, e.toString())
       }
     }
-    var pcl: ClassLoader = resolver.createClassLoaderFor(args.group, args.artifact, args.packaging, args.version,
+    var pcl: ClassLoader = null
+    try {
+      pcl = resolver.createClassLoaderFor(args.group, args.artifact, args.packaging, args.version,
       if (args.searchTestJars) Scope.TEST else Scope.RUNTIME, curr, oa)
+    } catch {
+      case e: DependencyResolutionException => {
+        ctx.getCommandWriter().printfln("Unable to find %s artifact: %s:%s:%s", args.packaging, args.group, args.artifact, args.version)
+        log.get().error("Unable to create a class loader.", e)
+        return
+      }
+    }
 
     Thread.currentThread().setContextClassLoader(pcl)
     try {
